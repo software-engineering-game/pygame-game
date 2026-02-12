@@ -20,7 +20,7 @@ asset_folder = os.path.join(src_folder, "assets") # Looks for the directory 'ass
 
 # Global Variables
 FRAMECAP = 60 # Number of ticks per second
-DISPLAY_WIDTH = 1280
+DISPLAY_WIDTH = 720
 DISPLAY_HEIGHT = 720
 GAME_TITLE = "Infinitesimal Ranger" # Placeholder name until we decide on the style of the game
 BLACK = (0,0,0)
@@ -105,7 +105,7 @@ class Enemy(pygame.sprite.Sprite):
         # most games don't link the sprite to the hitbox directly because doing so just feels needlessly punishing
         # but for the purposes of setting this up that's what we'll use for now
 
-        self.rect.center = (DISPLAY_WIDTH / 2, DISPLAY_HEIGHT - 50) # Sets the initial location of the bounding box's center
+        self.rect.center = (DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2) # Sets the initial location of the bounding box's center
 
         self.speedx = 0 # Sets initial x speed of player
         self.speedy = 0 # Sets initial y speed of player
