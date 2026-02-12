@@ -15,8 +15,8 @@ import os
 # Asset Folders
 # We will need to update this section of the code as the projects directory structure changes
 # because the os.path features are dependent on that structure
-primary_game_folder = os.path.dirname(__file__) # Establishes directory pointer for the files current directory
-img_folder = os.path.join(primary_game_folder, "assets") # Looks for the directory 'assets' within the primary_game_folder and creates a directory pointer to it
+src_folder = os.path.dirname(__file__) # Establishes directory pointer for the files current directory
+asset_folder = os.path.join(src_folder, "assets") # Looks for the directory 'assets' within the primary_game_folder and creates a directory pointer to it
 
 # Global Variables
 FRAMECAP = 60 # Number of ticks per second
@@ -25,12 +25,6 @@ DISPLAY_HEIGHT = 720
 GAME_TITLE = "Infinitesimal Ranger" # Placeholder name until we decide on the style of the game
 BLACK = (0,0,0)
 BACKGROUND_COLOR = BLACK # Currently defines the background as solid color black
-
-# Player Variables
-#PLAYER_WIDTH = 23 # Bounding box width
-#PLAYER_HEIGHT = 30 # Bounding box height
-PLAYER_SPRITE = "test_sprite.png" # Sets the name of the image to use for the player sprite
-PLAYER_SPD = 5
 
 # Keybinds
 # Sets the default keybinds
@@ -43,11 +37,17 @@ keybind_down = pygame.K_DOWN
 # Entity Classes
 #
 
+# Player Variables
+#PLAYER_WIDTH = 23 # Bounding box width
+#PLAYER_HEIGHT = 30 # Bounding box height
+PLAYER_SPRITE = "test_sprite.png" # Sets the name of the image to use for the player sprite
+PLAYER_SPD = 5
+
 # Defines Player Behavior
 class Player(pygame.sprite.Sprite):
     def __init__(self): # Constructor (or initializer) for the player class
         pygame.sprite.Sprite.__init__(self) # Uses the pygame init function for sprites
-        self.image = pygame.image.load(os.path.join(img_folder, PLAYER_SPRITE)).convert() # Sets the path for the player sprite image
+        self.image = pygame.image.load(os.path.join(asset_folder, PLAYER_SPRITE)).convert() # Sets the path for the player sprite image
         self.image.set_colorkey(BLACK)
 
         self.rect = self.image.get_rect() # Sets the box that handles player hit detection and space
@@ -87,6 +87,36 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += self.speedx
         self.rect.y += self.speedy
 
+# Enemy Variables
+#ENEMY_WIDTH = 23 # Bounding box width
+#ENEMY_HEIGHT = 30 # Bounding box height
+ENEMY_SPRITE = "cat.png" # Sets the name of the image to use for the enemy sprite
+ENEMY_SPD = 0
+
+# Defines Basic Enemy Behavior
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self): # Constructor (or initializer) for the player class
+        pygame.sprite.Sprite.__init__(self) # Uses the pygame init function for sprites
+        self.image = pygame.image.load(os.path.join(asset_folder, ENEMY_SPRITE)).convert() # Sets the path for the player sprite image
+        self.image.set_colorkey(BLACK)
+
+        self.rect = self.image.get_rect() # Sets the box that handles player hit detection and space
+        # Currently bases the bounding box off the player sprite. THIS WILL NEED TO BE CHANGED
+        # most games don't link the sprite to the hitbox directly because doing so just feels needlessly punishing
+        # but for the purposes of setting this up that's what we'll use for now
+
+        self.rect.center = (DISPLAY_WIDTH / 2, DISPLAY_HEIGHT - 50) # Sets the initial location of the bounding box's center
+
+        self.speedx = 0 # Sets initial x speed of player
+        self.speedy = 0 # Sets initial y speed of player
+
+    # Defines player object behavior
+    def update(self):
+        # Resets Speed
+        self.speedx = 0
+        self.speedy = 0
+
+        # the update function can't handle animations it just updates the object variables
 
 # Initialize Pygame
 pygame.init()
@@ -101,9 +131,12 @@ clock = pygame.time.Clock()
 
 # Entities
 ally_sprites = pygame.sprite.Group() # Creates a group for ally sprites, player and pellets
-enemy_sprites = pygame.sprite.Group() # Creates a group for enemy sprites, enemies and their pellets
 player = Player() # Declares a player object
-ally_sprites.add(player) # Adds the player to the group of all_sprites
+ally_sprites.add(player) # Adds the player to the group of ally_sprites
+
+enemy_sprites = pygame.sprite.Group() # Creates a group for enemy sprites, enemies and their pellets
+enemy1 = Enemy() # Declares an enemy object
+enemy_sprites.add(enemy1) # Adds the enemy1 to the group of enemy_sprites
 
 running = True # Condition used to indicate the game is running
 while running:
@@ -121,6 +154,7 @@ while running:
     #
 
     ally_sprites.update()
+    enemy_sprites.update()
 
     #
     # Render Game
@@ -130,6 +164,7 @@ while running:
     screen.fill(BACKGROUND_COLOR)
 
     ally_sprites.draw(screen) # Draws all sprites to the screen
+    enemy_sprites.draw(screen)
 
     # Displays the draw calls for this frame
     # ALWAYS DO THIS AFTER DRAW CALLS that you want displayed on a given frame
