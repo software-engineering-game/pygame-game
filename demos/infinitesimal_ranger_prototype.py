@@ -118,6 +118,16 @@ class Enemy(pygame.sprite.Sprite):
 
         # the update function can't handle animations it just updates the object variables
 
+#
+# Utilities
+#
+
+def spawn_basic_enemy_wave(wave_columns, wave_rows, x_spacing, y_spacing, corner_x, corner_y):
+    for j in range(wave_rows):
+        for i in range(wave_columns):
+            enemy_buffer = Basic_Enemy(corner_x + (i * x_spacing), corner_y + (j * y_spacing), ENEMY_BASIC_SPRITE)
+            enemy_dships.add(enemy_buffer)
+
 # Initialize Pygame
 pygame.init()
 #pygame.mixer.init() # Initializes the audio
