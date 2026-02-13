@@ -45,9 +45,9 @@ PLAYER_SPD = 5
 
 # Defines Player Behavior
 class Player(pygame.sprite.Sprite):
-    def __init__(self): # Constructor (or initializer) for the player class
+    def __init__(self, init_x, init_y, player_ship): # Constructor (or initializer) for the player class
         pygame.sprite.Sprite.__init__(self) # Uses the pygame init function for sprites
-        self.image = pygame.image.load(os.path.join(asset_folder, PLAYER_SPRITE)).convert() # Sets the path for the player sprite image
+        self.image = pygame.image.load(os.path.join(asset_folder, player_ship)).convert() # Sets the path for the player sprite image
         self.image.set_colorkey(BLACK)
 
         self.rect = self.image.get_rect() # Sets the box that handles player hit detection and space
@@ -55,7 +55,7 @@ class Player(pygame.sprite.Sprite):
         # most games don't link the sprite to the hitbox directly because doing so just feels needlessly punishing
         # but for the purposes of setting this up that's what we'll use for now
 
-        self.rect.center = (DISPLAY_WIDTH / 2, DISPLAY_HEIGHT - 50) # Sets the initial location of the bounding box's center
+        self.rect.center = (init_x, init_y) # Sets the initial location of the bounding box's center
 
         self.speedx = 0 # Sets initial x speed of player
         self.speedy = 0 # Sets initial y speed of player
@@ -70,16 +70,16 @@ class Player(pygame.sprite.Sprite):
         keystate = pygame.key.get_pressed()
 
         if keystate[keybind_left]: # Move left
-            self.speedx = PLAYER_SPD * -1
+            self.speedx -= PLAYER_SPD
         if keystate[keybind_right]: # Move right
-            self.speedx = PLAYER_SPD
+            self.speedx += PLAYER_SPD
         if keystate[keybind_left] and keystate[keybind_right]: # Don't move
             self.speedx = 0
 
         if keystate[keybind_up]: # Move up
-            self.speedy = PLAYER_SPD * -1
+            self.speedy -= PLAYER_SPD
         if keystate[keybind_down]: # Move down
-            self.speedy = PLAYER_SPD
+            self.speedy += PLAYER_SPD
         if keystate[keybind_up] and keystate[keybind_down]: # Don't move
             self.speedy = 0
 
@@ -90,14 +90,14 @@ class Player(pygame.sprite.Sprite):
 # Enemy Variables
 #ENEMY_WIDTH = 23 # Bounding box width
 #ENEMY_HEIGHT = 30 # Bounding box height
-ENEMY_SPRITE = "cat.png" # Sets the name of the image to use for the enemy sprite
+ENEMY_BASIC_SPRITE = "cat.png" # Sets the name of the image to use for the enemy sprite
 ENEMY_SPD = 0
 
 # Defines Basic Enemy Behavior
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self): # Constructor (or initializer) for the player class
+    def __init__(self, init_x, init_y, enemy_ship): # Constructor (or initializer) for the player class
         pygame.sprite.Sprite.__init__(self) # Uses the pygame init function for sprites
-        self.image = pygame.image.load(os.path.join(asset_folder, ENEMY_SPRITE)).convert() # Sets the path for the player sprite image
+        self.image = pygame.image.load(os.path.join(asset_folder, enemy_ship)).convert() # Sets the path for the player sprite image
         self.image.set_colorkey(BLACK)
 
         self.rect = self.image.get_rect() # Sets the box that handles player hit detection and space
@@ -105,7 +105,7 @@ class Enemy(pygame.sprite.Sprite):
         # most games don't link the sprite to the hitbox directly because doing so just feels needlessly punishing
         # but for the purposes of setting this up that's what we'll use for now
 
-        self.rect.center = (DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2) # Sets the initial location of the bounding box's center
+        self.rect.center = (init_x, init_y) # Sets the initial location of the bounding box's center
 
         self.speedx = 0 # Sets initial x speed of player
         self.speedy = 0 # Sets initial y speed of player
@@ -130,13 +130,20 @@ clock = pygame.time.Clock()
 #
 
 # Entities
-ally_sprites = pygame.sprite.Group() # Creates a group for ally sprites, player and pellets
-player = Player() # Declares a player object
-ally_sprites.add(player) # Adds the player to the group of ally_sprites
 
-enemy_sprites = pygame.sprite.Group() # Creates a group for enemy sprites, enemies and their pellets
-enemy1 = Enemy() # Declares an enemy object
-enemy_sprites.add(enemy1) # Adds the enemy1 to the group of enemy_sprites
+# Entity Groups
+ally_ships = pygame.sprite.Group()    # Creates a group for ally ship objects
+ally_bullets = pygame.sprite.Group()  # Creates a group for ally bullet objects
+
+enemy_ships = pygame.sprite.Group()   # Creates a group for enemy ship objects
+enemy_bullets = pygame.sprite.Group() # Creates a group for enemy bullet objects
+
+# Spawning player and one enemy
+player = Player(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT - 50, PLAYER_SPRITE) # Declares a player object
+ally_ships.add(player) # Adds the player to the group of ally_sprites
+
+enemy1 = Enemy(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2, ENEMY_BASIC_SPRITE) # Declares an enemy object
+enemy_ships.add(enemy1) # Adds the enemy1 to the group of enemy_sprites
 
 running = True # Condition used to indicate the game is running
 while running:
@@ -153,8 +160,8 @@ while running:
     # Update Game State
     #
 
-    ally_sprites.update()
-    enemy_sprites.update()
+    ally_ships.update()
+    enemy_ships.update()
 
     #
     # Render Game
