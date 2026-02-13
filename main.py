@@ -2,6 +2,7 @@
 
 import pygame
 import os
+import asyncio
 
 # Asset Folders
 # we will need to update this section of the code as the projects directory structure changes
@@ -28,6 +29,35 @@ keybind_left = pygame.K_LEFT
 keybind_right = pygame.K_RIGHT
 keybind_up = pygame.K_UP
 keybind_down = pygame.K_DOWN
+
+async def main():
+    # Initalizes the pygame 
+    pygame.init()
+    # makes the screen with out hardcoded values
+    screen = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
+
+    running = True
+
+    while running:
+        # Checks that pygame is still running
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        
+        screen.fill(BACKGROUND_COLOR)   # makes the window have a black background
+        pygame.draw.circle(screen, (255, 0, 0), (400, 300), 50)
+
+        pygame.display.flip() # displays the drawing
+        await asyncio.sleep(0)
+
+        
+
+    pygame.quit()
+
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
 
 
