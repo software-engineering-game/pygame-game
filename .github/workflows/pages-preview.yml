@@ -1,7 +1,7 @@
 name: Pages Preview (pygbag)
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}   # manual button press only
 
 permissions:
   contents: read
@@ -9,27 +9,20 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: "pages"
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout nick-work
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: nick-work
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Install system deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
 
       - name: Install pygbag
         run: |
