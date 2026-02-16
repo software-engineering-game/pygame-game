@@ -1,6 +1,6 @@
 import pygame
 import asyncio
-from states.menu_state import MainMenuState
+from states.main_menu_state import MainMenuState
 
 WIDTH, HEIGHT = 720, 720
 TITLE = "Space Dodgers"
