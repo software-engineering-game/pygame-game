@@ -26,6 +26,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
       - name: Install pygbag
         run: |
           python -m pip install --upgrade pip
