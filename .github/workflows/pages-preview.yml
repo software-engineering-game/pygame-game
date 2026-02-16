@@ -39,7 +39,7 @@ jobs:
 
       - name: Build web version
         run: |
-          python -m pygbag main.py --ume_block 0
+          python -m pygbag . --ume_block 0
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -49,7 +49,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-
     environment:
       name: github-pages
 
