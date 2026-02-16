@@ -89,6 +89,40 @@ class Player(pygame.sprite.Sprite):
         self.rect.y += self.speedy
 
 
+# Pause Screen Class
+class PauseScreen:
+    def __init__(self, screen):
+        self.screen = screen
+        self.font = pygame.font.Font(None, 74)
+        self.resume_button = pygame.Rect(DISPLAY_WIDTH // 2 - 100, DISPLAY_HEIGHT // 2, 200, 50)
+        self.quit_button = pygame.Rect(DISPLAY_WIDTH // 2 - 100, DISPLAY_HEIGHT // 2 + 70, 200, 50)
+
+    def draw(self):
+        # Draw the pause message
+        pause_text = self.font.render("Paused", True, (255, 255, 0))
+        text_rect = pause_text.get_rect(center=(DISPLAY_WIDTH // 2, DISPLAY_HEIGHT // 2 - 100))
+        self.screen.blit(pause_text, text_rect)
+
+        # Draw the resume button
+        pygame.draw.rect(self.screen, (0, 255, 0), self.resume_button)
+        resume_text = self.font.render("Resume", True, (0, 0, 0))
+        resume_text_rect = resume_text.get_rect(center=self.resume_button.center)
+        self.screen.blit(resume_text, resume_text_rect)
+
+        # Draw the quit button
+        pygame.draw.rect(self.screen, (255, 0, 0), self.quit_button)
+        quit_text = self.font.render("Quit", True, (0, 0, 0))
+        quit_text_rect = quit_text.get_rect(center=self.quit_button.center)
+        self.screen.blit(quit_text, quit_text_rect)
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.resume_button.collidepoint(event.pos):
+                return "resume"
+            elif self.quit_button.collidepoint(event.pos):
+                return "quit"
+        return None
+
 # Initialize Pygame
 async def main():
     pygame.init()
@@ -107,6 +141,10 @@ async def main():
     player = Player() # Declares a player object
     ally_sprites.add(player) # Adds the player to the group of all_sprites
 
+    # Pause screen
+    pause_screen = PauseScreen(screen)
+    is_paused = False
+
     running = True # Condition used to indicate the game is running
     while running:
         #
@@ -118,11 +156,22 @@ async def main():
             if event.type == pygame.QUIT: # pygame.QUIT event means the user clicked X to close your window
                 running = False
 
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                is_paused = not is_paused
+
+            if is_paused:
+                result = pause_screen.handle_event(event)
+                if result == "resume":
+                    is_paused = False
+                elif result == "quit":
+                    running = False
+
         #
         # Update Game State
         #
 
-        ally_sprites.update()
+        if not is_paused:
+            ally_sprites.update()
 
         #
         # Render Game
@@ -132,6 +181,9 @@ async def main():
         screen.fill(BACKGROUND_COLOR) 
 
         ally_sprites.draw(screen) # Draws all sprites to the screen
+
+        if is_paused:
+            pause_screen.draw()
 
         # Displays the draw calls for this frame
         # ALWAYS DO THIS AFTER DRAW CALLS that you want displayed on a given frame
