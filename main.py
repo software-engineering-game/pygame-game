@@ -5,6 +5,14 @@ WIDTH, HEIGHT = 720, 720
 TITLE = "Space Dodgers"
 FPS = 60
 
+class State:
+    def handle_event(self, event):
+        pass
+    def update(self, dt):
+        pass
+    def draw(self, screen):
+        pass
+
 async def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
