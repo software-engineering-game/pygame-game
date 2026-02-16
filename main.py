@@ -5,6 +5,7 @@
 #
 #
 #Date: 2026-02-05
+import asyncio
 import pygame
 import os
 
@@ -89,52 +90,54 @@ class Player(pygame.sprite.Sprite):
 
 
 # Initialize Pygame
-pygame.init()
-#pygame.mixer.init() # Initializes the audio
-screen = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT)) # Initializes the screen display
-pygame.display.set_caption(GAME_TITLE) # Names the Window the game runs in
-clock = pygame.time.Clock()
-
-#
-# Game Loop
-#
-
-# Entities
-ally_sprites = pygame.sprite.Group() # Creates a group for ally sprites, player and pellets
-enemy_sprites = pygame.sprite.Group() # Creates a group for enemy sprites, enemies and their pellets
-player = Player() # Declares a player object
-ally_sprites.add(player) # Adds the player to the group of all_sprites
-
-running = True # Condition used to indicate the game is running
-while running:
-    #
-    # Process Events and Input
-    #
-
-    # poll for events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT: # pygame.QUIT event means the user clicked X to close your window
-            running = False
+async def main():
+    pygame.init()
+    #pygame.mixer.init() # Initializes the audio
+    screen = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT)) # Initializes the screen display
+    pygame.display.set_caption(GAME_TITLE) # Names the Window the game runs in
+    clock = pygame.time.Clock()
 
     #
-    # Update Game State
+    # Game Loop
     #
 
-    ally_sprites.update()
+    # Entities
+    ally_sprites = pygame.sprite.Group() # Creates a group for ally sprites, player and pellets
+    enemy_sprites = pygame.sprite.Group() # Creates a group for enemy sprites, enemies and their pellets
+    player = Player() # Declares a player object
+    ally_sprites.add(player) # Adds the player to the group of all_sprites
 
-    #
-    # Render Game
-    #
+    running = True # Condition used to indicate the game is running
+    while running:
+        #
+        # Process Events and Input
+        #
 
-    # fill the screen with a color to wipe away anything from last frame
-    screen.fill(BACKGROUND_COLOR)
+        # poll for events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: # pygame.QUIT event means the user clicked X to close your window
+                running = False
 
-    ally_sprites.draw(screen) # Draws all sprites to the screen
+        #
+        # Update Game State
+        #
 
-    # Displays the draw calls for this frame
-    # ALWAYS DO THIS AFTER DRAW CALLS that you want displayed on a given frame
-    pygame.display.flip()
+        ally_sprites.update()
 
-    clock.tick(FRAMECAP)  # Sets FPS limit
+        #
+        # Render Game
+        #
+
+        # fill the screen with a color to wipe away anything from last frame
+        screen.fill(BACKGROUND_COLOR) 
+
+        ally_sprites.draw(screen) # Draws all sprites to the screen
+
+        # Displays the draw calls for this frame
+        # ALWAYS DO THIS AFTER DRAW CALLS that you want displayed on a given frame
+        pygame.display.flip()
+        await asyncio.sleep(0)
+        clock.tick(FRAMECAP)  # Sets FPS limit
 
 pygame.quit()
+asyncio.run(main() )
