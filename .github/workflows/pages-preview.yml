@@ -38,7 +38,7 @@ jobs:
 
       - name: Build web
         run: |
-          python -m pygbag .
+          python -m pygbag main.py
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
