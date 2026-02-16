@@ -13,6 +13,19 @@ class State:
     def draw(self, screen):
         pass
 
+class MenuState(State):
+    def __init__(self):
+        self.font = pygame.font.Font(None, 48)
+    
+    def handle_event(self, event):
+        # DO later
+        pass
+    def draw(self, screen):
+        screen.fill((0, 0, 0))
+        text = self.font.render("MENU - placeholder", True, (255, 255, 255))
+        screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2))
+
+
 async def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
