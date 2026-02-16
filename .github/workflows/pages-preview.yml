@@ -37,6 +37,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pygbag black
 
+      # Remove prototype so pygbag doesn't scan it
+      - name: Remove prototype folder for web build
+        run: |
+          rm -rf prototype
+
       - name: Build web version
         run: |
           python -m pygbag --ume_block 0 .
@@ -49,6 +54,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+
     environment:
       name: github-pages
 
