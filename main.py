@@ -1,16 +1,13 @@
 import pygame
 import asyncio
 from states.main_menu_state import MainMenuState
-
-WIDTH, HEIGHT = 720, 720
-TITLE = "Space Dodgers"
-FPS = 60
+from states import settings
 
 class App:
     def __init__(self, screen):
         self.screen = screen
-        self.width = WIDTH
-        self.height = HEIGHT
+        self.width = settings.WIDTH
+        self.height = settings.HEIGHT
         self.running = True
         self.state = None
 
@@ -22,8 +19,8 @@ class App:
 
 async def main():
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption(TITLE)
+    screen = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
+    pygame.display.set_caption(settings.TITLE)
 
     app = App(screen)
     app.change_state(MainMenuState())

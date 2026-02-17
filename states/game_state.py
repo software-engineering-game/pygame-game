@@ -1,31 +1,28 @@
 import pygame
 import os
 from states.base_state import State
+import settings
 
-BLACK = (0, 0, 0)
-keybind_player_up = pygame.K_UP
-keybind_player_down = pygame.K_DOWN
-keybind_player_left = pygame.K_LEFT
-keybind_player_right = pygame.K_RIGHT
+BLACK = (0, 0, 0) # This exists solely to key out the transparency for sprites
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         self.image.set_colorkey(BLACK)
-        self.rect = self.image.get_rect(center=start_pos)
+        self.rect = self.image.get_rect(center=start_pos) # I still want to find a way to change the bounding box
         self.speed = speed
 
     def update(self, keys):
         dx = dy = 0
 
-        if keys[keybind_player_left]:
+        if keys[settings.keybind_player_left]:
             dx -= self.speed
-        if keys[keybind_player_right]:
+        if keys[settings.keybind_player_right]:
             dx += self.speed
-        if keys[keybind_player_up]:
+        if keys[settings.keybind_player_up]:
             dy -= self.speed
-        if keys[keybind_player_down]:
+        if keys[settings.keybind_player_down]:
             dy += self.speed
 
         self.rect.x += dx
