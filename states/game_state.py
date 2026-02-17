@@ -28,6 +28,17 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += dx
         self.rect.y += dy
 
+class Basic_Enemy(pygame.sprite.Sprite):
+    def __init__(self, asset_folder, sprite_name, speed, start_pos):
+        super().__init__()
+        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect(center=start_pos)
+        self.speed = speed
+
+    def update(self):
+        # This is where basic enemy behavior should go
+        pass
 
 class GameState(State):
     def on_enter(self, app):
