@@ -3,11 +3,15 @@ import os
 from states.base_state import State
 
 BLACK = (0, 0, 0)
+keybind_player_up = pygame.K_UP
+keybind_player_down = pygame.K_DOWN
+keybind_player_left = pygame.K_LEFT
+keybind_player_right = pygame.K_RIGHT
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, img_folder, sprite_name, speed, start_pos):
+    def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
-        self.image = pygame.image.load(os.path.join(img_folder, sprite_name)).convert()
+        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
@@ -15,13 +19,13 @@ class Player(pygame.sprite.Sprite):
     def update(self, keys):
         dx = dy = 0
 
-        if keys[pygame.K_LEFT]:
+        if keys[keybind_player_left]:
             dx -= self.speed
-        if keys[pygame.K_RIGHT]:
+        if keys[keybind_player_right]:
             dx += self.speed
-        if keys[pygame.K_UP]:
+        if keys[keybind_player_up]:
             dy -= self.speed
-        if keys[pygame.K_DOWN]:
+        if keys[keybind_player_down]:
             dy += self.speed
 
         self.rect.x += dx
@@ -32,19 +36,22 @@ class GameState(State):
     def on_enter(self, app):
         # assets folder is at repo root
         repo_root = os.path.dirname(os.path.dirname(__file__))
-        img_folder = os.path.join(repo_root, "assets")
+        asset_folder = os.path.join(repo_root, "assets")
 
         self.bg_color = (0, 0, 0)
 
-        self.ally_sprites = pygame.sprite.Group()
+        self.ally_ships = pygame.sprite.Group()
+        self.ally_bullets = pygame.sprite.Group()
+        self.enemy_ships = pygame.sprite.Group()
+        self.enemy_bullets = pygame.sprite.Group()
 
         self.player = Player(
-            img_folder=img_folder,
+            asset_folder=asset_folder,
             sprite_name="test_sprite.png",
             speed=5,
             start_pos=(app.width // 2, app.height - 50),
         )
-        self.ally_sprites.add(self.player)
+        self.ally_ships.add(self.player)
 
     def handle_event(self, app, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -57,4 +64,4 @@ class GameState(State):
 
     def draw(self, app, screen):
         screen.fill(self.bg_color)
-        self.ally_sprites.draw(screen)
+        self.ally_ships.draw(screen)
