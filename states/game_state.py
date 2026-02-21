@@ -1,8 +1,7 @@
 import pygame
 import os
 from states.base_state import State
-import settings
-
+from states import settings
 BLACK = (0, 0, 0) # This exists solely to key out the transparency for sprites
 
 class Player(pygame.sprite.Sprite):
@@ -42,6 +41,7 @@ class Basic_Enemy(pygame.sprite.Sprite):
 
 class GameState(State):
     def on_enter(self, app):
+        self.app = app
         # assets folder is at repo root
         repo_root = os.path.dirname(os.path.dirname(__file__))
         asset_folder = os.path.join(repo_root, "assets")
@@ -62,9 +62,10 @@ class GameState(State):
         self.ally_ships.add(self.player)
 
     def handle_event(self, app, event):
+        # To get to pause screen
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            from states.main_menu_state import MainMenuState
-            app.change_state(MainMenuState())
+            from states.pause_state import PauseScreen
+            app.change_state(PauseScreen(app, self))
 
     def update(self, app, dt):
         keys = pygame.key.get_pressed()
