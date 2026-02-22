@@ -76,4 +76,22 @@ class MainMenuState(State):
         title_rect = title_text.get_rect(center=(app.width // 2, app.height // 5))
         screen.blit(title_text, title_rect)
 
+        # Menu nav
+        menu_top = app.height // 3
+        x = 60
+        line_height = 60
+
+        for i, option in enumerate(self.options):
+            y = menu_top + 40 + i * line_height
+
+            if i == self.selected:
+                prefix = "> "
+                color = (255, 255, 255)
+            else:
+                prefix = "  "
+                color = (160, 160, 160)
+            
+            text = self.menu_font.render(prefix + option, True, color)
+            screen.blit(text, (x, y))
+
         
