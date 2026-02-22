@@ -5,6 +5,21 @@ from states import settings
 
 BLACK = (0, 0, 0) # This exists solely to key out the transparency for sprites
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, speed):
+        super().__init__()
+        # Creates a simple laser bullet
+        self.image = pygame.Surface((4, 12))
+        self.image.fill((0, 255, 255))  #color for laser
+        self.rect = self.image.get_rect(center=(x, y))
+        self.speed = speed
+    
+    def update(self):
+        self.rect.y -= self.speed
+        # Remove bullet if it goes off screen
+        if self.rect.bottom < 0:
+            self.kill()
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
@@ -87,23 +102,64 @@ class GameState(State):
             start_pos=(app.width // 2, app.height - 50),
         )
         self.ally_ships.add(self.player)
+        
+        # Shooting cooldown tracking
+        self.shoot_cooldown = 0.0
+        self.can_shoot = True
 
     def handle_event(self, app, event):
         # To get to pause screen
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             from states.pause_state import PauseScreen
             app.change_state(PauseScreen(app, self))
+        
+        # Shooting input
+        if event.type == pygame.KEYDOWN and event.key == settings.keybind_player_shoot:
+            if self.can_shoot:
+                self.shoot()
 
+    def shoot(self):
+        bullet = Bullet(
+            x=self.player.rect.centerx,
+            y=self.player.rect.top,
+            speed=settings.BULLET_SPEED
+        )
+        self.ally_bullets.add(bullet)
+        self.can_shoot = False
+        self.shoot_cooldown = settings.BULLET_COOLDOWN
+    
     def update(self, app, dt):
         keys = pygame.key.get_pressed()
         self.player.update(keys)
         self.enemy_ships.update()
+        
+        # Update shooting cooldown
+        if not self.can_shoot:
+            self.shoot_cooldown -= dt
+            if self.shoot_cooldown <= 0:
+                self.can_shoot = True
+        
+        # Allow continuous shooting by holding spacebar
+        if keys[settings.keybind_player_shoot] and self.can_shoot:
+            self.shoot()
+        
+        # Update bullets
+        self.ally_bullets.update()
+        
+        # see if bullet hit an anemy
+        collisions = pygame.sprite.groupcollide(
+            self.ally_bullets, 
+            self.enemy_ships, 
+            True,  # Remove bullet on collision
+            True   # Remove enemy on collision
+        )
 
     def draw(self, app, screen):
         screen.fill(self.bg_color)
         screen.blit(self.bg_image, (0,0))
         self.ally_ships.draw(screen)
         self.enemy_ships.draw(screen)
+        self.ally_bullets.draw(screen)
 
     def spawn_basic_enemy_wave(self, asset_folder, sprite_name, speed, corner_pos, rows, columns, spacing):
         for j in range(rows):
