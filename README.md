@@ -14,3 +14,5 @@ but I did put in place the foundation for keybind options in the future
 - Move left = left arrow key
 - Move right = right arrow key
 
+## Shooting
+- Shoot = Spacebar (hold to shoot continuously)
