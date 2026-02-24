@@ -3,14 +3,15 @@ import os
 from states.base_state import State
 from states import settings
 
-BLACK = (0, 0, 0) # This exists solely to key out the transparency for sprites
+BLACK = (0, 0, 0)  # This exists solely to key out the transparency for sprites
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         self.image.set_colorkey(BLACK)
-        self.rect = self.image.get_rect(center=start_pos) # I still want to find a way to change the bounding box
+        self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
 
     def update(self, keys):
@@ -28,7 +29,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += dx
         self.rect.y += dy
 
-# Basic Grunt Enemy
+
 class Basic_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
@@ -38,10 +39,9 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.speed = speed
 
     def update(self):
-        # This is where basic enemy behavior should go
         pass
 
-# Not sure why this duplicate is here, but I assume it's for a more advanced enemy type
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
@@ -51,12 +51,15 @@ class Enemy(pygame.sprite.Sprite):
         self.speed = speed
 
     def update(self):
-        # need to add movement and shooting later
         pass
 
+
 class GameState(State):
+    saved_player_position = None
+
     def on_enter(self, app):
         self.app = app
+
         # assets folder is at repo root
         repo_root = os.path.dirname(os.path.dirname(__file__))
         asset_folder = os.path.join(repo_root, "assets")
@@ -77,7 +80,7 @@ class GameState(State):
             corner_pos=(settings.WAVE_CORNER_X, settings.WAVE_CORNER_Y),
             rows=settings.WAVE_ROWS,
             columns=settings.WAVE_COLUMNS,
-            spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING)
+            spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING),
         )
 
         self.player = Player(
@@ -88,9 +91,14 @@ class GameState(State):
         )
         self.ally_ships.add(self.player)
 
+        # Restore saved position if returning from pause
+        if GameState.saved_player_position is not None:
+            self.player.rect.center = GameState.saved_player_position
+
     def handle_event(self, app, event):
-        # To get to pause screen
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            # Save player position before pausing
+            GameState.saved_player_position = self.player.rect.center
             from states.pause_state import PauseScreen
             app.change_state(PauseScreen(app, self))
 
@@ -101,13 +109,18 @@ class GameState(State):
 
     def draw(self, app, screen):
         screen.fill(self.bg_color)
-        screen.blit(self.bg_image, (0,0))
+        screen.blit(self.bg_image, (0, 0))
         self.ally_ships.draw(screen)
         self.enemy_ships.draw(screen)
 
-    def spawn_basic_enemy_wave(self, asset_folder, sprite_name, speed, corner_pos, rows, columns, spacing):
+    def spawn_basic_enemy_wave(
+        self, asset_folder, sprite_name, speed, corner_pos, rows, columns, spacing
+    ):
         for j in range(rows):
             for i in range(columns):
-                (x, y) = (corner_pos[0] + i * spacing[0], corner_pos[1] + j * spacing[1])
+                (x, y) = (
+                    corner_pos[0] + i * spacing[0],
+                    corner_pos[1] + j * spacing[1],
+                )
                 enemy = Basic_Enemy(asset_folder, sprite_name, speed, (x, y))
                 self.enemy_ships.add(enemy)
