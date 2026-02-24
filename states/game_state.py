@@ -13,7 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=start_pos) # I still want to find a way to change the bounding box
         self.speed = speed
 
-    def update(self, keys):
+    def update(self, keys, bounds_rect=None):
         dx = dy = 0
 
         if keys[settings.keybind_player_left]:
@@ -27,6 +27,8 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.x += dx
         self.rect.y += dy
+        if bounds_rect is not None:
+                  self.rect.clamp_ip(bounds_rect)
 
 # Basic Grunt Enemy
 class Basic_Enemy(pygame.sprite.Sprite):
@@ -37,9 +39,36 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
 
+        # Square-movement state
+        self.bounds_rect = None
+        self.phase = 0  # 0=right, 1=down, 2=left, 3=up
+        self.side_len = 80
+        self.phase_pixels_remaining = self.side_len
+
     def update(self):
-        # This is where basic enemy behavior should go
-        pass
+        # If bounds not set, do nothing (safe default)
+        if self.bounds_rect is None:
+            return
+
+        # Move in a square: Right, Down, Left, Up
+        if self.phase == 0:
+            self.rect.x += self.speed
+        elif self.phase == 1:
+            self.rect.y += self.speed
+        elif self.phase == 2:
+            self.rect.x -= self.speed
+        else:
+            self.rect.y -= self.speed
+
+        self.phase_pixels_remaining -= self.speed
+
+        # Switch to next side when current side finished
+        if self.phase_pixels_remaining <= 0:
+            self.phase = (self.phase + 1) % 4
+            self.phase_pixels_remaining = self.side_len
+
+        # Clamp inside bounds after moving
+        self.rect.clamp_ip(self.bounds_rect)
 
 # Not sure why this duplicate is here, but I assume it's for a more advanced enemy type
 class Enemy(pygame.sprite.Sprite):
@@ -70,10 +99,36 @@ class GameState(State):
         self.enemy_ships = pygame.sprite.Group()
         self.enemy_bullets = pygame.sprite.Group()
 
+        # Play area bounds (change these numbers anytime)
+        margin_left = 40
+        margin_right = 40
+        margin_top = 40
+        margin_bottom = 40
+
+        self.play_area = pygame.Rect(
+            margin_left,
+            margin_top,
+            app.width - margin_left - margin_right,
+            app.height - margin_top - margin_bottom
+        )
+
+        # Enemy movement area (can be same or different)
+        enemy_margin_left = 40
+        enemy_margin_right = 40
+        enemy_margin_top = 40
+        enemy_margin_bottom = 200  # keep enemies mostly in upper area
+
+        self.enemy_area = pygame.Rect(
+            enemy_margin_left,
+            enemy_margin_top,
+            app.width - enemy_margin_left - enemy_margin_right,
+            app.height - enemy_margin_top - enemy_margin_bottom
+        )
+
         self.spawn_basic_enemy_wave(
             asset_folder=asset_folder,
             sprite_name=settings.ENEMY_BASIC_SPRITE,
-            speed=settings.ENEMY_SPD,
+            speed=3,
             corner_pos=(settings.WAVE_CORNER_X, settings.WAVE_CORNER_Y),
             rows=settings.WAVE_ROWS,
             columns=settings.WAVE_COLUMNS,
@@ -96,8 +151,12 @@ class GameState(State):
 
     def update(self, app, dt):
         keys = pygame.key.get_pressed()
-        self.player.update(keys)
+        self.player.update(keys, self.play_area)
         self.enemy_ships.update()
+        # Remove enemies that moved off-screen
+        for enemy in list(self.enemy_ships):
+         if enemy.rect.top > app.height:
+           enemy.kill()
 
     def draw(self, app, screen):
         screen.fill(self.bg_color)
@@ -110,4 +169,5 @@ class GameState(State):
             for i in range(columns):
                 (x, y) = (corner_pos[0] + i * spacing[0], corner_pos[1] + j * spacing[1])
                 enemy = Basic_Enemy(asset_folder, sprite_name, speed, (x, y))
+                enemy.bounds_rect = self.enemy_area
                 self.enemy_ships.add(enemy)
