@@ -5,12 +5,18 @@ from states import settings
 
 BLACK = (0, 0, 0) # This exists solely to key out the transparency for sprites
 
+# assets folder is at repo root
+repo_root = os.path.dirname(os.path.dirname(__file__))
+asset_folder = os.path.join(repo_root, "assets")
+
+# Class for the basic bullet
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, speed):
+    def __init__(self, asset_folder, sprite_name, x, y, speed):
         super().__init__()
         # Creates a simple laser bullet
-        self.image = pygame.Surface((4, 12))
-        self.image.fill((0, 255, 255))  #color for laser
+        # self.image = pygame.Surface((4, 12))
+        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()  #color for laser
+        self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect(center=(x, y))
         self.speed = speed
     
@@ -19,7 +25,10 @@ class Bullet(pygame.sprite.Sprite):
         # Remove bullet if it goes off screen
         if self.rect.bottom < 0:
             self.kill()
+        if self.rect.top > 740:
+            self.kill()
 
+# Class for standard player ship
 class Player(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
@@ -27,6 +36,22 @@ class Player(pygame.sprite.Sprite):
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect(center=start_pos) # I still want to find a way to change the bounding box
         self.speed = speed
+
+        # Shooting cooldown tracking
+        self.shoot_cooldown = 0.0
+        self.can_shoot = True
+
+    def shoot(self, bullet_group):
+        bullet = Bullet(
+            asset_folder=asset_folder,
+            sprite_name="basic_bullet.png",
+            x=self.rect.centerx,
+            y=self.rect.top,
+            speed=settings.BULLET_SPEED
+        )
+        bullet_group.add(bullet)
+        self.can_shoot = False
+        self.shoot_cooldown = settings.BULLET_COOLDOWN
 
     def update(self, keys):
         dx = dy = 0
@@ -52,18 +77,30 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
 
+        # Shooting cooldown tracking
+        self.shoot_cooldown = 0.0
+        self.can_shoot = True
+
+    def shoot(self, bullet_group):
+        # for the basic enemy shooting mechanics
+        pass
+
     def update(self):
         # This is where basic enemy behavior should go
         pass
 
-# Not sure why this duplicate is here, but I assume it's for a more advanced enemy type
-class Enemy(pygame.sprite.Sprite):
+# Bomber enemy that releases an exploding payload
+class Bomber_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
+
+    def shoot(self, bullet_group):
+        # For the bomber specific shooting mechanics
+        pass
 
     def update(self):
         # need to add movement and shooting later
@@ -72,11 +109,9 @@ class Enemy(pygame.sprite.Sprite):
 class GameState(State):
     def on_enter(self, app):
         self.app = app
-        # assets folder is at repo root
-        repo_root = os.path.dirname(os.path.dirname(__file__))
-        asset_folder = os.path.join(repo_root, "assets")
         bg_name = "asteroid_background.png"
 
+        # Sets the background color, and draws the image
         self.bg_color = (0, 0, 0)
         self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
 
@@ -95,17 +130,14 @@ class GameState(State):
             spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING)
         )
 
+        player_speed = 5
         self.player = Player(
             asset_folder=asset_folder,
             sprite_name="player_shotgun_ship.png",
-            speed=5,
+            speed=player_speed,
             start_pos=(app.width // 2, app.height - 50),
         )
         self.ally_ships.add(self.player)
-        
-        # Shooting cooldown tracking
-        self.shoot_cooldown = 0.0
-        self.can_shoot = True
 
     def handle_event(self, app, event):
         # To get to pause screen
@@ -115,33 +147,23 @@ class GameState(State):
         
         # Shooting input
         if event.type == pygame.KEYDOWN and event.key == settings.keybind_player_shoot:
-            if self.can_shoot:
-                self.shoot()
-
-    def shoot(self):
-        bullet = Bullet(
-            x=self.player.rect.centerx,
-            y=self.player.rect.top,
-            speed=settings.BULLET_SPEED
-        )
-        self.ally_bullets.add(bullet)
-        self.can_shoot = False
-        self.shoot_cooldown = settings.BULLET_COOLDOWN
+            if self.player.can_shoot:
+                self.player.shoot(self.ally_bullets)
     
     def update(self, app, dt):
         keys = pygame.key.get_pressed()
         self.player.update(keys)
         self.enemy_ships.update()
-        
+
         # Update shooting cooldown
-        if not self.can_shoot:
-            self.shoot_cooldown -= dt
-            if self.shoot_cooldown <= 0:
-                self.can_shoot = True
+        if not self.player.can_shoot:
+            self.player.shoot_cooldown -= dt
+            if self.player.shoot_cooldown <= 0:
+                self.player.can_shoot = True
         
         # Allow continuous shooting by holding spacebar
-        if keys[settings.keybind_player_shoot] and self.can_shoot:
-            self.shoot()
+        if keys[settings.keybind_player_shoot] and self.player.can_shoot:
+            self.player.shoot(self.ally_bullets)
         
         # Update bullets
         self.ally_bullets.update()

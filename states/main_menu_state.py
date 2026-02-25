@@ -29,7 +29,8 @@ class MainMenuState(State):
         self.t = 0
 
         # Make the stars
-        self.stars = [Stars(app.width, app.height) for _ in range(200)]
+        num_stars = 200
+        self.stars = [Stars(app.width, app.height) for _ in range(num_stars)]
 
         # Fonts
         self.title_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 48)
