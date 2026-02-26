@@ -12,7 +12,6 @@ keybind_player_right = pygame.K_RIGHT
 keybind_player_shoot = pygame.K_SPACE
 
 # Enemy
-ENEMY_BASIC_SPRITE = "basic_enemy.png"
 ENEMY_SPD = 0
 
 # optional wave defaults
