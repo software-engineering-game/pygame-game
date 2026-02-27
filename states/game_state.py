@@ -4,7 +4,7 @@ from states.base_state import State
 from states import settings
 
 # This exists to key out spritesheet backgrounds
-SHEET_COLOR = (160, 200, 152)
+SHEET_BG = (160, 200, 152)
 
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
@@ -17,7 +17,7 @@ class Bullet(pygame.sprite.Sprite):
         # Creates a simple laser bullet
         # self.image = pygame.Surface((4, 12))
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()  #color for laser
-        self.image.set_colorkey(SHEET_COLOR)
+        self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=(x, y))
         self.speed = speed
     
@@ -34,7 +34,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_COLOR)
+        self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.rect.scale_by(0.2)
         self.speed = speed
@@ -75,7 +75,7 @@ class Basic_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_COLOR)
+        self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.rect.scale_by(1)
         self.speed = speed
@@ -97,7 +97,7 @@ class Bomber_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_COLOR)
+        self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.rect.scale_by(1)
         self.speed = speed
@@ -114,22 +114,21 @@ class Swarm_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_COLOR)
+        self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
-        self.rect.scale_by(1)
+        #self.rect.scale_by(1)
         self.speed = speed
 
-        # Used for calculating direction to player
-        self.velocity = (0,0)
+        self.velocity = (0,0) # Used for calculating direction to player
 
     def shoot(self, bullet_group):
         pass
 
     def update(self, player_pos):
-        self.veloctiy = (player_pos[0] - self.rect.x, player_pos[1] - self.rect.y)
-        
+        self.velocity = ((player_pos[0] - self.rect.x), (player_pos[1] - self.rect.y))
+
         # Distance equation
-        distance = ((self.veloctiy[0] ** 2) + (self.veloctiy[1] ** 2)) ** 0.5
+        distance = ((self.velocity[0] ** 2) + (self.velocity[1] ** 2)) ** 0.5
         if distance == 0:
             self.velocity = (0,0)
             dx = 0
@@ -137,7 +136,7 @@ class Swarm_Enemy(pygame.sprite.Sprite):
         else:
             dx = (self.velocity[0] / distance) * self.speed
             dy = (self.velocity[1] / distance) * self.speed
-            
+        
         self.rect.x += dx
         self.rect.y += dy
         #will need sprite rotations at some point
@@ -172,7 +171,7 @@ class GameState(State):
         self.ram_ship = Swarm_Enemy(
             asset_folder=asset_folder,
             sprite_name="enemy_swarm.png",
-            speed=2,
+            speed=3,
             start_pos=(settings.WIDTH / 2, settings.HEIGHT / 2)
         )
         self.enemy_ships.add(self.ram_ship)
@@ -201,7 +200,7 @@ class GameState(State):
     def update(self, app, dt):
         keys = pygame.key.get_pressed()
         self.player.update(keys)
-        
+
         player_pos = (self.player.rect.x, self.player.rect.y)
         self.enemy_ships.update(player_pos=player_pos)
 
