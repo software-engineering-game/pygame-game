@@ -12,17 +12,21 @@ asset_folder = os.path.join(repo_root, "assets")
 
 # Class for the basic bullet
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, asset_folder, sprite_name, x, y, speed):
+    def __init__(self, asset_folder, sprite_name, speed, start_pos, direct):
         super().__init__()
         # Creates a simple laser bullet
         # self.image = pygame.Surface((4, 12))
-        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()  #color for laser
+        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         self.image.set_colorkey(SHEET_BG)
-        self.rect = self.image.get_rect(center=(x, y))
+        self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
+
+        self.x_direct = direct[0] # Should be set to 0, 1, or -1
+        self.y_direct = direct[1] # Should be set to 0, 1, or -1
     
     def update(self):
-        self.rect.y -= self.speed
+        self.rect.x += self.x_direct * self.speed
+        self.rect.y += self.y_direct * self.speed
         # Remove bullet if it goes off screen
         if self.rect.bottom < 0:
             self.kill()
@@ -44,14 +48,14 @@ class Player(pygame.sprite.Sprite):
         self.can_shoot = True
 
     def shoot(self, bullet_group):
-        bullet = Bullet(
+        player_bullet = Bullet(
             asset_folder=asset_folder,
             sprite_name="basic_bullet.png",
-            x=self.rect.centerx,
-            y=self.rect.top,
-            speed=settings.BULLET_SPEED
+            speed=settings.BULLET_SPEED,
+            start_pos=(self.rect.centerx, self.rect.top),
+            direct=(0, -1)
         )
-        bullet_group.add(bullet)
+        bullet_group.add(player_bullet)
         self.can_shoot = False
         self.shoot_cooldown = settings.BULLET_COOLDOWN
 
