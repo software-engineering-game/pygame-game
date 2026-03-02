@@ -3,13 +3,8 @@ import os
 from states.base_state import State
 from states import settings
 
-<<<<<<< HEAD
 # This exists to key out spritesheet backgrounds
 SHEET_BG = (160, 200, 152)
-=======
-BLACK = (0, 0, 0)  # This exists solely to key out the transparency for sprites
-
->>>>>>> origin/main
 
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
@@ -43,14 +38,9 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-<<<<<<< HEAD
         self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.rect.scale_by(0.2)
-=======
-        self.image.set_colorkey(BLACK)
-        self.rect = self.image.get_rect(center=start_pos)
->>>>>>> origin/main
         self.speed = speed
 
         # Shooting cooldown tracking
@@ -94,7 +84,6 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.rect.scale_by(1)
         self.speed = speed
 
-<<<<<<< HEAD
         # Shooting cooldown tracking
         self.shoot_cooldown = 0.0
         self.can_shoot = True
@@ -109,13 +98,6 @@ class Basic_Enemy(pygame.sprite.Sprite):
 
 # Bomber enemy that releases an exploding payload
 class Bomber_Enemy(pygame.sprite.Sprite):
-=======
-    def update(self):
-        pass
-
-
-class Enemy(pygame.sprite.Sprite):
->>>>>>> origin/main
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
@@ -124,7 +106,6 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.scale_by(1)
         self.speed = speed
 
-<<<<<<< HEAD
     def shoot(self, bullet_group):
         # For the bomber specific shooting mechanics
         pass
@@ -163,26 +144,14 @@ class Swarm_Enemy(pygame.sprite.Sprite):
         self.rect.x += dx
         self.rect.y += dy
         #will need sprite rotations at some point
-=======
-    def update(self):
-        pass
-
->>>>>>> origin/main
 
 class GameState(State):
     saved_player_position = None
 
     def on_enter(self, app):
         self.app = app
-<<<<<<< HEAD
         
         # Sets the background color, and draws the image
-=======
-
-        # assets folder is at repo root
-        repo_root = os.path.dirname(os.path.dirname(__file__))
-        asset_folder = os.path.join(repo_root, "assets")
->>>>>>> origin/main
         bg_name = "asteroid_background.png"
         self.bg_color = (0, 0, 0)
         self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
