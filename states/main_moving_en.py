@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #something.py
 # Coding Credits:
 # Thomas Bond
@@ -347,3 +348,5 @@ class Player(pygame.sprite.Sprite):
    def __init__(self): # Constructor (or initializer) for the player class
        pygame.sprite.Sprite.__init__(self) # Uses the pygame init function for sprites
        self.image = pygame.image.load(os.path.join(img_folder, PLAYER_SPRITE)).convert() # Sets the path for the player sprite image
+=======
+>>>>>>> refs/remotes/origin/dev

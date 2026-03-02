@@ -3,7 +3,8 @@ import os
 from states.base_state import State
 from states import settings
 
-BLACK = (0, 0, 0) # This exists solely to key out the transparency for sprites
+# This exists to key out spritesheet backgrounds
+SHEET_BG = (160, 200, 152)
 
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
@@ -11,17 +12,21 @@ asset_folder = os.path.join(repo_root, "assets")
 
 # Class for the basic bullet
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, asset_folder, sprite_name, x, y, speed):
+    def __init__(self, asset_folder, sprite_name, speed, start_pos, direct):
         super().__init__()
         # Creates a simple laser bullet
         # self.image = pygame.Surface((4, 12))
-        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()  #color for laser
-        self.image.set_colorkey(BLACK)
-        self.rect = self.image.get_rect(center=(x, y))
+        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
+        self.image.set_colorkey(SHEET_BG)
+        self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
+
+        self.x_direct = direct[0] # Should be set to 0, 1, or -1
+        self.y_direct = direct[1] # Should be set to 0, 1, or -1
     
     def update(self):
-        self.rect.y -= self.speed
+        self.rect.x += self.x_direct * self.speed
+        self.rect.y += self.y_direct * self.speed
         # Remove bullet if it goes off screen
         if self.rect.bottom < 0:
             self.kill()
@@ -33,8 +38,9 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(BLACK)
-        self.rect = self.image.get_rect(center=start_pos) # I still want to find a way to change the bounding box
+        self.image.set_colorkey(SHEET_BG)
+        self.rect = self.image.get_rect(center=start_pos)
+        self.rect.scale_by(0.2)
         self.speed = speed
 
         # Shooting cooldown tracking
@@ -42,14 +48,14 @@ class Player(pygame.sprite.Sprite):
         self.can_shoot = True
 
     def shoot(self, bullet_group):
-        bullet = Bullet(
+        player_bullet = Bullet(
             asset_folder=asset_folder,
             sprite_name="basic_bullet.png",
-            x=self.rect.centerx,
-            y=self.rect.top,
-            speed=settings.BULLET_SPEED
+            speed=settings.BULLET_SPEED,
+            start_pos=(self.rect.centerx, self.rect.top),
+            direct=(0, -1)
         )
-        bullet_group.add(bullet)
+        bullet_group.add(player_bullet)
         self.can_shoot = False
         self.shoot_cooldown = settings.BULLET_COOLDOWN
 
@@ -73,8 +79,9 @@ class Basic_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(BLACK)
+        self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
+        self.rect.scale_by(1)
         self.speed = speed
 
         # Shooting cooldown tracking
@@ -85,8 +92,8 @@ class Basic_Enemy(pygame.sprite.Sprite):
         # for the basic enemy shooting mechanics
         pass
 
-    def update(self):
-        # This is where basic enemy behavior should go
+    def update(self, player_pos):
+        # this is where basic enemy movement should go
         pass
 
 # Bomber enemy that releases an exploding payload
@@ -94,35 +101,70 @@ class Bomber_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(BLACK)
+        self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
+        self.rect.scale_by(1)
         self.speed = speed
 
     def shoot(self, bullet_group):
         # For the bomber specific shooting mechanics
         pass
 
-    def update(self):
-        # need to add movement and shooting later
+    def update(self, player_pos):
+        # This where enemy movement goes, I was thinking a horizontal line
         pass
+
+class Swarm_Enemy(pygame.sprite.Sprite):
+    def __init__(self, asset_folder, sprite_name, speed, start_pos):
+        super().__init__()
+        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
+        self.image.set_colorkey(SHEET_BG)
+        self.rect = self.image.get_rect(center=start_pos)
+        #self.rect.scale_by(1)
+        self.speed = speed
+
+        self.velocity = (0,0) # Used for calculating direction to player
+
+    def shoot(self, bullet_group):
+        pass
+
+    def update(self, player_pos):
+        self.velocity = ((player_pos[0] - self.rect.x), (player_pos[1] - self.rect.y))
+
+        # Distance equation
+        distance = ((self.velocity[0] ** 2) + (self.velocity[1] ** 2)) ** 0.5
+        if distance == 0:
+            self.velocity = (0,0)
+            dx = 0
+            dy = 0
+        else:
+            dx = (self.velocity[0] / distance) * self.speed
+            dy = (self.velocity[1] / distance) * self.speed
+        
+        self.rect.x += dx
+        self.rect.y += dy
+        #will need sprite rotations at some point
 
 class GameState(State):
     def on_enter(self, app):
         self.app = app
-        bg_name = "asteroid_background.png"
-
+        
         # Sets the background color, and draws the image
+        bg_name = "asteroid_background.png"
         self.bg_color = (0, 0, 0)
         self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
 
+        # Creates the sprite groups
         self.ally_ships = pygame.sprite.Group()
         self.ally_bullets = pygame.sprite.Group()
         self.enemy_ships = pygame.sprite.Group()
         self.enemy_bullets = pygame.sprite.Group()
 
+        # Spawning Enemies
+        enemy_sprite = "enemy_basic.png"
         self.spawn_basic_enemy_wave(
             asset_folder=asset_folder,
-            sprite_name=settings.ENEMY_BASIC_SPRITE,
+            sprite_name=enemy_sprite,
             speed=settings.ENEMY_SPD,
             corner_pos=(settings.WAVE_CORNER_X, settings.WAVE_CORNER_Y),
             rows=settings.WAVE_ROWS,
@@ -130,6 +172,15 @@ class GameState(State):
             spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING)
         )
 
+        self.ram_ship = Swarm_Enemy(
+            asset_folder=asset_folder,
+            sprite_name="enemy_swarm.png",
+            speed=3,
+            start_pos=(settings.WIDTH / 2, settings.HEIGHT / 2)
+        )
+        self.enemy_ships.add(self.ram_ship)
+
+        # Spawning Player
         player_speed = 5
         self.player = Player(
             asset_folder=asset_folder,
@@ -154,7 +205,9 @@ class GameState(State):
     def update(self, app, dt):
         keys = pygame.key.get_pressed()
         self.player.update(keys)
-        self.enemy_ships.update()
+
+        player_pos = (self.player.rect.x, self.player.rect.y)
+        self.enemy_ships.update(player_pos=player_pos)
 
         # Update shooting cooldown
         if not self.player.can_shoot:
