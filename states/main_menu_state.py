@@ -38,7 +38,9 @@ class MainMenuState(State):
 
         # Menu options
         self.options = ["Start Game", "How To Play", "Options", "Credits", "Quit"]
-        self.selected = 0
+        
+        if not hasattr(self, "selected"):
+            self.selected = 0
 
     def handle_event(self, app, event):
         if event.type == pygame.KEYDOWN:
@@ -57,15 +59,15 @@ class MainMenuState(State):
 
                 elif self.selected == 1:
                     from states.how_to_play_state import HowToPlayState
-                    app.change_state(HowToPlayState())
+                    app.change_state(HowToPlayState(self))
 
                 elif self.selected == 2:
                     from states.options_state import OptionsState
-                    app.change_state(OptionsState())
+                    app.change_state(OptionsState(self))
 
                 elif self.selected == 3:
                     from states.credits_state import CreditsState
-                    app.change_state(CreditsState())
+                    app.change_state(CreditsState(self))
 
                 elif self.selected == 4:
                     app.running = False

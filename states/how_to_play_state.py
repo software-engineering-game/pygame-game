@@ -1,4 +1,5 @@
 from states.base_state import State
+from states import settings
 import random
 import math
 import pygame
@@ -23,12 +24,18 @@ class Stars:
 
 
 class HowToPlayState(State):
+    def __init__(self, previous_state=None):
+        self.previous_state = previous_state
 
     def on_enter(self, app):
-        self.font = pygame.font.Font(None, 36)
-
         self.title_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 48)
+        self.controls_img = pygame.image.load("assets/controls.png").convert_alpha()
+        
+        scale = 0.6
+        w = int(self.controls_img.get_width() * scale)
+        h = int(self.controls_img.get_height() * scale)
 
+        self.controls_img = pygame.transform.smoothscale(self.controls_img, (w, h))   
 
         # Time for stars
         self.t = 0
@@ -39,9 +46,13 @@ class HowToPlayState(State):
         
     def handle_event(self, app, event):
         if event.type == pygame.KEYDOWN:
+
             if event.key == pygame.K_ESCAPE:
-                from states.main_menu_state import MainMenuState
-                app.change_state(MainMenuState())
+                if self.previous_state:
+                    app.change_state(self.previous_state)
+                else:
+                    from states.main_menu_state import MainMenuState
+                    app.change_state(MainMenuState())
 
     def update(self, app, dt):
         self.t += dt
@@ -54,5 +65,9 @@ class HowToPlayState(State):
             star.draw(screen, self.t)
 
         text = self.title_font.render("How To Play", True, (255, 255, 255))
-        title_rect = text.get_rect(center=(app.width // 2, app.height // 5))
+        title_rect = text.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 5))
+
+        img_rect = self.controls_img.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2 + 70))
+
         screen.blit(text, title_rect)
+        screen.blit(self.controls_img, img_rect)

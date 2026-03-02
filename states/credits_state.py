@@ -23,6 +23,8 @@ class Stars:
 
 
 class CreditsState(State):
+    def __init__(self, previous_state=None):
+        self.previous_state = previous_state
 
     def on_enter(self, app):
         self.font = pygame.font.Font(None, 36)
@@ -39,9 +41,13 @@ class CreditsState(State):
         
     def handle_event(self, app, event):
         if event.type == pygame.KEYDOWN:
+
             if event.key == pygame.K_ESCAPE:
-                from states.main_menu_state import MainMenuState
-                app.change_state(MainMenuState())
+                if self.previous_state:
+                    app.change_state(self.previous_state)
+                else:
+                    from states.main_menu_state import MainMenuState
+                    app.change_state(MainMenuState())
 
     def update(self, app, dt):
         self.t += dt
