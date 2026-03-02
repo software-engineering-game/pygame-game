@@ -2,6 +2,7 @@ import pygame
 import os
 from states.base_state import State
 from states import settings
+from states.death_state import DeathState  #ADDED: death screen
 
 # This exists to key out spritesheet backgrounds
 SHEET_BG = (160, 200, 152)
@@ -215,6 +216,10 @@ class GameState(State):
 
         player_pos = (self.player.rect.x, self.player.rect.y)
         self.enemy_ships.update(player_pos=player_pos)
+                # ✅ ADDED: if enemy touches player -> go to death screen
+        if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
+            app.change_state(DeathState("You Died"))
+            return
 
         # Update shooting cooldown
         if not self.player.can_shoot:
