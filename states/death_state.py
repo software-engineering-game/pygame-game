@@ -23,13 +23,15 @@ class DeathState(State):
 
     def handle_event(self, app, event):
     # ADDED: controls for death screen
-        if event.type == pygame.KEYDOWN:
-         if event.key == pygame.K_r:
+        if event.type != pygame.KEYDOWN:
+            return
+        
+        if event.key == pygame.K_r:
             #ADDED: reset saved player position so new game starts fresh
             from states.game_state import GameState
             GameState.saved_player_position = None
-
             app.change_state(MainMenuState())
+
         elif event.key in (pygame.K_ESCAPE, pygame.K_q):
             app.running = False
 
