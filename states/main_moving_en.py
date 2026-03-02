@@ -83,6 +83,7 @@ keybind_down = pygame.K_DOWN
 # Entity Classes
 #
 class Object:
+    # Constructs entity dimensions, position, and image
    def __init__(self, x, y, width, height, image):
        self.x = x
        self.y = y
@@ -90,7 +91,7 @@ class Object:
        self.height = height
        self.image = image
        self.velocity = [0, 0]
-       self.collider = [width, height]
+       self.collider = [width, height] # Collider is currently just the size of the entity
 
 
        objects.append(self)

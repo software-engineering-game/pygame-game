@@ -138,6 +138,7 @@ class GameState(State):
             start_pos=(app.width // 2, app.height - 50),
         )
         self.ally_ships.add(self.player)
+        self.enemy_hit_count = 0
 
     def handle_event(self, app, event):
         # To get to pause screen
@@ -168,13 +169,16 @@ class GameState(State):
         # Update bullets
         self.ally_bullets.update()
         
-        # see if bullet hit an anemy
+        # see if bullet hit an enemy
         collisions = pygame.sprite.groupcollide(
             self.ally_bullets, 
             self.enemy_ships, 
             True,  # Remove bullet on collision
             True   # Remove enemy on collision
         )
+        #Score tracking for hits,
+        if collisions:
+            self.enemy_hit_count += len(collisions)
 
     def draw(self, app, screen):
         screen.fill(self.bg_color)
@@ -182,6 +186,11 @@ class GameState(State):
         self.ally_ships.draw(screen)
         self.enemy_ships.draw(screen)
         self.ally_bullets.draw(screen)
+        
+        # Draw hit counter
+        font = pygame.font.Font(None, 36)
+        counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
+        screen.blit(counter_text, (10, 10))
 
     def spawn_basic_enemy_wave(self, asset_folder, sprite_name, speed, corner_pos, rows, columns, spacing):
         for j in range(rows):
