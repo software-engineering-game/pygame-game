@@ -8,7 +8,7 @@ class Stars:
         self.x = random.randint(0, w - 1)
         self.y = random.randint(0, h - 1)
         self.r = random.choice([1, 1, 1, 2])
-        self.base = random.randint(120, 120)
+        self.base = random.randint(100, 180)
         self.amp = random.randint(20, 80)
         self.speed = random.uniform(1.0, 4.0)
         self.phase = random.uniform(0, math.tau)
@@ -37,8 +37,10 @@ class MainMenuState(State):
         self.menu_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
 
         # Menu options
-        self.options = ["Start Game", "Quit"]
-        self.selected = 0
+        self.options = ["Start Game", "How To Play", "Options", "Credits", "Quit"]
+        
+        if not hasattr(self, "selected"):
+            self.selected = 0
 
     def handle_event(self, app, event):
         if event.type == pygame.KEYDOWN:
@@ -56,10 +58,25 @@ class MainMenuState(State):
                     app.change_state(GameState())
 
                 elif self.selected == 1:
-                    app.running = False
+                    from states.how_to_play_state import HowToPlayState
+                    app.change_state(HowToPlayState(self))
+
+                elif self.selected == 2:
+                    from states.options_state import OptionsState
+                    app.change_state(OptionsState(self))
+
+                elif self.selected == 3:
+                    from states.credits_state import CreditsState
+                    app.change_state(CreditsState(self))
+
+                elif self.selected == 4:
+                    from states.confirm_quit_state import ConfirmQuitState
+                    app.change_state(ConfirmQuitState(self))
+
 
             elif event.key == pygame.K_ESCAPE:
-                app.running = False
+                from states.confirm_quit_state import ConfirmQuitState
+                app.change_state(ConfirmQuitState(self))
 
     def update(self, app, dt):
         self.t += dt
