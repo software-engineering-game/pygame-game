@@ -3,8 +3,13 @@ import os
 from states.base_state import State
 from states import settings
 
+<<<<<<< HEAD
 # This exists to key out spritesheet backgrounds
 SHEET_BG = (160, 200, 152)
+=======
+BLACK = (0, 0, 0)  # This exists solely to key out the transparency for sprites
+
+>>>>>>> origin/main
 
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
@@ -38,9 +43,14 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
+<<<<<<< HEAD
         self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.rect.scale_by(0.2)
+=======
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect(center=start_pos)
+>>>>>>> origin/main
         self.speed = speed
 
         # Shooting cooldown tracking
@@ -74,7 +84,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += dx
         self.rect.y += dy
 
-# Basic Grunt Enemy
+
 class Basic_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
@@ -84,6 +94,7 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.rect.scale_by(1)
         self.speed = speed
 
+<<<<<<< HEAD
         # Shooting cooldown tracking
         self.shoot_cooldown = 0.0
         self.can_shoot = True
@@ -98,6 +109,13 @@ class Basic_Enemy(pygame.sprite.Sprite):
 
 # Bomber enemy that releases an exploding payload
 class Bomber_Enemy(pygame.sprite.Sprite):
+=======
+    def update(self):
+        pass
+
+
+class Enemy(pygame.sprite.Sprite):
+>>>>>>> origin/main
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
@@ -106,6 +124,7 @@ class Bomber_Enemy(pygame.sprite.Sprite):
         self.rect.scale_by(1)
         self.speed = speed
 
+<<<<<<< HEAD
     def shoot(self, bullet_group):
         # For the bomber specific shooting mechanics
         pass
@@ -144,12 +163,26 @@ class Swarm_Enemy(pygame.sprite.Sprite):
         self.rect.x += dx
         self.rect.y += dy
         #will need sprite rotations at some point
+=======
+    def update(self):
+        pass
+
+>>>>>>> origin/main
 
 class GameState(State):
+    saved_player_position = None
+
     def on_enter(self, app):
         self.app = app
+<<<<<<< HEAD
         
         # Sets the background color, and draws the image
+=======
+
+        # assets folder is at repo root
+        repo_root = os.path.dirname(os.path.dirname(__file__))
+        asset_folder = os.path.join(repo_root, "assets")
+>>>>>>> origin/main
         bg_name = "asteroid_background.png"
         self.bg_color = (0, 0, 0)
         self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
@@ -169,7 +202,7 @@ class GameState(State):
             corner_pos=(settings.WAVE_CORNER_X, settings.WAVE_CORNER_Y),
             rows=settings.WAVE_ROWS,
             columns=settings.WAVE_COLUMNS,
-            spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING)
+            spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING),
         )
 
         self.ram_ship = Swarm_Enemy(
@@ -191,9 +224,14 @@ class GameState(State):
         self.ally_ships.add(self.player)
         self.enemy_hit_count = 0
 
+        # Restore saved position if returning from pause
+        if GameState.saved_player_position is not None:
+            self.player.rect.center = GameState.saved_player_position
+
     def handle_event(self, app, event):
-        # To get to pause screen
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            # Save player position before pausing
+            GameState.saved_player_position = self.player.rect.center
             from states.pause_state import PauseScreen
             app.change_state(PauseScreen(app, self))
         
@@ -235,7 +273,7 @@ class GameState(State):
 
     def draw(self, app, screen):
         screen.fill(self.bg_color)
-        screen.blit(self.bg_image, (0,0))
+        screen.blit(self.bg_image, (0, 0))
         self.ally_ships.draw(screen)
         self.enemy_ships.draw(screen)
         self.ally_bullets.draw(screen)
@@ -245,9 +283,14 @@ class GameState(State):
         counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
 
-    def spawn_basic_enemy_wave(self, asset_folder, sprite_name, speed, corner_pos, rows, columns, spacing):
+    def spawn_basic_enemy_wave(
+        self, asset_folder, sprite_name, speed, corner_pos, rows, columns, spacing
+    ):
         for j in range(rows):
             for i in range(columns):
-                (x, y) = (corner_pos[0] + i * spacing[0], corner_pos[1] + j * spacing[1])
+                (x, y) = (
+                    corner_pos[0] + i * spacing[0],
+                    corner_pos[1] + j * spacing[1],
+                )
                 enemy = Basic_Enemy(asset_folder, sprite_name, speed, (x, y))
                 self.enemy_ships.add(enemy)
