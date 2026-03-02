@@ -45,13 +45,15 @@ class PauseScreen(State):
 
     def handle_event(self, app, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            app.change_state(self.previous_state)
+            #ADDED: resume without re-running GameState.on_enter()
+            app.state = self.previous_state
             return
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.resume_button.collidepoint(event.pos):
-                app.change_state(self.previous_state)
-                return
+                  #ADDED: resume without re-running GameState.on_enter()
+                    app.state = self.previous_state
+                    return
             elif self.quit_button.collidepoint(event.pos):
                 from states.confirm_quit_state import ConfirmQuitState
                 app.change_state(ConfirmQuitState(self))
