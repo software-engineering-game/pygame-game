@@ -53,7 +53,8 @@ class PauseScreen(State):
                 app.change_state(self.previous_state)
                 return
             elif self.quit_button.collidepoint(event.pos):
-                app.running = False
+                from states.confirm_quit_state import ConfirmQuitState
+                app.change_state(ConfirmQuitState(self))
                 return
             elif self.main_menu_button.collidepoint(event.pos):
                 app.change_state(MainMenuState())

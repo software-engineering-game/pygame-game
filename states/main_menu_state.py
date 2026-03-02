@@ -70,11 +70,13 @@ class MainMenuState(State):
                     app.change_state(CreditsState(self))
 
                 elif self.selected == 4:
-                    app.running = False
+                    from states.confirm_quit_state import ConfirmQuitState
+                    app.change_state(ConfirmQuitState(self))
 
 
             elif event.key == pygame.K_ESCAPE:
-                app.running = False
+                from states.confirm_quit_state import ConfirmQuitState
+                app.change_state(ConfirmQuitState(self))
 
     def update(self, app, dt):
         self.t += dt
