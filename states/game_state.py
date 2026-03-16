@@ -135,13 +135,14 @@ class Bomber_Enemy(pygame.sprite.Sprite):
 class Swarm_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
-        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_BG)
+        self.original_image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
+        self.original_image.set_colorkey(SHEET_BG)
+        self.image = self.original_image
         self.rect = self.image.get_rect(center=start_pos)
-        #self.rect.scale_by(1)
         self.speed = speed
 
-        self.velocity = (0,0) # Used for calculating direction to player
+        self.velocity = (0,0)
+        self.angle = 0
 
     def shoot(self, bullet_group):
         pass
@@ -149,7 +150,6 @@ class Swarm_Enemy(pygame.sprite.Sprite):
     def update(self, player_pos):
         self.velocity = ((player_pos[0] - self.rect.x), (player_pos[1] - self.rect.y))
 
-        # Distance equation
         distance = ((self.velocity[0] ** 2) + (self.velocity[1] ** 2)) ** 0.5
         if distance == 0:
             self.velocity = (0,0)
@@ -158,10 +158,18 @@ class Swarm_Enemy(pygame.sprite.Sprite):
         else:
             dx = (self.velocity[0] / distance) * self.speed
             dy = (self.velocity[1] / distance) * self.speed
-        
+
+            # atan2 gives angle from positive x-axis; subtract 90 so "up" on the sprite faces the target
+            import math
+            self.angle = math.degrees(math.atan2(-self.velocity[1], self.velocity[0])) - 90
+
+        center = self.rect.center
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        self.image.set_colorkey(SHEET_BG)
+        self.rect = self.image.get_rect(center=center)
+
         self.rect.x += dx
         self.rect.y += dy
-        #will need sprite rotations at some point
 
 class GameState(State):
     saved_player_position = None
@@ -192,14 +200,13 @@ class GameState(State):
             spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING),
         )
 
-        # Removed the ramming ship for now since this was meant more as a demonstration of its behavior
-        # self.ram_ship = Swarm_Enemy(
-        #     asset_folder=asset_folder,
-        #     sprite_name="enemy_swarm.png",
-        #     speed=3,
-        #     start_pos=(settings.WIDTH / 2, settings.HEIGHT / 2)
-        # )
-        # self.enemy_ships.add(self.ram_ship)
+        self.ram_ship = Swarm_Enemy(
+            asset_folder=asset_folder,
+            sprite_name="enemy_swarm.png",
+            speed=3,
+            start_pos=(settings.WIDTH / 2, settings.HEIGHT / 2)
+        )
+        self.enemy_ships.add(self.ram_ship)
 
         # Spawning Player
         player_speed = 5
@@ -244,9 +251,9 @@ class GameState(State):
         player_pos = (self.player.rect.x, self.player.rect.y)
         self.enemy_ships.update(player_pos=player_pos)
                 # ✅ ADDED: if enemy touches player -> go to death screen
-        if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
-            app.change_state(DeathState("You Died", self.enemy_hit_count))
-            return
+        # if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
+        #     app.change_state(DeathState("You Died", self.enemy_hit_count))
+        #     return
 
         # Update shooting cooldown
         if not self.player.can_shoot:
