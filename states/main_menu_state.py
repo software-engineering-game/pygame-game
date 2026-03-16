@@ -2,6 +2,7 @@ import pygame
 import random
 import math
 from states.base_state import State
+from states import utils
 
 class Stars:
     def __init__(self, w, h):
@@ -35,6 +36,9 @@ class MainMenuState(State):
         # Fonts
         self.title_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 48)
         self.menu_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
+        self.score_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 16)
+
+        self.high_score = utils.load_high_score()
 
         # Menu options
         self.options = ["Start Game", "How To Play", "Options", "Credits", "Quit"]
@@ -93,6 +97,12 @@ class MainMenuState(State):
         title_text = self.title_font.render("Space Dodgers", True, (255, 255, 0))
         title_rect = title_text.get_rect(center=(app.width // 2, app.height // 5))
         screen.blit(title_text, title_rect)
+
+        # High score below title
+        if self.high_score > 0:
+            hs_text = self.score_font.render(f"High Score: {self.high_score}", True, (255, 215, 0))
+            hs_rect = hs_text.get_rect(center=(app.width // 2, app.height // 5 + 50))
+            screen.blit(hs_text, hs_rect)
 
         # Menu nav
         menu_top = app.height // 3
