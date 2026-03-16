@@ -2,6 +2,7 @@ import pygame
 import os
 from states.base_state import State
 from states import settings
+from states import utils
 from states.death_state import DeathState  #ADDED: death screen
 
 # This exists to key out spritesheet backgrounds
@@ -15,8 +16,6 @@ asset_folder = os.path.join(repo_root, "assets")
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos, direct):
         super().__init__()
-        # Creates a simple laser bullet
-        # self.image = pygame.Surface((4, 12))
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
@@ -36,9 +35,18 @@ class Bullet(pygame.sprite.Sprite):
 
 # Class for standard player ship
 class Player(pygame.sprite.Sprite):
-    def __init__(self, asset_folder, sprite_name, speed, start_pos):
+    def __init__(self, frames, speed, start_pos):
         super().__init__()
-        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
+
+        # Animation related variables
+        self.frames = frames
+        self.current_frame = 0
+        self.last_update = 0
+        self.animation_speed = 100  # milliseconds
+        self.image = self.frames[self.current_frame]
+
+        # Old functionality without animation, incase something breaks during testing
+        # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.rect.scale_by(0.2)
@@ -62,6 +70,15 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, keys):
         dx = dy = 0
+
+        # Animation that loops the frames
+        current_time = pygame.time.get_ticks()
+        # If times since last frame update exceeds the millisecond interval
+        if current_time - self.last_update > self.animation_speed:
+            self.last_update = current_time
+            # Sets it to current_frame + 1, unless it exceeds the total number of frames
+            self.current_frame = (self.current_frame + 1) % len(self.frames)
+            self.image = self.frames[self.current_frame]
 
         if keys[settings.keybind_player_left]:
             dx -= self.speed
@@ -153,7 +170,7 @@ class GameState(State):
         self.app = app
         
         # Sets the background color, and draws the image
-        bg_name = "asteroid_background.png"
+        bg_name = "background_asteroids.png"
         self.bg_color = (0, 0, 0)
         self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
 
@@ -175,19 +192,26 @@ class GameState(State):
             spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING),
         )
 
-        self.ram_ship = Swarm_Enemy(
-            asset_folder=asset_folder,
-            sprite_name="enemy_swarm.png",
-            speed=3,
-            start_pos=(settings.WIDTH / 2, settings.HEIGHT / 2)
-        )
-        self.enemy_ships.add(self.ram_ship)
+        # Removed the ramming ship for now since this was meant more as a demonstration of its behavior
+        # self.ram_ship = Swarm_Enemy(
+        #     asset_folder=asset_folder,
+        #     sprite_name="enemy_swarm.png",
+        #     speed=3,
+        #     start_pos=(settings.WIDTH / 2, settings.HEIGHT / 2)
+        # )
+        # self.enemy_ships.add(self.ram_ship)
 
         # Spawning Player
         player_speed = 5
         self.player = Player(
-            asset_folder=asset_folder,
-            sprite_name="player_shotgun_ship.png",
+            # Loads the sprite sheet into the player's frames
+            frames=utils.load_spritesheet(
+                asset_folder=asset_folder,
+                sheet_name="player_auto_ship.png",
+                key_color=SHEET_BG,
+                frame_width=64,
+                frame_height=64
+            ),
             speed=player_speed,
             start_pos=(app.width // 2, app.height - 50),
         )
