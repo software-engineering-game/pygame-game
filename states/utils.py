@@ -23,3 +23,5 @@ def load_spritesheet(asset_folder, sheet_name, key_color, frame_width, frame_hei
 # Loading Level Data
 #
 
+def build_level(level_data):
+    pass
