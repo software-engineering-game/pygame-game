@@ -214,6 +214,9 @@ class GameState(State):
         keys = pygame.key.get_pressed()
         self.player.update(keys)
 
+        play_area = pygame.Rect(0, 0, app.width, app.height)
+        self.player.rect.clamp_ip(play_area)
+
         player_pos = (self.player.rect.x, self.player.rect.y)
         self.enemy_ships.update(player_pos=player_pos)
                 # ✅ ADDED: if enemy touches player -> go to death screen
