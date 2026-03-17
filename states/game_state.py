@@ -47,7 +47,7 @@ class Player(pygame.sprite.Sprite):
 
         # Old functionality without animation, incase something breaks during testing
         # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_BG)
+        # self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.rect.scale_by(0.2)
         self.speed = speed
@@ -94,10 +94,15 @@ class Player(pygame.sprite.Sprite):
 
 
 class Basic_Enemy(pygame.sprite.Sprite):
-    def __init__(self, asset_folder, sprite_name, speed, start_pos):
+    def __init__(self, frames, speed, start_pos):
         super().__init__()
-        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_BG)
+
+        self.frames = frames
+        self.current_frame = 0
+        self.image = self.frames[self.current_frame]
+
+        # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
+        # self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.rect.scale_by(1)
         self.speed = speed
@@ -189,14 +194,18 @@ class GameState(State):
         self.enemy_bullets = pygame.sprite.Group()
 
         # Spawning Enemies
-        enemy_sprite = "enemy_basic.png"
-        self.spawn_basic_enemy_wave(
+        enemy_basic_sprites = utils.load_spritesheet(
             asset_folder=asset_folder,
-            sprite_name=enemy_sprite,
+            sheet_name="enemy_basic.png",
+            key_color=SHEET_BG,
+            frame_width=66,
+            frame_height=64
+        )
+        self.spawn_enemy_wave(
+            frames=enemy_basic_sprites,
             speed=settings.ENEMY_SPD,
             corner_pos=(settings.WAVE_CORNER_X, settings.WAVE_CORNER_Y),
-            rows=settings.WAVE_ROWS,
-            columns=settings.WAVE_COLUMNS,
+            size=(settings.WAVE_COLUMNS,settings.WAVE_ROWS),
             spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING),
         )
 
@@ -291,14 +300,14 @@ class GameState(State):
         counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
 
-    def spawn_basic_enemy_wave(
-        self, asset_folder, sprite_name, speed, corner_pos, rows, columns, spacing
+    def spawn_enemy_wave(
+        self, frames, speed, corner_pos, size, spacing
     ):
-        for j in range(rows):
-            for i in range(columns):
+        for j in range(size[1]):     # Rows
+            for i in range(size[0]): # Columns
                 (x, y) = (
                     corner_pos[0] + i * spacing[0],
-                    corner_pos[1] + j * spacing[1],
+                    corner_pos[1] + j * spacing[1]
                 )
-                enemy = Basic_Enemy(asset_folder, sprite_name, speed, (x, y))
+                enemy = Basic_Enemy(frames=frames, speed=speed, start_pos=(x, y))
                 self.enemy_ships.add(enemy)
