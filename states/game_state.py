@@ -67,6 +67,8 @@ class Player(pygame.sprite.Sprite):
         bullet_group.add(player_bullet)
         self.can_shoot = False
         self.shoot_cooldown = settings.BULLET_COOLDOWN
+        sfx_shoot = pygame.mixer.Sound("assets/sfx/shoot.wav")
+        pygame.mixer.Sound.play(sfx_shoot)
 
     def update(self, keys):
         dx = dy = 0
@@ -245,6 +247,8 @@ class GameState(State):
         self.enemy_ships.update(player_pos=player_pos)
                 # ✅ ADDED: if enemy touches player -> go to death screen
         if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
+            sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+            pygame.mixer.Sound.play(sfx_player_boom)
             app.change_state(DeathState("You Died"))
             return
 
@@ -270,7 +274,10 @@ class GameState(State):
         )
         #Score tracking for hits,
         if collisions:
+            sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
+            pygame.mixer.Sound.play(sfx_boom)
             self.enemy_hit_count += len(collisions)
+
 
     def draw(self, app, screen):
         screen.fill(self.bg_color)
