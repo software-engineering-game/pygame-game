@@ -68,3 +68,7 @@ class OptionsState(State):
 
         screen.blit(text, title_rect)
         screen.blit(options_text, options_rect)
+
+        back_text = self.font.render("Press ESC to go back", True, (160, 160, 160))
+        back_rect = back_text.get_rect(center=(app.width // 2, app.height - 50))
+        screen.blit(back_text, back_rect)

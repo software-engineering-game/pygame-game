@@ -1,5 +1,28 @@
 import pygame
 import os
+import json
+
+#
+# High Score
+#
+
+SCORE_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "highscore.json")
+
+def load_high_score():
+    try:
+        with open(SCORE_FILE, "r") as f:
+            data = json.load(f)
+            return data.get("high_score", 0)
+    except (FileNotFoundError, json.JSONDecodeError, KeyError):
+        return 0
+
+def save_high_score(score):
+    current_best = load_high_score()
+    if score > current_best:
+        with open(SCORE_FILE, "w") as f:
+            json.dump({"high_score": score}, f)
+        return True
+    return False
 
 #
 # General Utility
@@ -22,6 +45,9 @@ def load_spritesheet(asset_folder, sheet_name, key_color, frame_width, frame_hei
 #
 # Loading Level Data
 #
+
+def spawn_enemy_wave(enemy_type, frames, speed, corner_pos, size, spacing):
+    pass
 
 def build_level(level_data):
     pass
