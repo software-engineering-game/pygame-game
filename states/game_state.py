@@ -212,7 +212,7 @@ class GameState(State):
 
         utils.build_level(
             asset_folder=asset_folder,
-            level="swarm_wave",
+            level_name="first_wave",
             enemy_ships=self.enemy_ships,
             temp_type=Basic_Enemy
         )
