@@ -32,16 +32,19 @@ def test_bullet_despawn():
     bullet.update()
     assert not bullet.alive()
 
-def bullet_moves_up():
+def test_bullet_moves_up():
     bullet = Bullet("assets", "basic_bullet.png", 5, (100,100), (0,-1))
 
     start_y = bullet.rect.y
     bullet.update()
-    assert bullet.rect.y > start_y
+    assert bullet.rect.y < start_y
 
-def bullets_alive_onscreen():
+def test_bullets_alive_onscreen():
     bullet = Bullet("assets", "basic_bullet.png", 5, (100,100), (0,-1))
 
+    group = pygame.sprite.Group()
+    group.add(bullet)
+    
     bullet.update()
     assert bullet.alive()
 
@@ -70,6 +73,17 @@ def test_game_state_init():
     assert game_state.player is not None
     assert len(game_state.enemy_ships) > 0
 
+#----------Player Stays In Bounds Test----------
 
+def player_stays_in_bounds():
+    game_state = GameState()
+    game_state.on_enter(FakeApp())
+
+    # forces the player out of bounds
+    game_state.player.x = -100
+    game_state.player.y = -100
+
+    assert game_state.player.rect.left >= 0
+    assert game_state.player.rect.right >= 0
 
 
