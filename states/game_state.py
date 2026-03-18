@@ -260,9 +260,9 @@ class GameState(State):
         player_pos = (self.player.rect.x, self.player.rect.y)
         self.enemy_ships.update(player_pos=player_pos)
                 # ✅ ADDED: if enemy touches player -> go to death screen
-        # if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
-        #     app.change_state(DeathState("You Died", self.enemy_hit_count))
-        #     return
+        if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
+            app.change_state(DeathState("You Died", self.enemy_hit_count))
+            return
 
         # Update shooting cooldown
         if not self.player.can_shoot:

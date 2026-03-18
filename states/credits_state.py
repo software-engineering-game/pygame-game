@@ -30,7 +30,7 @@ class CreditsState(State):
         self.font = pygame.font.Font(None, 36)
 
         self.title_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 48)
-        self.names_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
+        self.names_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 20)
 
         # Time for stars
         self.t = 0
@@ -61,9 +61,24 @@ class CreditsState(State):
 
         title_text = self.title_font.render("Credits", True, (255, 255, 255))
         title_rect = title_text.get_rect(center=(app.width // 2, app.height // 5))
-        
-        names_text = self.names_font.render("Placeholder", True, (255, 255, 255))
-        names_rect = names_text.get_rect(center=(app.width // 2, app.height // 2))
 
+        lines = [
+            "Dev Team:",
+            "Nicholas Vuletich, Thomas Bond,",
+            "Crawford Barnett, Mayah Nix,",
+            "Samaa Hediya, Ayush Patel"
+        ]
+
+        y_start = app.height // 2
+        line_spacing = 35
+
+        for i, line in enumerate(lines):
+            names_text = self.names_font.render(line, True, (255, 255, 255))
+            names_rect = names_text.get_rect(center=(app.width // 2, y_start + i * line_spacing))
+            screen.blit(names_text, names_rect)
+
+        back_text = self.font.render("Press ESC to go back", True, (160, 160, 160))
+        back_rect = back_text.get_rect(center=(app.width // 2, app.height - 50))
+        
+        screen.blit(back_text, back_rect)
         screen.blit(title_text, title_rect)
-        screen.blit(names_text, names_rect)
