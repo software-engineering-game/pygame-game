@@ -5,9 +5,6 @@ from states import settings
 from states import utils
 from states.death_state import DeathState  #ADDED: death screen
 
-# This exists to key out spritesheet backgrounds
-SHEET_BG = (160, 200, 152)
-
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
 asset_folder = os.path.join(repo_root, "assets")
@@ -17,7 +14,7 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos, direct):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_BG)
+        self.image.set_colorkey(utils.SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
 
@@ -47,7 +44,7 @@ class Player(pygame.sprite.Sprite):
 
         # Old functionality without animation, incase something breaks during testing
         # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        # self.image.set_colorkey(SHEET_BG)
+        # self.image.set_colorkey(utils.SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
 
         self.hitbox = self.rect.scale_by(0.3)
@@ -105,7 +102,7 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.image = self.frames[self.current_frame]
 
         # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        # self.image.set_colorkey(SHEET_BG)
+        # self.image.set_colorkey(utils.SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
 
@@ -126,7 +123,7 @@ class Bomber_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_BG)
+        self.image.set_colorkey(utils.SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
 
@@ -142,7 +139,7 @@ class Swarm_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.original_image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.original_image.set_colorkey(SHEET_BG)
+        self.original_image.set_colorkey(utils.SHEET_BG)
         self.image = self.original_image
         self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
@@ -171,7 +168,7 @@ class Swarm_Enemy(pygame.sprite.Sprite):
 
         center = self.rect.center
         self.image = pygame.transform.rotate(self.original_image, self.angle)
-        self.image.set_colorkey(SHEET_BG)
+        self.image.set_colorkey(utils.SHEET_BG)
         self.rect = self.image.get_rect(center=center)
 
         self.rect.x += dx
@@ -195,28 +192,12 @@ class GameState(State):
         self.enemy_bullets = pygame.sprite.Group()
 
         # Spawning Enemies
-        # enemy_basic_sprites = utils.load_spritesheet(
-        #     asset_folder=asset_folder,
-        #     sheet_name="enemy_basic.png",
-        #     key_color=SHEET_BG,
-        #     frame_width=66,
-        #     frame_height=64
-        # )
-        # self.spawn_enemy_wave(
-        #     frames=enemy_basic_sprites,
-        #     speed=settings.ENEMY_SPD,
-        #     corner_pos=(settings.WAVE_CORNER_X, settings.WAVE_CORNER_Y),
-        #     size=(settings.WAVE_COLUMNS,settings.WAVE_ROWS),
-        #     spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING),
-        # )
-
         utils.build_level(
             asset_folder=asset_folder,
-            level_name="first_wave",
+            level_name="first_level",
             enemy_ships=self.enemy_ships,
             temp_type=Basic_Enemy
         )
-
 
         self.ram_ship = Swarm_Enemy(
             asset_folder=asset_folder,
@@ -233,9 +214,9 @@ class GameState(State):
             frames=utils.load_spritesheet(
                 asset_folder=asset_folder,
                 sheet_name="player_shotgun_ship.png",
-                key_color=SHEET_BG,
-                frame_width=64,
-                frame_height=64
+                key_color=utils.SHEET_BG,
+                frame_width=utils.FRAME_SIZE,
+                frame_height=utils.FRAME_SIZE
             ),
             speed=player_speed,
             start_pos=(app.width // 2, app.height - 50),
@@ -312,14 +293,14 @@ class GameState(State):
         counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
 
-    def spawn_enemy_wave(
-        self, frames, speed, corner_pos, size, spacing
-    ):
-        for j in range(size[1]):     # Rows
-            for i in range(size[0]): # Columns
-                (x, y) = (
-                    corner_pos[0] + i * spacing[0],
-                    corner_pos[1] + j * spacing[1]
-                )
-                enemy = Basic_Enemy(frames=frames, speed=speed, start_pos=(x, y))
-                self.enemy_ships.add(enemy)
+    # def spawn_enemy_wave(
+    #     self, frames, speed, corner_pos, size, spacing
+    # ):
+    #     for j in range(size[1]):     # Rows
+    #         for i in range(size[0]): # Columns
+    #             (x, y) = (
+    #                 corner_pos[0] + i * spacing[0],
+    #                 corner_pos[1] + j * spacing[1]
+    #             )
+    #             enemy = Basic_Enemy(frames=frames, speed=speed, start_pos=(x, y))
+    #             self.enemy_ships.add(enemy)

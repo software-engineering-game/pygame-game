@@ -2,6 +2,10 @@ import pygame
 import os
 import json
 
+# This exists to key out spritesheet backgrounds
+SHEET_BG = (160, 200, 152)
+FRAME_SIZE = 64
+
 #
 # High Score
 #
@@ -70,18 +74,21 @@ def build_level(asset_folder, level_name, enemy_ships, temp_type):
     # Loads the data for one level as a python dictionary
     level = load_level(level_name=level_name)
 
+    # Spawns enemy waves
+    #Future versions can have a for loop that calls spawn_enemy_wave
+    #based on how many waves a level has, but for now we assume a level has one wave
     spawn_enemy_wave(
         enemy_type=temp_type,
         enemy_group=enemy_ships,
         frames=load_spritesheet(
             asset_folder=asset_folder,
             sheet_name=level["sprite_sheets"][0],
-            key_color=(160, 200, 152),
+            key_color=SHEET_BG,
             frame_width=66,
-            frame_height=64
+            frame_height=FRAME_SIZE
         ),
         speed=0,
         corner_pos=level["wave_position"],
         size=level["wave_size"],
-        spacing=(80, 80)
+        spacing=level["wave_spacing"]
     )
