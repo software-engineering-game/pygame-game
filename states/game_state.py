@@ -49,7 +49,10 @@ class Player(pygame.sprite.Sprite):
         # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         # self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
-        self.rect.scale_by(0.2)
+
+        self.hitbox = self.rect.scale_by(0.3)
+        self.hitbox.center = (self.rect.centerx, self.rect.centery)
+
         self.speed = speed
 
         # Shooting cooldown tracking
@@ -104,7 +107,6 @@ class Basic_Enemy(pygame.sprite.Sprite):
         # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         # self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
-        self.rect.scale_by(1)
         self.speed = speed
 
         # Shooting cooldown tracking
@@ -126,7 +128,6 @@ class Bomber_Enemy(pygame.sprite.Sprite):
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         self.image.set_colorkey(SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
-        self.rect.scale_by(1)
         self.speed = speed
 
     def shoot(self, bullet_group):
@@ -194,20 +195,28 @@ class GameState(State):
         self.enemy_bullets = pygame.sprite.Group()
 
         # Spawning Enemies
-        enemy_basic_sprites = utils.load_spritesheet(
+        # enemy_basic_sprites = utils.load_spritesheet(
+        #     asset_folder=asset_folder,
+        #     sheet_name="enemy_basic.png",
+        #     key_color=SHEET_BG,
+        #     frame_width=66,
+        #     frame_height=64
+        # )
+        # self.spawn_enemy_wave(
+        #     frames=enemy_basic_sprites,
+        #     speed=settings.ENEMY_SPD,
+        #     corner_pos=(settings.WAVE_CORNER_X, settings.WAVE_CORNER_Y),
+        #     size=(settings.WAVE_COLUMNS,settings.WAVE_ROWS),
+        #     spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING),
+        # )
+
+        utils.build_level(
             asset_folder=asset_folder,
-            sheet_name="enemy_basic.png",
-            key_color=SHEET_BG,
-            frame_width=66,
-            frame_height=64
+            level="swarm_wave",
+            enemy_ships=self.enemy_ships,
+            temp_type=Basic_Enemy
         )
-        self.spawn_enemy_wave(
-            frames=enemy_basic_sprites,
-            speed=settings.ENEMY_SPD,
-            corner_pos=(settings.WAVE_CORNER_X, settings.WAVE_CORNER_Y),
-            size=(settings.WAVE_COLUMNS,settings.WAVE_ROWS),
-            spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING),
-        )
+
 
         self.ram_ship = Swarm_Enemy(
             asset_folder=asset_folder,
@@ -223,7 +232,7 @@ class GameState(State):
             # Loads the sprite sheet into the player's frames
             frames=utils.load_spritesheet(
                 asset_folder=asset_folder,
-                sheet_name="player_auto_ship.png",
+                sheet_name="player_shotgun_ship.png",
                 key_color=SHEET_BG,
                 frame_width=64,
                 frame_height=64
@@ -295,6 +304,9 @@ class GameState(State):
         self.enemy_ships.draw(screen)
         self.ally_bullets.draw(screen)
         
+        # delete after testing
+        pygame.draw.rect(screen, (255,255,255), self.player.hitbox)
+
         # Draw hit counter
         font = pygame.font.Font(None, 36)
         counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
