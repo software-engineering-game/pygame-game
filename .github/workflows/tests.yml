@@ -2,29 +2,28 @@ name: Run Tests
 
 on:
   push:
-    branches: ["*"]
+    branches:
+      - "*"
   pull_request:
-    branches: [dev, main]
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
-          python-version: 3.13
+          python-version: "3.13"
 
-      - name: Install dependencies
-        run: |
-          pip install pytest pygame
+      - run: pip install pytest pygame
 
-      - name: Run tests
+      - run: pytest -v
         env:
           SDL_VIDEODRIVER: dummy
           PYTHONPATH: .
-        run: pytest -v
