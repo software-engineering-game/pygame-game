@@ -2,6 +2,10 @@ import sys
 import os
 import pygame
 
+from states.game_state import GameState
+from states.game_state import Bullet
+from states.death_state import DeathState
+
 # Add project root to Python path so tests can import from 'states'
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -20,7 +24,6 @@ class FakeApp:
         self.changed_to = state
 
 #----------Bullet Tests----------
-from states.game_state import Bullet
 
 def test_bullet_despawn():
     bullet = Bullet("assets", "basic_bullet.png", 5, (100,100), (0,-1))
@@ -44,10 +47,7 @@ def bullets_alive_onscreen():
 
 #----------Player Death Test----------
 
-def test_player_dies_on_collision():
-    from states.game_state import GameState
-    from states.death_state import DeathState
-    
+def test_player_dies_on_collision():  
     app = FakeApp()
 
     game_state = GameState()
@@ -60,4 +60,16 @@ def test_player_dies_on_collision():
     game_state.update(app, dt=0.016)
 
     assert isinstance(app.changed_to, DeathState)
+
+#----------Game State Initialization Test----------
+
+def test_game_state_init():
+    game_state = GameState()
+    game_state.on_enter(FakeApp())
+
+    assert game_state.player is not None
+    assert len(game_state.enemy_ships) > 0
+
+
+
 
