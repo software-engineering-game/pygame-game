@@ -9,6 +9,8 @@ from states.death_state import DeathState  #ADDED: death screen
 repo_root = os.path.dirname(os.path.dirname(__file__))
 asset_folder = os.path.join(repo_root, "assets")
 
+# Sprite is a base class from the Pygame Library
+# def __init__(pygame, sprite, width, height, x, y):
 # Class for the basic bullet
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos, direct):
@@ -79,14 +81,17 @@ class Player(pygame.sprite.Sprite):
             # Sets it to current_frame + 1, unless it exceeds the total number of frames
             self.current_frame = (self.current_frame + 1) % len(self.frames)
             self.image = self.frames[self.current_frame]
-
-        if keys[settings.keybind_player_left]:
+        
+        # Setting up WASD movement 
+        keys = pygame.key.get_pressed()
+        
+        if keys[settings.keybind_player_left] or keys[pygame.K_a]:
             dx -= self.speed
-        if keys[settings.keybind_player_right]:
+        if keys[settings.keybind_player_right] or keys[pygame.K_d]:
             dx += self.speed
-        if keys[settings.keybind_player_up]:
+        if keys[settings.keybind_player_up] or keys[pygame.K_w]:
             dy -= self.speed
-        if keys[settings.keybind_player_down]:
+        if keys[settings.keybind_player_down] or keys[pygame.K_s]:
             dy += self.speed
 
         self.rect.x += dx
