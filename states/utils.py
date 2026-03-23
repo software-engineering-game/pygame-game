@@ -2,6 +2,10 @@ import pygame
 import os
 import json
 
+# This exists to key out spritesheet backgrounds
+SHEET_BG = (160, 200, 152)
+FRAME_SIZE = 64
+
 #
 # High Score
 #
@@ -10,8 +14,8 @@ SCORE_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "highscore
 
 def load_high_score():
     try:
-        with open(SCORE_FILE, "r") as f:
-            data = json.load(f)
+        with open(SCORE_FILE, "r") as file:
+            data = json.load(file)
             return data.get("high_score", 0)
     except (FileNotFoundError, json.JSONDecodeError, KeyError):
         return 0
@@ -19,8 +23,8 @@ def load_high_score():
 def save_high_score(score):
     current_best = load_high_score()
     if score > current_best:
-        with open(SCORE_FILE, "w") as f:
-            json.dump({"high_score": score}, f)
+        with open(SCORE_FILE, "w") as file:
+            json.dump({"high_score": score}, file)
         return True
     return False
 
@@ -46,8 +50,45 @@ def load_spritesheet(asset_folder, sheet_name, key_color, frame_width, frame_hei
 # Loading Level Data
 #
 
-def spawn_enemy_wave(enemy_type, frames, speed, corner_pos, size, spacing):
-    pass
+LEVEL_DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "level_data.json")
 
-def build_level(level_data):
-    pass
+def load_level(level_name):
+    try:
+        with open(LEVEL_DATA, "r") as file:
+            data = json.load(file)
+            return data.get(level_name)
+    except (FileNotFoundError, json.JSONDecodeError, KeyError):
+        return 0
+
+def spawn_enemy_wave(enemy_type, enemy_group, frames, speed, corner_pos, size, spacing):
+    for j in range(size[1]):     # Rows
+            for i in range(size[0]): # Columns
+                (x, y) = (
+                    corner_pos[0] + i * spacing[0],
+                    corner_pos[1] + j * spacing[1]
+                )
+                enemy = enemy_type(frames=frames, speed=speed, start_pos=(x, y))
+                enemy_group.add(enemy)
+
+def build_level(asset_folder, level_name, enemy_ships, temp_type):
+    # Loads the data for one level as a python dictionary
+    level = load_level(level_name=level_name)
+
+    # Spawns enemy waves
+    #Future versions can have a for loop that calls spawn_enemy_wave
+    #based on how many waves a level has, but for now we assume a level has one wave
+    spawn_enemy_wave(
+        enemy_type=temp_type,
+        enemy_group=enemy_ships,
+        frames=load_spritesheet(
+            asset_folder=asset_folder,
+            sheet_name=level["sprite_sheets"][0],
+            key_color=SHEET_BG,
+            frame_width=66,
+            frame_height=FRAME_SIZE
+        ),
+        speed=0,
+        corner_pos=level["wave_position"],
+        size=level["wave_size"],
+        spacing=level["wave_spacing"]
+    )
