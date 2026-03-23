@@ -1,12 +1,10 @@
 import pygame
+import random
 import os
 from states.base_state import State
 from states import settings
 from states import utils
 from states.death_state import DeathState  #ADDED: death screen
-
-# This exists to key out spritesheet backgrounds
-SHEET_BG = (160, 200, 152)
 
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
@@ -17,7 +15,7 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos, direct):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_BG)
+        self.image.set_colorkey(utils.SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
 
@@ -47,9 +45,12 @@ class Player(pygame.sprite.Sprite):
 
         # Old functionality without animation, incase something breaks during testing
         # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_BG)
+        # self.image.set_colorkey(utils.SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
-        self.rect.scale_by(0.2)
+
+        self.hitbox = self.rect.scale_by(0.3)
+        self.hitbox.center = (self.rect.centerx, self.rect.centery)
+
         self.speed = speed
 
         # Shooting cooldown tracking
@@ -96,21 +97,33 @@ class Player(pygame.sprite.Sprite):
 
 
 class Basic_Enemy(pygame.sprite.Sprite):
-    def __init__(self, asset_folder, sprite_name, speed, start_pos):
+    def __init__(self, frames, speed, start_pos):
         super().__init__()
-        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_BG)
+
+        self.frames = frames
+        self.current_frame = 0
+        self.image = self.frames[self.current_frame]
+
+        # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
+        # self.image.set_colorkey(utils.SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
-        self.rect.scale_by(1)
         self.speed = speed
 
         # Shooting cooldown tracking
-        self.shoot_cooldown = 0.0
-        self.can_shoot = True
+        self.shoot_cooldown = random.uniform(1.0, 3.0)
+        self.can_shoot = False
 
     def shoot(self, bullet_group):
-        # for the basic enemy shooting mechanics
-        pass
+        enemy_bullet = Bullet(
+            asset_folder=asset_folder,
+            sprite_name="basic_bullet.png",
+            speed=settings.BULLET_SPEED,
+            start_pos=(self.rect.centerx, self.rect.bottom),
+            direct=(0, 1)
+        )
+        bullet_group.add(enemy_bullet)
+        self.can_shoot = False
+        self.shoot_cooldown = random.uniform(1.0, 3.0)
 
     def update(self, player_pos):
         # this is where basic enemy movement should go
@@ -121,9 +134,8 @@ class Bomber_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_BG)
+        self.image.set_colorkey(utils.SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
-        self.rect.scale_by(1)
         self.speed = speed
 
     def shoot(self, bullet_group):
@@ -137,13 +149,14 @@ class Bomber_Enemy(pygame.sprite.Sprite):
 class Swarm_Enemy(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos):
         super().__init__()
-        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(SHEET_BG)
+        self.original_image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
+        self.original_image.set_colorkey(utils.SHEET_BG)
+        self.image = self.original_image
         self.rect = self.image.get_rect(center=start_pos)
-        #self.rect.scale_by(1)
         self.speed = speed
 
-        self.velocity = (0,0) # Used for calculating direction to player
+        self.velocity = (0,0)
+        self.angle = 0
 
     def shoot(self, bullet_group):
         pass
@@ -151,7 +164,6 @@ class Swarm_Enemy(pygame.sprite.Sprite):
     def update(self, player_pos):
         self.velocity = ((player_pos[0] - self.rect.x), (player_pos[1] - self.rect.y))
 
-        # Distance equation
         distance = ((self.velocity[0] ** 2) + (self.velocity[1] ** 2)) ** 0.5
         if distance == 0:
             self.velocity = (0,0)
@@ -160,10 +172,18 @@ class Swarm_Enemy(pygame.sprite.Sprite):
         else:
             dx = (self.velocity[0] / distance) * self.speed
             dy = (self.velocity[1] / distance) * self.speed
-        
+
+            # atan2 gives angle from positive x-axis; subtract 90 so "up" on the sprite faces the target
+            import math
+            self.angle = math.degrees(math.atan2(-self.velocity[1], self.velocity[0])) - 90
+
+        center = self.rect.center
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        self.image.set_colorkey(utils.SHEET_BG)
+        self.rect = self.image.get_rect(center=center)
+
         self.rect.x += dx
         self.rect.y += dy
-        #will need sprite rotations at some point
 
 class GameState(State):
     saved_player_position = None
@@ -183,25 +203,20 @@ class GameState(State):
         self.enemy_bullets = pygame.sprite.Group()
 
         # Spawning Enemies
-        enemy_sprite = "enemy_basic.png"
-        self.spawn_basic_enemy_wave(
+        utils.build_level(
             asset_folder=asset_folder,
-            sprite_name=enemy_sprite,
-            speed=settings.ENEMY_SPD,
-            corner_pos=(settings.WAVE_CORNER_X, settings.WAVE_CORNER_Y),
-            rows=settings.WAVE_ROWS,
-            columns=settings.WAVE_COLUMNS,
-            spacing=(settings.WAVE_X_SPACING, settings.WAVE_Y_SPACING),
+            level_name="first_level",
+            enemy_ships=self.enemy_ships,
+            temp_type=Basic_Enemy
         )
 
-        # Removed the ramming ship for now since this was meant more as a demonstration of its behavior
-        # self.ram_ship = Swarm_Enemy(
-        #     asset_folder=asset_folder,
-        #     sprite_name="enemy_swarm.png",
-        #     speed=3,
-        #     start_pos=(settings.WIDTH / 2, settings.HEIGHT / 2)
-        # )
-        # self.enemy_ships.add(self.ram_ship)
+        self.ram_ship = Swarm_Enemy(
+            asset_folder=asset_folder,
+            sprite_name="enemy_swarm.png",
+            speed=3,
+            start_pos=(settings.WIDTH / 2, settings.HEIGHT / 2)
+        )
+        self.enemy_ships.add(self.ram_ship)
 
         # Spawning Player
         player_speed = 5
@@ -209,10 +224,10 @@ class GameState(State):
             # Loads the sprite sheet into the player's frames
             frames=utils.load_spritesheet(
                 asset_folder=asset_folder,
-                sheet_name="player_auto_ship.png",
-                key_color=SHEET_BG,
-                frame_width=64,
-                frame_height=64
+                sheet_name="player_shotgun_ship.png",
+                key_color=utils.SHEET_BG,
+                frame_width=utils.FRAME_SIZE,
+                frame_height=utils.FRAME_SIZE
             ),
             speed=player_speed,
             start_pos=(app.width // 2, app.height - 50),
@@ -245,11 +260,27 @@ class GameState(State):
 
         player_pos = (self.player.rect.x, self.player.rect.y)
         self.enemy_ships.update(player_pos=player_pos)
-                # ✅ ADDED: if enemy touches player -> go to death screen
-        if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
+
+        # Enemy auto-fire logic for basic enemies
+        for enemy in self.enemy_ships:
+            if isinstance(enemy, Basic_Enemy):
+                enemy.shoot_cooldown -= dt
+                if enemy.shoot_cooldown <= 0 and not enemy.can_shoot:
+                    enemy.can_shoot = True
+
+                if enemy.can_shoot:
+                    enemy.shoot(self.enemy_bullets)
+
+        if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
             sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
             pygame.mixer.Sound.play(sfx_player_boom)
-            app.change_state(DeathState("You Died"))
+            app.change_state(DeathState("You Died", self.enemy_hit_count))
+            return
+        
+        if pygame.sprite.spritecollide(self.player, self.enemy_bullets, False):
+            sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+            pygame.mixer.Sound.play(sfx_player_boom)
+            app.change_state(DeathState("You Died", self.enemy_hit_count))
             return
 
         # Update shooting cooldown
@@ -264,6 +295,7 @@ class GameState(State):
         
         # Update bullets
         self.ally_bullets.update()
+        self.enemy_bullets.update()
         
         # see if bullet hit an enemy
         collisions = pygame.sprite.groupcollide(
@@ -285,20 +317,24 @@ class GameState(State):
         self.ally_ships.draw(screen)
         self.enemy_ships.draw(screen)
         self.ally_bullets.draw(screen)
+        self.enemy_bullets.draw(screen)
         
+        # delete after testing
+        pygame.draw.rect(screen, (255,255,255), self.player.hitbox)
+
         # Draw hit counter
         font = pygame.font.Font(None, 36)
         counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
 
-    def spawn_basic_enemy_wave(
-        self, asset_folder, sprite_name, speed, corner_pos, rows, columns, spacing
-    ):
-        for j in range(rows):
-            for i in range(columns):
-                (x, y) = (
-                    corner_pos[0] + i * spacing[0],
-                    corner_pos[1] + j * spacing[1],
-                )
-                enemy = Basic_Enemy(asset_folder, sprite_name, speed, (x, y))
-                self.enemy_ships.add(enemy)
+    # def spawn_enemy_wave(
+    #     self, frames, speed, corner_pos, size, spacing
+    # ):
+    #     for j in range(size[1]):     # Rows
+    #         for i in range(size[0]): # Columns
+    #             (x, y) = (
+    #                 corner_pos[0] + i * spacing[0],
+    #                 corner_pos[1] + j * spacing[1]
+    #             )
+    #             enemy = Basic_Enemy(frames=frames, speed=speed, start_pos=(x, y))
+    #             self.enemy_ships.add(enemy)
