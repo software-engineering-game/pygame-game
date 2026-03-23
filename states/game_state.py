@@ -1,4 +1,5 @@
 import pygame
+import random
 import os
 from states.base_state import State
 from states import settings
@@ -108,12 +109,20 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.speed = speed
 
         # Shooting cooldown tracking
-        self.shoot_cooldown = 0.0
-        self.can_shoot = True
+        self.shoot_cooldown = random.uniform(1.0, 3.0)
+        self.can_shoot = False
 
     def shoot(self, bullet_group):
-        # for the basic enemy shooting mechanics
-        pass
+        enemy_bullet = Bullet(
+            asset_folder=asset_folder,
+            sprite_name="basic_bullet.png",
+            speed=settings.BULLET_SPEED,
+            start_pos=(self.rect.centerx, self.rect.bottom),
+            direct=(0, 1)
+        )
+        bullet_group.add(enemy_bullet)
+        self.can_shoot = False
+        self.shoot_cooldown = random.uniform(1.0, 3.0)
 
     def update(self, player_pos):
         # this is where basic enemy movement should go
@@ -259,8 +268,24 @@ class GameState(State):
 
         player_pos = (self.player.rect.x, self.player.rect.y)
         self.enemy_ships.update(player_pos=player_pos)
-                # ✅ ADDED: if enemy touches player -> go to death screen
+
+        # Enemy auto-fire logic for basic enemies
+        for enemy in self.enemy_ships:
+            if isinstance(enemy, Basic_Enemy):
+                enemy.shoot_cooldown -= dt
+                if enemy.shoot_cooldown <= 0 and not enemy.can_shoot:
+                    enemy.can_shoot = True
+
+                if enemy.can_shoot:
+                    enemy.shoot(self.enemy_bullets)
+
+        # ✅ ADDED: if enemy touches player -> go to death screen
         if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
+            app.change_state(DeathState("You Died", self.enemy_hit_count))
+            return
+        
+        # If enemy bullet hits player -> go to death screen
+        if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
             app.change_state(DeathState("You Died", self.enemy_hit_count))
             return
 
@@ -276,6 +301,7 @@ class GameState(State):
         
         # Update bullets
         self.ally_bullets.update()
+        self.enemy_bullets.update()
         
         # see if bullet hit an enemy
         collisions = pygame.sprite.groupcollide(
@@ -294,6 +320,7 @@ class GameState(State):
         self.ally_ships.draw(screen)
         self.enemy_ships.draw(screen)
         self.ally_bullets.draw(screen)
+        self.enemy_bullets.draw(screen)
         
         # Draw hit counter
         font = pygame.font.Font(None, 36)
