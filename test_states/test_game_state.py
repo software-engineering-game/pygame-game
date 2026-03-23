@@ -1,14 +1,23 @@
-import sys
 import os
+import sys
 import pygame
 
-from states.game_state import GameState
-from states.game_state import Bullet
-from states.death_state import DeathState
 
 # Add project root to Python path so tests can import from 'states'
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+# allows us to run pytest in different directories
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT) 
+# Myah added this 
+
+# Ensure relative asset paths resolve during tests.
+os.chdir(PROJECT_ROOT)
+
+from states.death_state import DeathState
+from states.game_state import Bullet
+from states.game_state import GameState
 
 pygame.init()
 pygame.display.set_mode((1, 1))  # tiny window to test the asset since it needs a display
