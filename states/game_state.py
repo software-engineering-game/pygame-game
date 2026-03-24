@@ -196,7 +196,7 @@ class GameState(State):
 
     def on_enter(self, app):
         self.app = app
-        pygame.mixer.init()
+        #pygame.mixer.init()
         
         # Sets the background color, and draws the image
         bg_name = "background_asteroids.png"
