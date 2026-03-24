@@ -279,23 +279,23 @@ class GameState(State):
                     enemy.shoot(self.enemy_bullets)
         
         if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
+            app.change_state(DeathState("You Died", self.enemy_hit_count))
             sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
             pygame.mixer.Sound.play(sfx_player_boom)
-            app.change_state(DeathState("You Died", self.enemy_hit_count))
             return
 
         # ✅ ADDED: if enemy touches player -> go to death screen
         if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
+            app.change_state(DeathState("You Died", self.enemy_hit_count))
             sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
             pygame.mixer.Sound.play(sfx_player_boom)
-            app.change_state(DeathState("You Died", self.enemy_hit_count))
             return
         
         # If enemy bullet hits player -> go to death screen
         if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
+            app.change_state(DeathState("You Died", self.enemy_hit_count))
             sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
             pygame.mixer.Sound.play(sfx_player_boom)
-            app.change_state(DeathState("You Died", self.enemy_hit_count))
             return
     
         # Update shooting cooldown
