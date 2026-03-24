@@ -282,6 +282,12 @@ class GameState(State):
             app.change_state(DeathState("You Died", self.enemy_hit_count))
             return
 
+        if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
+            sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+            pygame.mixer.Sound.play(sfx_player_boom)
+            app.change_state(DeathState("You Died", self.enemy_hit_count))
+            return
+
         # Update shooting cooldown
         if not self.player.can_shoot:
             self.player.shoot_cooldown -= dt
