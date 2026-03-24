@@ -9,8 +9,6 @@ from states.death_state import DeathState  #ADDED: death screen
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
 asset_folder = os.path.join(repo_root, "assets")
-pygame.mixer.init()
-
 
 # Sprite is a base class from the Pygame Library
 # def __init__(pygame, sprite, width, height, x, y):
@@ -197,6 +195,7 @@ class GameState(State):
 
     def on_enter(self, app):
         self.app = app
+        pygame.mixer.init()
         
         # Sets the background color, and draws the image
         bg_name = "background_asteroids.png"
