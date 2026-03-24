@@ -5,6 +5,9 @@ from states.base_state import State
 from states import settings
 from states import utils
 from states.death_state import DeathState  #ADDED: death screen
+import os
+os.environ['SDL_AUDIODRIVER'] = 'dsp'
+
 
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
