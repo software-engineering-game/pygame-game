@@ -1,8 +1,8 @@
-from states.base_state import State
-from states import settings
+import pygame
 import random
 import math
-import pygame
+from states.base_state import State
+from states import settings
 
 class Stars:
     def __init__(self, w, h):

@@ -60,20 +60,22 @@ def load_level(level_name):
     except (FileNotFoundError, json.JSONDecodeError, KeyError):
         return 0
 
-def spawn_enemy_wave(enemy_type, enemy_group, frames, speed, corner_pos, size, spacing):
+def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing):
     for j in range(size[1]):     # Rows
             for i in range(size[0]): # Columns
                 (x, y) = (
                     corner_pos[0] + i * spacing[0],
                     corner_pos[1] + j * spacing[1]
                 )
-                enemy = enemy_type(frames=frames, speed=speed, start_pos=(x, y))
+                enemy = enemy_type(frames=frames, start_pos=(x, y))
                 enemy_group.add(enemy)
 
-def build_level(asset_folder, level_name, enemy_ships, temp_type):
+def build_level(asset_folder, level_name, enemy_ships, bg_image, temp_type):
     # Loads the data for one level as a python dictionary
     level = load_level(level_name=level_name)
 
+    bg_image = pygame.image.load(os.path.join(asset_folder, level["bg_img"]))
+    
     # Spawns enemy waves
     #Future versions can have a for loop that calls spawn_enemy_wave
     #based on how many waves a level has, but for now we assume a level has one wave
@@ -87,7 +89,6 @@ def build_level(asset_folder, level_name, enemy_ships, temp_type):
             frame_width=66,
             frame_height=FRAME_SIZE
         ),
-        speed=0,
         corner_pos=level["wave_position"],
         size=level["wave_size"],
         spacing=level["wave_spacing"]

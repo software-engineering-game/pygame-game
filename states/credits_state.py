@@ -64,9 +64,11 @@ class CreditsState(State):
 
         lines = [
             "Dev Team:",
-            "Nicholas Vuletich, Thomas Bond,",
+            "Nicholas Vuletich,",
             "Crawford Barnett, Mayah Nix,",
-            "Samaa Hediya, Ayush Patel"
+            "Samaa Hediya, Ayush Patel",
+            "Artists:",
+            "Thomas Bond"
         ]
 
         y_start = app.height // 2
