@@ -10,22 +10,31 @@
    },
    
    "first_level": {
-      "level_num":     1,
-      "bg_img":        "background_asteroids.png",
-      "enemy_types":   ["Basic_Enemy"],
-      "sprite_sheets": ["enemy_basic.png"],
-      "wave_position": [120, 120],
-      "wave_size":     [6,2],
-      "wave_spacing":  [80, 80]
+      "level_num": 1,
+      "bg_img":    "background_asteroids.png",
+      "waves": [
+         {
+            "enemy_type":   "Basic_Enemy",
+            "sprite_sheet": "enemy_basic.png",
+            "wave_position": [120, 120],
+            "wave_size": [6,2],
+            "wave_spacing": [80, 80]
+         }
+      ]
    },
    
    "swarm_level": {
-      "level_num":     2,
-      "bg_img":        "background_asteroids.png",
-      "enemy_types":   ["Swarm_Enemy"],
-      "sprite_sheets": ["enemy_swarm.png"],
-      "wave_position": [190, 120],
-      "wave_size":     [5,1],
-      "wave_spacing":  [60, 80]
+      "level_num": 2,
+      "bg_img":    "background_asteroids.png",
+      "waves": [
+         {
+            "enemy_type":    "Swarm_Enemy",
+            "sprite_sheet":  "enemy_swarm.png",
+            "wave_position": [190, 120],
+            "wave_size":     [5,1],
+            "wave_spacing":  [60, 80]
+         }
+      ]
+      
    }
 }

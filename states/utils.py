@@ -74,7 +74,7 @@ def build_level(asset_folder, level_name, enemy_ships, bg_image, temp_type):
     # Loads the data for one level as a python dictionary
     level = load_level(level_name=level_name)
 
-    bg_image = pygame.image.load(os.path.join(asset_folder, level["bg_img"]))
+    # bg_image = pygame.image.load(os.path.join(asset_folder, level["bg_img"]))
     
     # Spawns enemy waves
     #Future versions can have a for loop that calls spawn_enemy_wave
@@ -84,12 +84,12 @@ def build_level(asset_folder, level_name, enemy_ships, bg_image, temp_type):
         enemy_group=enemy_ships,
         frames=load_spritesheet(
             asset_folder=asset_folder,
-            sheet_name=level["sprite_sheets"][0],
+            sheet_name=level["waves"][0]["sprite_sheet"],
             key_color=SHEET_BG,
             frame_width=66,
             frame_height=FRAME_SIZE
         ),
-        corner_pos=level["wave_position"],
-        size=level["wave_size"],
-        spacing=level["wave_spacing"]
+        corner_pos=level["waves"][0]["wave_position"],
+        size=level["waves"][0]["wave_size"],
+        spacing=level["waves"][0]["wave_spacing"]
     )
