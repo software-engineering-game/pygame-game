@@ -197,6 +197,7 @@ class GameState(State):
 
     def on_enter(self, app):
         self.app = app
+        pygame.init()
         pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
         
         # Sets the background color, and draws the image
