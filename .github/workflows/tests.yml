@@ -21,10 +21,12 @@ jobs:
         with:
           python-version: "3.13"
 
+      - run: sudo apt-get install libsdl2-mixer-2.0-0
+
       - run: pip install pytest pygame
 
       - run: pytest -v
         env:
           SDL_VIDEODRIVER: dummy
           PYTHONPATH: .
-      - run: sudo apt-get install libsdl2-mixer-2.0-0
+
