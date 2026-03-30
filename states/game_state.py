@@ -194,6 +194,7 @@ class GameState(State):
     def on_enter(self, app):
         self.app = app
         
+        app.play_music("assets/audio/gamedemo.ogg")
         # Sets the background color, and draws the image
         bg_name = "background_asteroids.png"
         self.bg_color = (0, 0, 0)
@@ -324,6 +325,8 @@ class GameState(State):
         font = pygame.font.Font(None, 36)
         counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
+
+    
 
     # def spawn_enemy_wave(
     #     self, frames, speed, corner_pos, size, spacing

@@ -35,6 +35,7 @@ class DeathState(State):
         if event.key == pygame.K_r:
             from states.game_state import GameState
             GameState.saved_player_position = None
+            app.stop_music()
             app.change_state(MainMenuState())
 
         elif event.key in (pygame.K_ESCAPE, pygame.K_q):

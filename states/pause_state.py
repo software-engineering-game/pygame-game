@@ -59,6 +59,7 @@ class PauseScreen(State):
                 app.change_state(ConfirmQuitState(self))
                 return
             elif self.main_menu_button.collidepoint(event.pos):
+                app.stop_music()
                 app.change_state(MainMenuState())
     
     def update(self, app, dt):
