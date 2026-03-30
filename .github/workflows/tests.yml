@@ -26,4 +26,5 @@ jobs:
       - run: pytest -v
         env:
           SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
           PYTHONPATH: .
