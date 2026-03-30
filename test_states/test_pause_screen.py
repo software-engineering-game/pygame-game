@@ -3,6 +3,7 @@ import sys
 # this replaces mocks with the real confirm quit state,
 # which is needed to test the transition to it from the pause screen
 from unittest.mock import patch
+from states.game_state import GameState
 
 import pygame
 
@@ -22,6 +23,8 @@ from states.pause_state import PauseScreen
 
 class FakeApp:
     def __init__(self):
+        self.width = 800
+        self.height = 600
         # Minimal stand-in for the real App object.
         # PauseScreen expects an `app.screen` surface to exist (for rendering).
         self.screen = pygame.display.get_surface()
@@ -112,3 +115,17 @@ def test_click_main_menu_changes_to_main_menu_state():
 
     assert isinstance(app.changed_to, DummyMainMenuState)
 
+
+def test_game_state_transitions_to_pause_on_escape():
+    # Clicking ESC from GaneState shopud make pause menu pop up
+    app = FakeApp()
+
+    game_state = GameState()
+    game_state.on_enter(app)
+
+    event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE)
+
+    game_state.handle_event(app, event)
+
+    from states.pause_state import PauseScreen
+    assert isinstance(app.changed_to, PauseScreen)
