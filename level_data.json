@@ -1,7 +1,7 @@
 {
    "test_level": {
       "level_num":     666,
-      "bg_img":        "background_station.png",
+      "bg_img":        "background_test.png",
       "waves": [
          {
             "enemy_type": "Basic_Enemy",

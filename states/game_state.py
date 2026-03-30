@@ -208,7 +208,7 @@ class GameState(State):
         # Building Level
         self.bg_image = utils.build_level(
             asset_folder=asset_folder,
-            level_name="test_level",
+            level_name="first_level",
             enemy_ships=self.enemy_ships,
             temp_type=Basic_Enemy
         )
