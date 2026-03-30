@@ -6,9 +6,11 @@ from states import settings
 from states import utils
 from states.death_state import DeathState  #ADDED: death screen
 
+
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
 asset_folder = os.path.join(repo_root, "assets")
+
 
 # Sprite is a base class from the Pygame Library
 # def __init__(pygame, sprite, width, height, x, y):
@@ -70,6 +72,8 @@ class Player(pygame.sprite.Sprite):
         bullet_group.add(player_bullet)
         self.can_shoot = False
         self.shoot_cooldown = settings.BULLET_COOLDOWN
+        sfx_shoot = pygame.mixer.Sound("assets/sfx/shoot.wav")
+        pygame.mixer.Sound.play(sfx_shoot)
 
     def update(self, keys):
         dx = dy = 0
@@ -193,6 +197,8 @@ class GameState(State):
 
     def on_enter(self, app):
         self.app = app
+        pygame.init()
+        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
         
         # Sets the background color, and draws the image
         self.bg_color = (0, 0, 0)
@@ -272,17 +278,27 @@ class GameState(State):
 
                 if enemy.can_shoot:
                     enemy.shoot(self.enemy_bullets)
+        
+        if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
+            app.change_state(DeathState("You Died", self.enemy_hit_count))
+            sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+            pygame.mixer.Sound.play(sfx_player_boom)
+            return
 
         # ✅ ADDED: if enemy touches player -> go to death screen
         if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
             app.change_state(DeathState("You Died", self.enemy_hit_count))
+            sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+            pygame.mixer.Sound.play(sfx_player_boom)
             return
         
         # If enemy bullet hits player -> go to death screen
         if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
             app.change_state(DeathState("You Died", self.enemy_hit_count))
+            sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+            pygame.mixer.Sound.play(sfx_player_boom)
             return
-
+    
         # Update shooting cooldown
         if not self.player.can_shoot:
             self.player.shoot_cooldown -= dt
@@ -306,7 +322,10 @@ class GameState(State):
         )
         #Score tracking for hits,
         if collisions:
+            sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
+            pygame.mixer.Sound.play(sfx_boom)
             self.enemy_hit_count += len(collisions)
+
 
     def draw(self, app, screen):
         screen.fill(self.bg_color)
