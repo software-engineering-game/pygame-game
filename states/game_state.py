@@ -276,6 +276,10 @@ class GameState(State):
                 if enemy.can_shoot:
                     enemy.shoot(self.enemy_bullets)
 
+        if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
+            app.change_state(DeathState("You Died", self.enemy_hit_count))
+            return
+
         if pygame.sprite.spritecollide(self.player, self.enemy_bullets, False):
             sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
             pygame.mixer.Sound.play(sfx_player_boom)
