@@ -21,10 +21,6 @@ jobs:
         with:
           python-version: "3.13"
 
-      - run: sudo apt install linux-modules-extra-`uname -r`
-
-      - run: sudo modprobe snd-dummy
-
       - run: sudo apt-get install alsa-base alsa-utils
 
       - run: pip install pytest pygame
