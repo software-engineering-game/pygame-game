@@ -11,8 +11,9 @@ keybind_player_left = pygame.K_LEFT
 keybind_player_right = pygame.K_RIGHT
 keybind_player_shoot = pygame.K_SPACE
 
-# Enemy
-ENEMY_SPD = 0
+# Enemy Variables
+basic_enemy_spd = 2
+swarm_enemy_spd = 3
 
 # optional wave defaults
 WAVE_COLUMNS = 5
