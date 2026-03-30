@@ -3,6 +3,10 @@ from states.base_state import State
 from states import settings
 from states.main_menu_state import MainMenuState
 
+button_color_resume = (175, 175, 175)
+button_color_main = (175, 175, 175)
+button_color_quit = (175, 10, 10)
+
 # Pause Screen Class
 class PauseScreen(State):
     def __init__(self, app, previous_state):
@@ -26,19 +30,19 @@ class PauseScreen(State):
         screen.blit(pause_text, text_rect)
 
         # Draw the resume button
-        pygame.draw.rect(self.screen, (0, 255, 0), self.resume_button)
+        pygame.draw.rect(self.screen, button_color_resume, self.resume_button)
         resume_text = self.font_resume.render("Resume", True, (0, 0, 0))
         resume_text_rect = resume_text.get_rect(center=self.resume_button.center)
         screen.blit(resume_text, resume_text_rect)
 
         # Draw the Main menu button button
-        pygame.draw.rect(self.screen, (0, 255, 0), self.main_menu_button)
+        pygame.draw.rect(self.screen, button_color_main, self.main_menu_button)
         main_menu_text = self.font_main_menu.render("Main Menu", True, (0, 0, 0))
         main_menu_text_rect = main_menu_text.get_rect(center=self.main_menu_button.center)
         screen.blit(main_menu_text, main_menu_text_rect)
 
         # Draw the quit button
-        pygame.draw.rect(self.screen, (255, 0, 0), self.quit_button)
+        pygame.draw.rect(self.screen, button_color_quit, self.quit_button)
         quit_text = self.font_quit.render("Quit", True, (0, 0, 0))
         quit_text_rect = quit_text.get_rect(center=self.quit_button.center)
         screen.blit(quit_text, quit_text_rect)

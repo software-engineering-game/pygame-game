@@ -6,7 +6,6 @@ from states.main_menu_state import MainMenuState
 from states import settings
 from states import utils
 
-
 class DeathState(State):
     def __init__(self, message="You Died", score=0):
         self.message = message
