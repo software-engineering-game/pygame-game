@@ -110,8 +110,13 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.current_frame = 0
         self.image = self.frames[self.current_frame]
 
-        self.direction = random.choice([-1, 1])
-        self.drift_speed = random.uniform(1.0, 2.5)
+        self.vertical_speed = random.uniform(0.8, 1.5)
+        self.vx = random.uniform(-1.5, 1.5)
+        self.vy = random.uniform(0.8, 1.5)
+
+        # how often direction changes
+        self.change_timer = random.uniform(1.0, 3.0)
+        
 
         # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         # self.image.set_colorkey(utils.SHEET_BG)
@@ -135,15 +140,25 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.shoot_cooldown = random.uniform(2.5, 5.0)
 
     def update(self, player_pos):
-        # Horizontal movement
-        self.rect.x += self.direction * self.drift_speed
+        # Move based on velocity
+        self.rect.x += self.vx
+        self.rect.y += self.vy
 
-        # Slight downward movement
-        self.rect.y += 0.3
+        # Occasionally change direction (this is the key to "flow")
+        self.change_timer -= 0.016  # approx frame time
 
-        # Bounce off screen edges
-        if self.rect.left <= 0 or self.rect.right >= settings.WIDTH:
-            self.direction *= -1
+        if self.change_timer <= 0:
+            self.vx = random.uniform(-1.5, 1.5)
+            self.vy = random.uniform(0.8, 1.5)
+            self.change_timer = random.uniform(1.0, 3.0)
+            self.vx = max(-2, min(2, self.vx))
+            self.vy = max(0.5, min(2, self.vy))
+
+        if self.rect.right < 0:
+            self.rect.left = settings.WIDTH
+
+        elif self.rect.left > settings.WIDTH:
+            self.rect.right = 0
 
         # If enemy goes off bottom → reset to top
         if self.rect.top > settings.HEIGHT:
@@ -228,9 +243,22 @@ class GameState(State):
         self.countdown_active = True
 
         # Spawning Enemies
-        for _ in range(10):
-            x = random.randint(50, app.width - 50)
-            y = random.randint(0, app.height // 3)
+        self.enemy_ships.empty()
+
+        num_enemies = 10
+        columns = num_enemies
+
+        spacing_x = app.width // columns
+
+        for i in range(num_enemies):
+            # base position in column
+            x = i * spacing_x + spacing_x // 2
+
+            # add small randomness so it's not perfectly aligned
+            x += random.randint(-20, 20)
+
+            # spawn in top 1/4
+            y = random.randint(0, app.height // 4)
 
             enemy = Basic_Enemy(
                 frames=utils.load_spritesheet(
@@ -245,6 +273,8 @@ class GameState(State):
             )
 
             self.enemy_ships.add(enemy)
+
+
 
         self.ram_ship = Swarm_Enemy(
             asset_folder=asset_folder,
