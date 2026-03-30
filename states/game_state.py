@@ -233,8 +233,8 @@ class GameState(State):
         
         # Sets the background color, and draws the image
         self.bg_color = (0, 0, 0)
-        #bg_name = "background_asteroids.png"
-        #self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
+        bg_name = "background_asteroids.png"
+        self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
 
         # Creates the sprite groups
         self.ally_ships = pygame.sprite.Group()
@@ -272,7 +272,6 @@ class GameState(State):
                     frame_width=utils.FRAME_SIZE,
                     frame_height=utils.FRAME_SIZE
                 ),
-                speed=2,
                 start_pos=(x, y)
             )
 
