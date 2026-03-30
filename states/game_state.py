@@ -301,7 +301,9 @@ class GameState(State):
             start_pos=(app.width // 2, app.height - 50),
         )
         self.ally_ships.add(self.player)
+        self.player_start_pos = (app.width // 2, app.height - 50)
         self.enemy_hit_count = 0
+        self.lives = 3
 
         # Restore saved position if returning from pause
         if GameState.saved_player_position is not None:
@@ -348,36 +350,25 @@ class GameState(State):
                 if enemy.can_shoot:
                     enemy.shoot(self.enemy_bullets)
 
+        # If enemy touches player
         if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
-            app.change_state(DeathState("You Died", self.enemy_hit_count))
-            return
+            self.lives -= 1
+            self.player.rect.center = self.player_start_pos
 
-        if pygame.sprite.spritecollide(self.player, self.enemy_bullets, False):
-            sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
-            pygame.mixer.Sound.play(sfx_player_boom)
-            app.change_state(DeathState("You Died", self.enemy_hit_count))
-            return
-        
-        if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
-            app.change_state(DeathState("You Died", self.enemy_hit_count))
-            sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
-            pygame.mixer.Sound.play(sfx_player_boom)
-            return
+            if self.lives <= 0:
+                app.change_state(DeathState("You Died", self.enemy_hit_count))
+                sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+                pygame.mixer.Sound.play(sfx_player_boom)
+                return
 
-        # ✅ ADDED: if enemy touches player -> go to death screen
-        if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
-            app.change_state(DeathState("You Died", self.enemy_hit_count))
-            sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
-            pygame.mixer.Sound.play(sfx_player_boom)
-            return
-        
-        # If enemy bullet hits player -> go to death screen
+        # If enemy bullet hits player
         if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
-            app.change_state(DeathState("You Died", self.enemy_hit_count))
-            sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
-            pygame.mixer.Sound.play(sfx_player_boom)
-            return
-    
+            self.lives -= 1
+            self.player.rect.center = self.player_start_pos
+
+            if self.lives <= 0:
+                app.change_state(DeathState("You Died", self.enemy_hit_count))
+                return
         # Update shooting cooldown
         if not self.player.can_shoot:
             self.player.shoot_cooldown -= dt
@@ -436,4 +427,9 @@ class GameState(State):
         font = pygame.font.Font(None, 36)
         counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
+        font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 20)
+
+        for i in range(self.lives):
+            heart = font.render("♥", True, (255, 0, 0))
+            screen.blit(heart, (10 + i * 30, screen.get_height() - 40))
 
