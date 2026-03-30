@@ -28,6 +28,7 @@ class FakeApp:
         self.width = 800
         self.height = 600
         self.changed_to = None
+        self.testing = True
 
     def change_state(self, state):
         self.changed_to = state

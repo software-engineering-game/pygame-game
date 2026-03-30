@@ -246,6 +246,9 @@ class GameState(State):
         self.countdown = 3.0   # seconds
         self.countdown_active = True
 
+        if hasattr(app, "testing") and app.testing:
+            self.countdown_active = False
+
         # Spawning Enemies
         self.enemy_ships.empty()
 
@@ -352,6 +355,11 @@ class GameState(State):
 
         # If enemy touches player
         if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
+            if hasattr(app, "testing") and app.testing:
+                app.change_state(DeathState("You Died", self.enemy_hit_count))
+                return
+
+
             self.lives -= 1
             self.player.rect.center = self.player_start_pos
 

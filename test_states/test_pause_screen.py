@@ -32,6 +32,7 @@ class FakeApp:
         self.state = None
         # Tests inspect `changed_to` to verify state-transition requests.
         self.changed_to = None
+        self.testing = True
 
     def change_state(self, new_state):
         # Mirror the real app API used by PauseScreen; record the requested state.
