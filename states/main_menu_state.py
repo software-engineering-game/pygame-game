@@ -37,6 +37,7 @@ class MainMenuState(State):
         self.title_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 48)
         self.menu_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
         self.score_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 16)
+        
 
         self.high_score = utils.load_high_score()
 
