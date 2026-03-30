@@ -11,6 +11,7 @@ from states.death_state import DeathState  #ADDED: death screen
 repo_root = os.path.dirname(os.path.dirname(__file__))
 asset_folder = os.path.join(repo_root, "assets")
 
+
 # Sprite is a base class from the Pygame Library
 # def __init__(pygame, sprite, width, height, x, y):
 # Class for the basic bullet
@@ -196,7 +197,7 @@ class GameState(State):
 
     def on_enter(self, app):
         self.app = app
-        pygame.mixer.init()
+        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
         
         # Sets the background color, and draws the image
         bg_name = "background_asteroids.png"
