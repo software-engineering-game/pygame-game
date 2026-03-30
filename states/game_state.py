@@ -1,6 +1,7 @@
 import pygame
 import random
 import os
+import math
 from states.base_state import State
 from states import settings
 from states import utils
@@ -109,13 +110,16 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.current_frame = 0
         self.image = self.frames[self.current_frame]
 
+        self.direction = random.choice([-1, 1])
+        self.drift_speed = random.uniform(1.0, 2.5)
+
         # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         # self.image.set_colorkey(utils.SHEET_BG)
         self.rect = self.image.get_rect(center=start_pos)
         self.speed = speed
 
         # Shooting cooldown tracking
-        self.shoot_cooldown = random.uniform(1.0, 3.0)
+        self.shoot_cooldown = random.uniform(2.5, 5.0)
         self.can_shoot = False
 
     def shoot(self, bullet_group):
@@ -128,11 +132,23 @@ class Basic_Enemy(pygame.sprite.Sprite):
         )
         bullet_group.add(enemy_bullet)
         self.can_shoot = False
-        self.shoot_cooldown = random.uniform(1.0, 3.0)
+        self.shoot_cooldown = random.uniform(2.5, 5.0)
 
     def update(self, player_pos):
-        # this is where basic enemy movement should go
-        pass
+        # Horizontal movement
+        self.rect.x += self.direction * self.drift_speed
+
+        # Slight downward movement
+        self.rect.y += 0.3
+
+        # Bounce off screen edges
+        if self.rect.left <= 0 or self.rect.right >= settings.WIDTH:
+            self.direction *= -1
+
+        # If enemy goes off bottom → reset to top
+        if self.rect.top > settings.HEIGHT:
+            self.rect.x = random.randint(50, settings.WIDTH - 50)
+            self.rect.y = random.randint(-100, -40)
 
 # Bomber enemy that releases an exploding payload
 class Bomber_Enemy(pygame.sprite.Sprite):
@@ -207,13 +223,28 @@ class GameState(State):
         self.enemy_ships = pygame.sprite.Group()
         self.enemy_bullets = pygame.sprite.Group()
 
+        # Countdown for player readiness
+        self.countdown = 3.0   # seconds
+        self.countdown_active = True
+
         # Spawning Enemies
-        utils.build_level(
-            asset_folder=asset_folder,
-            level_name="first_level",
-            enemy_ships=self.enemy_ships,
-            temp_type=Basic_Enemy
-        )
+        for _ in range(10):
+            x = random.randint(50, app.width - 50)
+            y = random.randint(0, app.height // 3)
+
+            enemy = Basic_Enemy(
+                frames=utils.load_spritesheet(
+                    asset_folder=asset_folder,
+                    sheet_name="enemy_basic.png",
+                    key_color=utils.SHEET_BG,
+                    frame_width=utils.FRAME_SIZE,
+                    frame_height=utils.FRAME_SIZE
+                ),
+                speed=2,
+                start_pos=(x, y)
+            )
+
+            self.enemy_ships.add(enemy)
 
         self.ram_ship = Swarm_Enemy(
             asset_folder=asset_folder,
@@ -257,6 +288,15 @@ class GameState(State):
                 self.player.shoot(self.ally_bullets)
     
     def update(self, app, dt):
+
+        if self.countdown_active:
+            self.countdown -= dt
+
+            if self.countdown <= 0:
+                self.countdown_active = False
+
+            return
+
         keys = pygame.key.get_pressed()
         self.player.update(keys)
 
@@ -327,6 +367,21 @@ class GameState(State):
         self.enemy_ships.draw(screen)
         self.ally_bullets.draw(screen)
         self.enemy_bullets.draw(screen)
+
+
+        if self.countdown_active:
+            font = pygame.font.Font(None, 200)
+
+            count = int(self.countdown) + 1  # makes it show 3,2,1
+
+            if count > 0:
+                text = font.render(str(count), True, (255, 255, 255))
+            else:
+                text = font.render("GO", True, (255, 255, 255))
+
+            rect = text.get_rect(center=(app.width // 2, app.height // 2))
+            screen.blit(text, rect)
+
         
         # delete after testing
         pygame.draw.rect(screen, (255,255,255), self.player.hitbox)
