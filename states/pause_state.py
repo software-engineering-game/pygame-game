@@ -5,7 +5,7 @@ from states.main_menu_state import MainMenuState
 
 button_color_resume = (175, 175, 175)
 button_color_main = (175, 175, 175)
-button_color_quit = (175, 175, 175)
+button_color_quit = (175, 10, 10)
 
 # Pause Screen Class
 class PauseScreen(State):

@@ -1,12 +1,23 @@
 {
    "test_level": {
       "level_num":     666,
-      "bg_img":        "background_asteroids.png",
-      "enemy_types":   ["Basic_Enemy", "Swarm_Enemy"],
-      "sprite_sheets": ["enemy_basic.png", "enemy_swarm.png"],
-      "wave_position": [120, 120],
-      "wave_size":     [2,1],
-      "wave_spacing":  [80, 80]
+      "bg_img":        "background_station.png",
+      "waves": [
+         {
+            "enemy_type": "Basic_Enemy",
+            "sprite_sheet": "enemy_basic.png",
+            "wave_position": [120, 120],
+            "wave_size": [1, 1],
+            "wave_spacing": [80, 80]
+         },
+         {
+            "enemy_type": "Swarm_Enemy",
+            "sprite_sheet": "enemy_swarm.png",
+            "wave_position": [200, 120],
+            "wave_size": [1, 1],
+            "wave_spacing": [80, 80]
+         }
+      ]
    },
    
    "first_level": {

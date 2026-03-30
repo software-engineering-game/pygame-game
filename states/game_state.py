@@ -195,9 +195,9 @@ class GameState(State):
         self.app = app
         
         # Sets the background color, and draws the image
-        bg_name = "background_asteroids.png"
         self.bg_color = (0, 0, 0)
-        self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
+        #bg_name = "background_asteroids.png"
+        #self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
 
         # Creates the sprite groups
         self.ally_ships = pygame.sprite.Group()
@@ -205,12 +205,11 @@ class GameState(State):
         self.enemy_ships = pygame.sprite.Group()
         self.enemy_bullets = pygame.sprite.Group()
 
-        # Spawning Enemies
-        utils.build_level(
+        # Building Level
+        self.bg_image = utils.build_level(
             asset_folder=asset_folder,
-            level_name="first_level",
+            level_name="test_level",
             enemy_ships=self.enemy_ships,
-            bg_image=self.bg_image,
             temp_type=Basic_Enemy
         )
 

@@ -70,26 +70,32 @@ def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing)
                 enemy = enemy_type(frames=frames, start_pos=(x, y))
                 enemy_group.add(enemy)
 
-def build_level(asset_folder, level_name, enemy_ships, bg_image, temp_type):
+def build_level(asset_folder, level_name, enemy_ships, temp_type):
     # Loads the data for one level as a python dictionary
     level = load_level(level_name=level_name)
 
-    # bg_image = pygame.image.load(os.path.join(asset_folder, level["bg_img"]))
+    # Loads the background image named in level_data into a pygame image
+    bg_image = pygame.image.load(os.path.join(asset_folder, level["bg_img"]))
     
+    #needs to parse enemy types from level_data somehow
+
     # Spawns enemy waves
-    #Future versions can have a for loop that calls spawn_enemy_wave
-    #based on how many waves a level has, but for now we assume a level has one wave
-    spawn_enemy_wave(
-        enemy_type=temp_type,
-        enemy_group=enemy_ships,
-        frames=load_spritesheet(
-            asset_folder=asset_folder,
-            sheet_name=level["waves"][0]["sprite_sheet"],
-            key_color=SHEET_BG,
-            frame_width=66,
-            frame_height=FRAME_SIZE
-        ),
-        corner_pos=level["waves"][0]["wave_position"],
-        size=level["waves"][0]["wave_size"],
-        spacing=level["waves"][0]["wave_spacing"]
-    )
+    # Loops for however many waves there are
+    for wav_index in range(len(level["waves"])):
+        spawn_enemy_wave(
+            enemy_type=temp_type,
+            enemy_group=enemy_ships,
+            frames=load_spritesheet(
+                asset_folder=asset_folder,
+                sheet_name=level["waves"][wav_index]["sprite_sheet"],
+                key_color=SHEET_BG,
+                frame_width=66,
+                frame_height=FRAME_SIZE
+            ),
+            corner_pos=level["waves"][wav_index]["wave_position"],
+            size=level["waves"][wav_index]["wave_size"],
+            spacing=level["waves"][wav_index]["wave_spacing"]
+        )
+    
+    # Returns the background image name to tie it into level data
+    return bg_image
