@@ -60,6 +60,8 @@ def load_level(level_name):
     except (FileNotFoundError, json.JSONDecodeError, KeyError):
         return 0
 
+
+
 def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing):
     for j in range(size[1]):     # Rows
             for i in range(size[0]): # Columns
@@ -82,6 +84,8 @@ def build_level(asset_folder, level_name, enemy_ships, temp_type):
     # Spawns enemy waves
     # Loops for however many waves there are
     for wav_index in range(len(level["waves"])):
+        
+        
         spawn_enemy_wave(
             enemy_type=temp_type,
             enemy_group=enemy_ships,
