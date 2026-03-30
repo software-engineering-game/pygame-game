@@ -5,7 +5,7 @@ from states.base_state import State
 from states import settings
 from states import utils
 from states.death_state import DeathState  #ADDED: death screen
-
+from states.upgrade_state import UpgradeState
 
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
@@ -98,6 +98,7 @@ class Player(pygame.sprite.Sprite):
             dy -= self.speed
         if keys[settings.keybind_player_down] or keys[pygame.K_s]:
             dy += self.speed
+
 
         self.rect.x += dx
         self.rect.y += dy
@@ -253,6 +254,10 @@ class GameState(State):
             GameState.saved_player_position = self.player.rect.center
             from states.pause_state import PauseScreen
             app.change_state(PauseScreen(app, self))
+
+                # Keybind to quickly debug something
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
+            app.change_state(UpgradeState(app, self))
         
         # Shooting input
         if event.type == pygame.KEYDOWN and event.key == settings.keybind_player_shoot:

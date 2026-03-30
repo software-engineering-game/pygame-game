@@ -10,6 +10,9 @@ keybind_player_down = pygame.K_DOWN
 keybind_player_left = pygame.K_LEFT
 keybind_player_right = pygame.K_RIGHT
 keybind_player_shoot = pygame.K_SPACE
+keybind_debug_shop = pygame.K_t
+keybind_upgrade_1 = pygame.K_1
+keybind_upgrade_2 = pygame.K_2
 
 # Enemy Variables
 basic_enemy_spd = 2
