@@ -18,7 +18,7 @@ class GameState(State):
     def on_enter(self, app):
         self.app = app
         pygame.init()
-        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
+        #pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
         
         # Sets the background color, and draws the image
         self.bg_color = (0, 0, 0)
@@ -154,8 +154,8 @@ class GameState(State):
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
-                pygame.mixer.Sound.play(sfx_player_boom)
+                #sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+                #pygame.mixer.Sound.play(sfx_player_boom)
                 return
 
         # If enemy bullet hits player
@@ -189,8 +189,8 @@ class GameState(State):
         )
         #Score tracking for hits,
         if collisions:
-            sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
-            pygame.mixer.Sound.play(sfx_boom)
+            #sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
+            #pygame.mixer.Sound.play(sfx_boom)
             self.enemy_hit_count += len(collisions)
 
 
