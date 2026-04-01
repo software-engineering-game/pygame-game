@@ -122,9 +122,13 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.can_shoot = False
 
     def shoot(self, bullet_group):
-        enemy_bullet = Bullet(
-            asset_folder=asset_folder,
-            sprite_name="basic_bullet.png",
+        enemy_bullet = tstbul(
+            frames=utils.load_spritesheet(
+                asset_folder=asset_folder,
+                sheet_name="basic_bullet.png",
+                frame_width=10,
+                frame_height=16
+            ),
             speed=settings.BULLET_SPEED,
             start_pos=(self.rect.centerx, self.rect.bottom),
             direct=(0, 1)

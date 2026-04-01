@@ -1,7 +1,9 @@
 import pygame
 import random
 import math
+import utils
 
+# Class for menu star effect
 class Stars:
     def __init__(self, w, h):
         self.x = random.randint(0, w - 1)
@@ -20,6 +22,13 @@ class Stars:
         b = self.brightness(t)
         pygame.draw.circle(screen, (b, b, b), (self.x, self.y), self.r)
 
+#
+# Classes for Game Entities
+#
+
+# Sprite is a base class from the Pygame Library
+# def __init__(pygame, sprite, width, height, x, y):
+
 class Game_Entity(pygame.sprite.Sprite):
     def __init__(self, frames, speed, start_pos):
         super().__init__()
@@ -27,6 +36,8 @@ class Game_Entity(pygame.sprite.Sprite):
         # Animation related variables
         self.frames = frames
         self.current_frame = 0
+        self.last_update = 0
+        self.animation_speed = 100  # milliseconds
         self.image = self.frames[self.current_frame]
 
         # Bounding Box
@@ -56,6 +67,22 @@ class Bullet(Game_Entity):
             self.kill()
 
 class Player(Game_Entity):
-    def __init__(self):
-        super.__init__()
+    def __init__(self, frames, speed, start_pos):
+        super().__init__(frames, speed, start_pos)
+
+        # Hitbox
+        self.hitbox = self.rect.scale_by(0.3)
+        self.hitbox.center = (self.rect.centerx, self.rect.centery)
+
+        # Shooting cooldown tracking
+        self.shoot_cooldown = 0.0
+        self.can_shoot = True
+
+    def shoot(self, bullet_group):
+        pass
+
+
+
+class Swarm_Enemy():
+    pass
 
