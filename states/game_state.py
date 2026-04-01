@@ -1,5 +1,4 @@
 import pygame
-import random
 import os
 from states import settings
 from states import utils
@@ -77,14 +76,13 @@ class GameState(State):
                 self.player.shoot(self.ally_bullets)
     
     def update(self, app, dt):
-
+        # Keeps GameState from updating
         if self.countdown_active:
             self.countdown -= dt
 
             if self.countdown <= 0:
                 self.countdown_active = False
-
-            return
+            return # returns it to main loop
 
         keys = pygame.key.get_pressed()
         self.player.update(keys)
