@@ -64,9 +64,7 @@ class GameState(State):
 
             enemy = entities.Basic_Enemy(
                 frames=utils.load_spritesheet(
-                    asset_folder=asset_folder,
                     sheet_name="enemy_basic.png",
-                    key_color=utils.SHEET_BG,
                     frame_width=utils.FRAME_SIZE,
                     frame_height=utils.FRAME_SIZE
                 ),
