@@ -5,101 +5,11 @@ from states import settings
 from states import utils
 from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
-from states.entities import Bullet as tstbul
+from states import entities
 
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
 asset_folder = os.path.join(repo_root, "assets")
-
-# Class for the basic bullet
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, asset_folder, sprite_name, speed, start_pos, direct):
-        super().__init__()
-        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(utils.SHEET_BG)
-        
-        # Bounding Box
-        self.rect = self.image.get_rect(center=start_pos)
-        
-        self.speed = speed
-        self.x_direct = direct[0] # Should be set to 0, 1, or -1
-        self.y_direct = direct[1] # Should be set to 0, 1, or -1
-    
-    def update(self):
-        self.rect.x += self.x_direct * self.speed
-        self.rect.y += self.y_direct * self.speed
-        # Remove bullet if it goes off screen
-        if self.rect.bottom < 0:
-            self.kill()
-        if self.rect.top > 740:
-            self.kill()
-
-# Class for standard player ship
-class Player(pygame.sprite.Sprite):
-    def __init__(self, frames, speed, start_pos):
-        super().__init__()
-
-        # Animation related variables
-        self.frames = frames
-        self.current_frame = 0
-        self.last_update = 0
-        self.animation_speed = 100  # milliseconds
-        self.image = self.frames[self.current_frame]
-
-        # Bounding Box
-        self.rect = self.image.get_rect(center=start_pos)
-        # Hitbox
-        self.hitbox = self.rect.scale_by(0.3)
-        self.hitbox.center = (self.rect.centerx, self.rect.centery)
-
-        self.speed = speed
-
-        # Shooting cooldown tracking
-        self.shoot_cooldown = 0.0
-        self.can_shoot = True
-
-    def shoot(self, bullet_group):
-        player_bullet = tstbul(
-            frames=utils.load_spritesheet(
-                sheet_name="basic_bullet.png",
-                frame_width=10,
-                frame_height=16
-            ),
-            speed=settings.BULLET_SPEED,
-            start_pos=(self.rect.centerx, self.rect.top),
-            direct=(0, -1)
-        )
-        bullet_group.add(player_bullet)
-        self.can_shoot = False
-        self.shoot_cooldown = settings.BULLET_COOLDOWN
-
-    def update(self, keys):
-        dx = dy = 0
-
-        # Animation that loops the frames
-        current_time = pygame.time.get_ticks()
-        # If times since last frame update exceeds the millisecond interval
-        if current_time - self.last_update > self.animation_speed:
-            self.last_update = current_time
-            # Sets it to current_frame + 1, unless it exceeds the total number of frames
-            self.current_frame = (self.current_frame + 1) % len(self.frames)
-            self.image = self.frames[self.current_frame]
-        
-        # Setting up WASD movement 
-        keys = pygame.key.get_pressed()
-        
-        if keys[settings.keybind_player_left] or keys[pygame.K_a]:
-            dx -= self.speed
-        if keys[settings.keybind_player_right] or keys[pygame.K_d]:
-            dx += self.speed
-        if keys[settings.keybind_player_up] or keys[pygame.K_w]:
-            dy -= self.speed
-        if keys[settings.keybind_player_down] or keys[pygame.K_s]:
-            dy += self.speed
-
-        self.rect.x += dx
-        self.rect.y += dy
-
 
 class Basic_Enemy(pygame.sprite.Sprite):
     def __init__(self, frames, start_pos):
@@ -118,7 +28,7 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.can_shoot = False
 
     def shoot(self, bullet_group):
-        enemy_bullet = tstbul(
+        enemy_bullet = entities.Bullet(
             frames=utils.load_spritesheet(
                 sheet_name="basic_bullet.png",
                 frame_width=10,
@@ -218,10 +128,10 @@ class GameState(State):
 
         # Spawning Player
         player_speed = 5
-        self.player = Player(
+        self.player = entities.Player_Auto(
             # Loads the sprite sheet into the player's frames
             frames=utils.load_spritesheet(
-                sheet_name="player_shotgun_ship.png",
+                sheet_name="player_auto_ship.png",
                 frame_width=utils.FRAME_SIZE,
                 frame_height=utils.FRAME_SIZE
             ),

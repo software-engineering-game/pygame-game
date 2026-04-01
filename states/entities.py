@@ -1,6 +1,8 @@
 import pygame
 import random
 import math
+from states.utils import load_spritesheet
+from states import settings
 
 # Class for menu star effect
 class Stars:
@@ -65,6 +67,11 @@ class Bullet(Game_Entity):
         if self.rect.top > 740:
             self.kill()
 
+#
+# Player Ship Types
+#
+
+# Base Class for standard player ship
 class Player(Game_Entity):
     def __init__(self, frames, speed, start_pos):
         super().__init__(frames, speed, start_pos)
@@ -78,10 +85,79 @@ class Player(Game_Entity):
         self.can_shoot = True
 
     def shoot(self, bullet_group):
+        # # Spawns the bullet and adds it to bullet group
+        # player_bullet = Bullet(
+        #     frames=load_spritesheet(
+        #         sheet_name="basic_bullet.png",
+        #         frame_width=10,
+        #         frame_height=16
+        #     ),
+        #     speed=settings.BULLET_SPEED,
+        #     start_pos=(self.rect.centerx, self.rect.top),
+        #     direct=(0, -1)
+        # )
+        # bullet_group.add(player_bullet)
+
+        # # Prevents the player from shooting and resets the cooldown
+        # self.can_shoot = False
+        # self.shoot_cooldown = settings.BULLET_COOLDOWN
         pass
 
+    def update(self, keys):
+        dx = dy = 0
 
+        # Animation that loops the frames
+        current_time = pygame.time.get_ticks()
+        # If times since last frame update exceeds the millisecond interval
+        if current_time - self.last_update > self.animation_speed:
+            self.last_update = current_time
+            # Sets it to current_frame + 1, unless it exceeds the total number of frames
+            self.current_frame = (self.current_frame + 1) % len(self.frames)
+            self.image = self.frames[self.current_frame]
+        
+        # Setting up WASD movement 
+        keys = pygame.key.get_pressed()
+        
+        if keys[settings.keybind_player_left] or keys[pygame.K_a]:
+            dx -= self.speed
+        if keys[settings.keybind_player_right] or keys[pygame.K_d]:
+            dx += self.speed
+        if keys[settings.keybind_player_up] or keys[pygame.K_w]:
+            dy -= self.speed
+        if keys[settings.keybind_player_down] or keys[pygame.K_s]:
+            dy += self.speed
 
-class Swarm_Enemy():
-    pass
+        self.rect.x += dx
+        self.rect.y += dy
+
+#
+class Player_Auto(Player):
+    def __init__(self, frames, speed, start_pos):
+        super().__init__(frames, speed, start_pos)
+    
+    def shoot(self, bullet_group):
+        # Spawns the bullet and adds it to bullet group
+        player_bullet = Bullet(
+            frames=load_spritesheet(
+                sheet_name="basic_bullet.png",
+                frame_width=10,
+                frame_height=16
+            ),
+            speed=settings.BULLET_SPEED,
+            start_pos=(self.rect.centerx, self.rect.top),
+            direct=(0, -1)
+        )
+        bullet_group.add(player_bullet)
+        self.can_shoot = False
+        self.shoot_cooldown = settings.BULLET_COOLDOWN
+
+#
+class Player_Shotgun(Player):
+    def __init__(self, frames, speed, start_pos):
+        super().__init__(frames, speed, start_pos)
+
+#
+class Player_Sniper(Player):
+    def __init__(self, frames, speed, start_pos):
+        super().__init__(frames, speed, start_pos)
 
