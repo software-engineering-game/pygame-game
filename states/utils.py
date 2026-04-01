@@ -34,9 +34,9 @@ def save_high_score(score):
 
 # Takes a spritesheet and splits it into a list of frames
 # Returns the frames as a list of pygame images
-def load_spritesheet(asset_folder, sheet_name, key_color, frame_width, frame_height):
+def load_spritesheet(asset_folder, sheet_name, frame_width, frame_height):
     sprite_sheet = pygame.image.load(os.path.join(asset_folder, sheet_name)).convert()
-    sprite_sheet.set_colorkey(key_color)
+    sprite_sheet.set_colorkey(SHEET_BG)
     frames = []
     for j in range(0, sprite_sheet.get_height(), frame_height):
         for i in range(0, sprite_sheet.get_width(), frame_width):
@@ -92,7 +92,6 @@ def build_level(asset_folder, level_name, enemy_ships, temp_type):
             frames=load_spritesheet(
                 asset_folder=asset_folder,
                 sheet_name=level["waves"][wav_index]["sprite_sheet"],
-                key_color=SHEET_BG,
                 frame_width=66,
                 frame_height=FRAME_SIZE
             ),

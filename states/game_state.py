@@ -1,10 +1,11 @@
 import pygame
 import random
 import os
-from states.base_state import State
 from states import settings
 from states import utils
+from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
+from states.entities import Bullet as tstbul
 
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
@@ -18,9 +19,11 @@ class Bullet(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
         self.image.set_colorkey(utils.SHEET_BG)
+        
+        # Bounding Box
         self.rect = self.image.get_rect(center=start_pos)
+        
         self.speed = speed
-
         self.x_direct = direct[0] # Should be set to 0, 1, or -1
         self.y_direct = direct[1] # Should be set to 0, 1, or -1
     
@@ -45,11 +48,9 @@ class Player(pygame.sprite.Sprite):
         self.animation_speed = 100  # milliseconds
         self.image = self.frames[self.current_frame]
 
-        # Old functionality without animation, incase something breaks during testing
-        # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        # self.image.set_colorkey(utils.SHEET_BG)
+        # Bounding Box
         self.rect = self.image.get_rect(center=start_pos)
-
+        # Hitbox
         self.hitbox = self.rect.scale_by(0.3)
         self.hitbox.center = (self.rect.centerx, self.rect.centery)
 
@@ -60,9 +61,13 @@ class Player(pygame.sprite.Sprite):
         self.can_shoot = True
 
     def shoot(self, bullet_group):
-        player_bullet = Bullet(
-            asset_folder=asset_folder,
-            sprite_name="basic_bullet.png",
+        player_bullet = tstbul(
+            frames=utils.load_spritesheet(
+                asset_folder=asset_folder,
+                sheet_name="basic_bullet.png",
+                frame_width=10,
+                frame_height=16
+            ),
             speed=settings.BULLET_SPEED,
             start_pos=(self.rect.centerx, self.rect.top),
             direct=(0, -1)
@@ -213,13 +218,6 @@ class GameState(State):
             temp_type=Basic_Enemy
         )
 
-        # self.ram_ship = Swarm_Enemy(
-        #     asset_folder=asset_folder,
-        #     sprite_name="enemy_swarm.png",
-        #     start_pos=(settings.WIDTH / 2, settings.HEIGHT / 2)
-        # )
-        # self.enemy_ships.add(self.ram_ship)
-
         # Spawning Player
         player_speed = 5
         self.player = Player(
@@ -227,7 +225,6 @@ class GameState(State):
             frames=utils.load_spritesheet(
                 asset_folder=asset_folder,
                 sheet_name="player_shotgun_ship.png",
-                key_color=utils.SHEET_BG,
                 frame_width=utils.FRAME_SIZE,
                 frame_height=utils.FRAME_SIZE
             ),
