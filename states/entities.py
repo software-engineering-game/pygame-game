@@ -168,7 +168,7 @@ class Basic_Enemy(Game_Entity):
 
 
         # Shooting cooldown tracking
-        self.shoot_cooldown = random.uniform(3.0, 6.0)
+        self.shoot_cooldown = random.uniform(1.0, 5.0)
         self.can_shoot = False
 
     def shoot(self, bullet_group):
@@ -184,7 +184,7 @@ class Basic_Enemy(Game_Entity):
         )
         bullet_group.add(enemy_bullet)
         self.can_shoot = False
-        self.shoot_cooldown = random.uniform(3.0, 6.0)
+        self.shoot_cooldown = random.uniform(2.0, 5.0)
 
     def update(self, player_pos):
         # Move based on velocity
