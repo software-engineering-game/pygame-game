@@ -28,6 +28,7 @@ class FakeApp:
         self.width = 800
         self.height = 600
         self.changed_to = None
+        self.testing = True
 
     def change_state(self, state):
         self.changed_to = state
@@ -94,5 +95,26 @@ def player_stays_in_bounds():
 
     assert game_state.player.rect.left >= 0
     assert game_state.player.rect.right >= 0
+
+#----------Enemy hit counter increase Test----------
+
+def test_enemy_hit_counter_increments():
+    app = FakeApp()
+
+    game_state = GameState()
+    game_state.on_enter(app)
+
+    enemy = next(iter(game_state.enemy_ships))
+
+    bullet = pygame.sprite.Sprite()
+    bullet.rect = enemy.rect.copy()
+
+    game_state.ally_bullets.add(bullet)
+
+    assert game_state.enemy_hit_count == 0
+
+    game_state.update(app, dt=0.016)
+
+    assert game_state.enemy_hit_count == 1
 
 
