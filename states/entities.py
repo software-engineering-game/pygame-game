@@ -157,9 +157,19 @@ class Basic_Enemy(Game_Entity):
         # Hitbox
         self.hitbox = self.rect.scale_by(0.4)
 
+
+        self.vertical_speed = random.uniform(0.8, 1.5)
+        self.vx = random.uniform(-1.5, 1.5)
+        self.vy = random.uniform(0.8, 1.5)
+
+        # how often direction changes
+        self.change_timer = random.uniform(1.0, 3.0)
+        
+
+
         # Shooting cooldown tracking
-        self.shoot_cooldown = random.uniform(1.0, 3.0)
-        self.can_shoot = False
+        self.shoot_cooldown = random.uniform(3.0, 6.0)
+        self.can_shoot = True
 
     def shoot(self, bullet_group):
         enemy_bullet = Bullet(
@@ -174,9 +184,33 @@ class Basic_Enemy(Game_Entity):
         )
         bullet_group.add(enemy_bullet)
         self.can_shoot = False
-        self.shoot_cooldown = random.uniform(3.0, 8.0)
+        self.shoot_cooldown = random.uniform(3.0, 6.0)
 
+    def update(self, player_pos):
+        # Move based on velocity
+        self.rect.x += self.vx
+        self.rect.y += self.vy
 
+        # Occasionally change direction (this is the key to "flow")
+        self.change_timer -= 0.016  # approx frame time
+
+        if self.change_timer <= 0:
+            self.vx = random.uniform(-1.5, 1.5)
+            self.vy = random.uniform(0.8, 1.5)
+            self.change_timer = random.uniform(1.0, 3.0)
+            self.vx = max(-2, min(2, self.vx))
+            self.vy = max(0.5, min(2, self.vy))
+
+        if self.rect.right < 0:
+            self.rect.left = settings.WIDTH
+
+        elif self.rect.left > settings.WIDTH:
+            self.rect.right = 0
+
+        # If enemy goes off bottom → reset to top
+        if self.rect.top > settings.HEIGHT:
+            self.rect.x = random.randint(50, settings.WIDTH - 50)
+            self.rect.y = random.randint(-100, -40)
 
 # Swarm Enemy Type
 class Swarm_Enemy(Game_Entity):
@@ -214,4 +248,18 @@ class Swarm_Enemy(Game_Entity):
         self.rect.x += dx
         self.rect.y += dy
 
+# Bomber Enemy Type
+class Bomber_Enemy(Game_Entity):
+    def __init__(self, frames, start_pos):
+        super().__init__(frames, speed=settings.bomber_enemy_spd, start_pos=start_pos)
 
+        # Hitbox
+        self.hitbox = self.rect.scale_by(0.4)
+
+    def shoot(self, bullet_group):
+        # for when I write the bomber specific mechanics
+        pass
+    
+    def update(self, player_pos):
+        # Enemy behavior
+        pass

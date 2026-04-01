@@ -46,23 +46,6 @@ class Basic_Enemy(pygame.sprite.Sprite):
         # this is where basic enemy movement should go
         pass
 
-# Bomber enemy that releases an exploding payload
-class Bomber_Enemy(pygame.sprite.Sprite):
-    def __init__(self, asset_folder, sprite_name, start_pos):
-        super().__init__()
-        self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.image.set_colorkey(utils.SHEET_BG)
-        self.rect = self.image.get_rect(center=start_pos)
-        self.speed = 0 # Placeholder
-
-    def shoot(self, bullet_group):
-        # For the bomber specific shooting mechanics
-        pass
-
-    def update(self, player_pos):
-        # This where enemy movement goes, I was thinking a horizontal line
-        pass
-
 class GameState(State):
     saved_player_position = None
 
@@ -82,9 +65,9 @@ class GameState(State):
 
         # Building Level
         self.bg_image = utils.build_level(
-            level_name="second_level",
+            level_name="first_level",
             enemy_ships=self.enemy_ships,
-            temp_type=entities.Swarm_Enemy
+            temp_type=entities.Basic_Enemy
         )
 
         # Spawning Player
