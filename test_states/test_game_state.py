@@ -16,7 +16,7 @@ if PROJECT_ROOT not in sys.path:
 os.chdir(PROJECT_ROOT)
 
 from states.death_state import DeathState
-from states.game_state import Bullet
+from states.entities import Bullet
 from states.game_state import GameState
 
 pygame.init()
