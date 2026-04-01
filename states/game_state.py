@@ -5,6 +5,7 @@ from states import utils
 from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
 from states import entities
+from states.upgrade_state import UpgradeState
 
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
@@ -15,11 +16,13 @@ class GameState(State):
 
     def on_enter(self, app):
         self.app = app
+        pygame.init()
+        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
         
         # Sets the background color, and draws the image
         self.bg_color = (0, 0, 0)
-        #bg_name = "background_asteroids.png"
-        #self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
+        bg_name = "background_asteroids.png"
+        self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
 
         # Creates the sprite groups
         self.ally_ships = pygame.sprite.Group()
@@ -43,6 +46,35 @@ class GameState(State):
             enemy_ships=self.enemy_ships,
             temp_type=entities.Basic_Enemy
         )
+        num_enemies = 10
+        columns = num_enemies
+
+        spacing_x = app.width // columns
+
+        for i in range(num_enemies):
+            # base position in column
+            x = i * spacing_x + spacing_x // 2
+
+            # add small randomness so it's not perfectly aligned
+            x += random.randint(-20, 20)
+
+            # spawn in top 1/4
+            y = random.randint(0, app.height // 4)
+
+            enemy = Basic_Enemy(
+                frames=utils.load_spritesheet(
+                    asset_folder=asset_folder,
+                    sheet_name="enemy_basic.png",
+                    key_color=utils.SHEET_BG,
+                    frame_width=utils.FRAME_SIZE,
+                    frame_height=utils.FRAME_SIZE
+                ),
+                start_pos=(x, y)
+            )
+
+            self.enemy_ships.add(enemy)
+
+
 
         # Spawning Player
         player_speed = 5
@@ -57,7 +89,9 @@ class GameState(State):
             start_pos=(app.width // 2, app.height - 50),
         )
         self.ally_ships.add(self.player)
+        self.player_start_pos = (app.width // 2, app.height - 50)
         self.enemy_hit_count = 0
+        self.lives = 3
 
         # Restore saved position if returning from pause
         if GameState.saved_player_position is not None:
@@ -69,6 +103,10 @@ class GameState(State):
             GameState.saved_player_position = self.player.rect.center
             from states.pause_state import PauseScreen
             app.change_state(PauseScreen(app, self))
+
+                # Keybind to quickly debug something
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
+            app.change_state(UpgradeState(app, self))
         
         # Shooting input
         if event.type == pygame.KEYDOWN and event.key == settings.keybind_player_shoot:
@@ -103,16 +141,30 @@ class GameState(State):
                 if enemy.can_shoot:
                     enemy.shoot(self.enemy_bullets)
 
-        # ✅ ADDED: if enemy touches player -> go to death screen
+        # If enemy touches player
         if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
-            app.change_state(DeathState("You Died", self.enemy_hit_count))
-            return
-        
-        # If enemy bullet hits player -> go to death screen
-        if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
-            app.change_state(DeathState("You Died", self.enemy_hit_count))
-            return
+            if hasattr(app, "testing") and app.testing:
+                app.change_state(DeathState("You Died", self.enemy_hit_count))
+                return
 
+
+            self.lives -= 1
+            self.player.rect.center = self.player_start_pos
+
+            if self.lives <= 0:
+                app.change_state(DeathState("You Died", self.enemy_hit_count))
+                sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+                pygame.mixer.Sound.play(sfx_player_boom)
+                return
+
+        # If enemy bullet hits player
+        if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
+            self.lives -= 1
+            self.player.rect.center = self.player_start_pos
+
+            if self.lives <= 0:
+                app.change_state(DeathState("You Died", self.enemy_hit_count))
+                return
         # Update shooting cooldown
         if not self.player.can_shoot:
             self.player.shoot_cooldown -= dt
@@ -136,7 +188,10 @@ class GameState(State):
         )
         #Score tracking for hits,
         if collisions:
+            sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
+            pygame.mixer.Sound.play(sfx_boom)
             self.enemy_hit_count += len(collisions)
+
 
     def draw(self, app, screen):
         screen.fill(self.bg_color)
@@ -145,6 +200,21 @@ class GameState(State):
         self.enemy_ships.draw(screen)
         self.ally_bullets.draw(screen)
         self.enemy_bullets.draw(screen)
+
+
+        if self.countdown_active:
+            font = pygame.font.Font(None, 200)
+
+            count = int(self.countdown) + 1  # makes it show 3,2,1
+
+            if count > 0:
+                text = font.render(str(count), True, (255, 255, 255))
+            else:
+                text = font.render("GO", True, (255, 255, 255))
+
+            rect = text.get_rect(center=(app.width // 2, app.height // 2))
+            screen.blit(text, rect)
+
         
         # Draws Text for Readiness Countdown
         if self.countdown_active:
@@ -167,4 +237,9 @@ class GameState(State):
         font = pygame.font.Font(None, 36)
         counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
+        font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 20)
+
+        for i in range(self.lives):
+            heart = font.render("♥", True, (255, 0, 0))
+            screen.blit(heart, (10 + i * 30, screen.get_height() - 40))
 
