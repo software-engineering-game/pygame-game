@@ -63,45 +63,6 @@ class Bomber_Enemy(pygame.sprite.Sprite):
         # This where enemy movement goes, I was thinking a horizontal line
         pass
 
-class Swarm_Enemy(pygame.sprite.Sprite):
-    def __init__(self, asset_folder, sprite_name, start_pos):
-        super().__init__()
-        self.original_image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        self.original_image.set_colorkey(utils.SHEET_BG)
-        self.image = self.original_image
-        self.rect = self.image.get_rect(center=start_pos)
-        self.speed = settings.swarm_enemy_spd
-
-        self.velocity = (0,0)
-        self.angle = 0
-
-    def shoot(self, bullet_group):
-        pass
-
-    def update(self, player_pos):
-        self.velocity = ((player_pos[0] - self.rect.x), (player_pos[1] - self.rect.y))
-
-        distance = ((self.velocity[0] ** 2) + (self.velocity[1] ** 2)) ** 0.5
-        if distance == 0:
-            self.velocity = (0,0)
-            dx = 0
-            dy = 0
-        else:
-            dx = (self.velocity[0] / distance) * self.speed
-            dy = (self.velocity[1] / distance) * self.speed
-
-            # atan2 gives angle from positive x-axis; subtract 90 so "up" on the sprite faces the target
-            import math
-            self.angle = math.degrees(math.atan2(-self.velocity[1], self.velocity[0])) - 90
-
-        center = self.rect.center
-        self.image = pygame.transform.rotate(self.original_image, self.angle)
-        self.image.set_colorkey(utils.SHEET_BG)
-        self.rect = self.image.get_rect(center=center)
-
-        self.rect.x += dx
-        self.rect.y += dy
-
 class GameState(State):
     saved_player_position = None
 
@@ -121,9 +82,9 @@ class GameState(State):
 
         # Building Level
         self.bg_image = utils.build_level(
-            level_name="first_level",
+            level_name="second_level",
             enemy_ships=self.enemy_ships,
-            temp_type=Basic_Enemy
+            temp_type=entities.Swarm_Enemy
         )
 
         # Spawning Player

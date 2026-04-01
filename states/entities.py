@@ -85,22 +85,6 @@ class Player(Game_Entity):
         self.can_shoot = True
 
     def shoot(self, bullet_group):
-        # # Spawns the bullet and adds it to bullet group
-        # player_bullet = Bullet(
-        #     frames=load_spritesheet(
-        #         sheet_name="basic_bullet.png",
-        #         frame_width=10,
-        #         frame_height=16
-        #     ),
-        #     speed=settings.BULLET_SPEED,
-        #     start_pos=(self.rect.centerx, self.rect.top),
-        #     direct=(0, -1)
-        # )
-        # bullet_group.add(player_bullet)
-
-        # # Prevents the player from shooting and resets the cooldown
-        # self.can_shoot = False
-        # self.shoot_cooldown = settings.BULLET_COOLDOWN
         pass
 
     def update(self, keys):
@@ -130,7 +114,7 @@ class Player(Game_Entity):
         self.rect.x += dx
         self.rect.y += dy
 
-#
+# Class for the standard firing mode
 class Player_Auto(Player):
     def __init__(self, frames, speed, start_pos):
         super().__init__(frames, speed, start_pos)
@@ -160,4 +144,47 @@ class Player_Shotgun(Player):
 class Player_Sniper(Player):
     def __init__(self, frames, speed, start_pos):
         super().__init__(frames, speed, start_pos)
+
+#
+# Enemy Ship Types
+#
+
+# Swarm Enemy Type
+class Swarm_Enemy(Game_Entity):
+    def __init__(self, frames, start_pos):
+        super().__init__(frames, speed=settings.swarm_enemy_spd, start_pos=start_pos)
+        self.original_image = self.image
+
+        # Bounding Box
+        self.rect = self.image.get_rect(center=start_pos)
+        # Hitbox
+        self.hitbox = self.rect.scale_by(0.4)
+
+        # Player Tracking Variables
+        self.velocity = (0,0)
+        self.angle = 0
+
+    def update(self, player_pos):
+        self.velocity = ((player_pos[0] - self.rect.x), (player_pos[1] - self.rect.y))
+
+        distance = ((self.velocity[0] ** 2) + (self.velocity[1] ** 2)) ** 0.5
+        if distance == 0:
+            self.velocity = (0,0)
+            dx = 0
+            dy = 0
+        else:
+            dx = (self.velocity[0] / distance) * self.speed
+            dy = (self.velocity[1] / distance) * self.speed
+
+            # atan2 gives angle from positive x-axis; subtract 90 so "up" on the sprite faces the target
+            import math
+            self.angle = math.degrees(math.atan2(-self.velocity[1], self.velocity[0])) - 90
+
+        center = self.rect.center
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        self.rect = self.image.get_rect(center=center)
+
+        self.rect.x += dx
+        self.rect.y += dy
+
 
