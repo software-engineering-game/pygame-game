@@ -1,27 +1,7 @@
 import pygame
-import random
-import math
 from states.base_state import State
+from states.entities import Stars
 from states import utils
-
-class Stars:
-    def __init__(self, w, h):
-        self.x = random.randint(0, w - 1)
-        self.y = random.randint(0, h - 1)
-        self.r = random.choice([1, 1, 1, 2])
-        self.base = random.randint(100, 180)
-        self.amp = random.randint(20, 80)
-        self.speed = random.uniform(1.0, 4.0)
-        self.phase = random.uniform(0, math.tau)
-
-    def brightness(self, t):
-        b = self.base + self.amp * math.sin(t * self.speed + self.phase)
-        return max(0, min(255, int(b)))
-    
-    def draw(self, screen, t):
-        b = self.brightness(t)
-        pygame.draw.circle(screen, (b, b, b), (self.x, self.y), self.r)
-
 
 class MainMenuState(State):
 
@@ -48,16 +28,16 @@ class MainMenuState(State):
             self.selected = 0
 
     def handle_event(self, app, event):
-        sfx_menu = pygame.mixer.Sound("assets/sfx/menu1.wav")
+        #sfx_menu = pygame.mixer.Sound("assets/sfx/menu1.wav")
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_UP:
                 self.selected = (self.selected - 1) % len(self.options)
-                pygame.mixer.Sound.play(sfx_menu)
+                #pygame.mixer.Sound.play(sfx_menu)
 
             elif event.key == pygame.K_DOWN:
                 self.selected = (self.selected + 1) % len(self.options)
-                pygame.mixer.Sound.play(sfx_menu)
+                #pygame.mixer.Sound.play(sfx_menu)
 
             elif event.key == pygame.K_RETURN:
 

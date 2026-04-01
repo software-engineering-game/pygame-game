@@ -17,6 +17,7 @@ keybind_upgrade_2 = pygame.K_2
 # Enemy Variables
 basic_enemy_spd = 2
 swarm_enemy_spd = 3
+bomber_enemy_spd = 1
 
 # optional wave defaults
 WAVE_COLUMNS = 5
