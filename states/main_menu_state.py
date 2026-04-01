@@ -28,16 +28,16 @@ class MainMenuState(State):
             self.selected = 0
 
     def handle_event(self, app, event):
-        sfx_menu = pygame.mixer.Sound("assets/sfx/menu1.wav")
+        #sfx_menu = pygame.mixer.Sound("assets/sfx/menu1.wav")
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_UP:
                 self.selected = (self.selected - 1) % len(self.options)
-                pygame.mixer.Sound.play(sfx_menu)
+                #pygame.mixer.Sound.play(sfx_menu)
 
             elif event.key == pygame.K_DOWN:
                 self.selected = (self.selected + 1) % len(self.options)
-                pygame.mixer.Sound.play(sfx_menu)
+                #pygame.mixer.Sound.play(sfx_menu)
 
             elif event.key == pygame.K_RETURN:
 

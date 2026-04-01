@@ -112,7 +112,9 @@ class Player(Game_Entity):
             dy += self.speed
 
         self.rect.x += dx
+        self.hitbox.x += dx
         self.rect.y += dy
+        self.hitbox.y += dy
 
 # Class for the standard firing mode
 class Player_Auto(Player):
@@ -156,7 +158,6 @@ class Basic_Enemy(Game_Entity):
 
         # Hitbox
         self.hitbox = self.rect.scale_by(0.4)
-
 
         self.vertical_speed = random.uniform(0.8, 1.5)
         self.vx = random.uniform(-1.5, 1.5)
