@@ -1,5 +1,6 @@
 import pygame
 import os
+import random
 from states import settings
 from states import utils
 from states.base_state import State
