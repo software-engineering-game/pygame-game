@@ -6,6 +6,9 @@ import json
 SHEET_BG = (160, 200, 152)
 FRAME_SIZE = 64
 
+repo_root = os.path.dirname(os.path.dirname(__file__))
+asset_folder = os.path.join(repo_root, "assets")
+
 #
 # High Score
 #
@@ -34,7 +37,7 @@ def save_high_score(score):
 
 # Takes a spritesheet and splits it into a list of frames
 # Returns the frames as a list of pygame images
-def load_spritesheet(asset_folder, sheet_name, frame_width, frame_height):
+def load_spritesheet(sheet_name, frame_width, frame_height):
     sprite_sheet = pygame.image.load(os.path.join(asset_folder, sheet_name)).convert()
     sprite_sheet.set_colorkey(SHEET_BG)
     frames = []
@@ -72,7 +75,7 @@ def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing)
                 enemy = enemy_type(frames=frames, start_pos=(x, y))
                 enemy_group.add(enemy)
 
-def build_level(asset_folder, level_name, enemy_ships, temp_type):
+def build_level(level_name, enemy_ships, temp_type):
     # Loads the data for one level as a python dictionary
     level = load_level(level_name=level_name)
 
@@ -90,7 +93,6 @@ def build_level(asset_folder, level_name, enemy_ships, temp_type):
             enemy_type=temp_type,
             enemy_group=enemy_ships,
             frames=load_spritesheet(
-                asset_folder=asset_folder,
                 sheet_name=level["waves"][wav_index]["sprite_sheet"],
                 frame_width=66,
                 frame_height=FRAME_SIZE

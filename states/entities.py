@@ -1,7 +1,6 @@
 import pygame
 import random
 import math
-import utils
 
 # Class for menu star effect
 class Stars:

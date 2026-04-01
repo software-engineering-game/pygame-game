@@ -11,8 +11,6 @@ from states.entities import Bullet as tstbul
 repo_root = os.path.dirname(os.path.dirname(__file__))
 asset_folder = os.path.join(repo_root, "assets")
 
-# Sprite is a base class from the Pygame Library
-# def __init__(pygame, sprite, width, height, x, y):
 # Class for the basic bullet
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, asset_folder, sprite_name, speed, start_pos, direct):
@@ -63,7 +61,6 @@ class Player(pygame.sprite.Sprite):
     def shoot(self, bullet_group):
         player_bullet = tstbul(
             frames=utils.load_spritesheet(
-                asset_folder=asset_folder,
                 sheet_name="basic_bullet.png",
                 frame_width=10,
                 frame_height=16
@@ -112,8 +109,7 @@ class Basic_Enemy(pygame.sprite.Sprite):
         self.current_frame = 0
         self.image = self.frames[self.current_frame]
 
-        # self.image = pygame.image.load(os.path.join(asset_folder, sprite_name)).convert()
-        # self.image.set_colorkey(utils.SHEET_BG)
+        # Bounding Box
         self.rect = self.image.get_rect(center=start_pos)
         self.speed = settings.basic_enemy_spd
 
@@ -124,7 +120,6 @@ class Basic_Enemy(pygame.sprite.Sprite):
     def shoot(self, bullet_group):
         enemy_bullet = tstbul(
             frames=utils.load_spritesheet(
-                asset_folder=asset_folder,
                 sheet_name="basic_bullet.png",
                 frame_width=10,
                 frame_height=16
@@ -216,7 +211,6 @@ class GameState(State):
 
         # Building Level
         self.bg_image = utils.build_level(
-            asset_folder=asset_folder,
             level_name="first_level",
             enemy_ships=self.enemy_ships,
             temp_type=Basic_Enemy
@@ -227,7 +221,6 @@ class GameState(State):
         self.player = Player(
             # Loads the sprite sheet into the player's frames
             frames=utils.load_spritesheet(
-                asset_folder=asset_folder,
                 sheet_name="player_shotgun_ship.png",
                 frame_width=utils.FRAME_SIZE,
                 frame_height=utils.FRAME_SIZE
