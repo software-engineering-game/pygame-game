@@ -149,14 +149,41 @@ class Player_Sniper(Player):
 # Enemy Ship Types
 #
 
+# Basic Enemy type
+class Basic_Enemy(Game_Entity):
+    def __init__(self, frames, start_pos):
+        super().__init__(frames, speed=settings.basic_enemy_spd, start_pos=start_pos)
+
+        # Hitbox
+        self.hitbox = self.rect.scale_by(0.4)
+
+        # Shooting cooldown tracking
+        self.shoot_cooldown = random.uniform(1.0, 3.0)
+        self.can_shoot = False
+
+    def shoot(self, bullet_group):
+        enemy_bullet = Bullet(
+            frames=load_spritesheet(
+                sheet_name="basic_bullet.png",
+                frame_width=10,
+                frame_height=16
+            ),
+            speed=settings.BULLET_SPEED,
+            start_pos=(self.rect.centerx, self.rect.bottom),
+            direct=(0, 1)
+        )
+        bullet_group.add(enemy_bullet)
+        self.can_shoot = False
+        self.shoot_cooldown = random.uniform(3.0, 8.0)
+
+
+
 # Swarm Enemy Type
 class Swarm_Enemy(Game_Entity):
     def __init__(self, frames, start_pos):
         super().__init__(frames, speed=settings.swarm_enemy_spd, start_pos=start_pos)
         self.original_image = self.image
 
-        # Bounding Box
-        self.rect = self.image.get_rect(center=start_pos)
         # Hitbox
         self.hitbox = self.rect.scale_by(0.4)
 
