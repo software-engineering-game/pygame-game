@@ -169,7 +169,7 @@ class Basic_Enemy(Game_Entity):
 
         # Shooting cooldown tracking
         self.shoot_cooldown = random.uniform(3.0, 6.0)
-        self.can_shoot = True
+        self.can_shoot = False
 
     def shoot(self, bullet_group):
         enemy_bullet = Bullet(

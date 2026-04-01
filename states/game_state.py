@@ -11,41 +11,6 @@ from states import entities
 repo_root = os.path.dirname(os.path.dirname(__file__))
 asset_folder = os.path.join(repo_root, "assets")
 
-class Basic_Enemy(pygame.sprite.Sprite):
-    def __init__(self, frames, start_pos):
-        super().__init__()
-
-        self.frames = frames
-        self.current_frame = 0
-        self.image = self.frames[self.current_frame]
-
-        # Bounding Box
-        self.rect = self.image.get_rect(center=start_pos)
-        self.speed = settings.basic_enemy_spd
-
-        # Shooting cooldown tracking
-        self.shoot_cooldown = random.uniform(1.0, 3.0)
-        self.can_shoot = False
-
-    def shoot(self, bullet_group):
-        enemy_bullet = entities.Bullet(
-            frames=utils.load_spritesheet(
-                sheet_name="basic_bullet.png",
-                frame_width=10,
-                frame_height=16
-            ),
-            speed=settings.BULLET_SPEED,
-            start_pos=(self.rect.centerx, self.rect.bottom),
-            direct=(0, 1)
-        )
-        bullet_group.add(enemy_bullet)
-        self.can_shoot = False
-        self.shoot_cooldown = random.uniform(3.0, 8.0)
-
-    def update(self, player_pos):
-        # this is where basic enemy movement should go
-        pass
-
 class GameState(State):
     saved_player_position = None
 
@@ -63,7 +28,17 @@ class GameState(State):
         self.enemy_ships = pygame.sprite.Group()
         self.enemy_bullets = pygame.sprite.Group()
 
-        # Building Level
+        # Countdown for player readiness
+        self.countdown = 3.0   # seconds
+        self.countdown_active = True
+
+        if hasattr(app, "testing") and app.testing:
+            self.countdown_active = False
+
+        # Spawning Enemies
+        self.enemy_ships.empty()
+
+        # Loading Level Data
         self.bg_image = utils.build_level(
             level_name="first_level",
             enemy_ships=self.enemy_ships,
@@ -102,6 +77,15 @@ class GameState(State):
                 self.player.shoot(self.ally_bullets)
     
     def update(self, app, dt):
+
+        if self.countdown_active:
+            self.countdown -= dt
+
+            if self.countdown <= 0:
+                self.countdown_active = False
+
+            return
+
         keys = pygame.key.get_pressed()
         self.player.update(keys)
 
@@ -113,7 +97,7 @@ class GameState(State):
 
         # Enemy auto-fire logic for basic enemies
         for enemy in self.enemy_ships:
-            if isinstance(enemy, Basic_Enemy):
+            if isinstance(enemy, entities.Basic_Enemy):
                 enemy.shoot_cooldown -= dt
                 if enemy.shoot_cooldown <= 0 and not enemy.can_shoot:
                     enemy.can_shoot = True
@@ -164,6 +148,20 @@ class GameState(State):
         self.ally_bullets.draw(screen)
         self.enemy_bullets.draw(screen)
         
+        # Draws Text for Readiness Countdown
+        if self.countdown_active:
+            font = pygame.font.Font(None, 200)
+            count = int(self.countdown) + 1  # makes it show 3,2,1
+
+            if count > 0:
+                text = font.render(str(count), True, (255, 255, 255))
+            else:
+                text = font.render("GO", True, (255, 255, 255))
+
+            rect = text.get_rect(center=(app.width // 2, app.height // 2))
+            screen.blit(text, rect)
+
+
         # delete after testing
         # pygame.draw.rect(screen, (255,255,255), self.player.hitbox)
 
