@@ -82,7 +82,7 @@ class GameState(State):
 
             if self.countdown <= 0:
                 self.countdown_active = False
-            return # returns it to main loop
+            return # returns it to main.py loop
 
         keys = pygame.key.get_pressed()
         self.player.update(keys)

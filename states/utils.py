@@ -63,8 +63,6 @@ def load_level(level_name):
     except (FileNotFoundError, json.JSONDecodeError, KeyError):
         return 0
 
-
-
 def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing):
     for j in range(size[1]):     # Rows
             for i in range(size[0]): # Columns
