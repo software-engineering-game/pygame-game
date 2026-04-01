@@ -62,7 +62,7 @@ class GameState(State):
             # spawn in top 1/4
             y = random.randint(0, app.height // 4)
 
-            enemy = Basic_Enemy(
+            enemy = entities.Basic_Enemy(
                 frames=utils.load_spritesheet(
                     asset_folder=asset_folder,
                     sheet_name="enemy_basic.png",
