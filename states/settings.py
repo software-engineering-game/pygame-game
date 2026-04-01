@@ -29,4 +29,4 @@ WAVE_CORNER_Y = 120
 
 # Bullet settings
 BULLET_SPEED = 8
-BULLET_COOLDOWN = 0.2  # seconds between shots
+BULLET_COOLDOWN = 0.5  # seconds between shots for player

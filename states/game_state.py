@@ -47,31 +47,31 @@ class GameState(State):
             enemy_ships=self.enemy_ships,
             temp_type=entities.Basic_Enemy
         )
-        num_enemies = 10
-        columns = num_enemies
+        # num_enemies = 10
+        # columns = num_enemies
 
-        spacing_x = app.width // columns
+        # spacing_x = app.width // columns
 
-        for i in range(num_enemies):
-            # base position in column
-            x = i * spacing_x + spacing_x // 2
+        # for i in range(num_enemies):
+        #     # base position in column
+        #     x = i * spacing_x + spacing_x // 2
 
-            # add small randomness so it's not perfectly aligned
-            x += random.randint(-20, 20)
+        #     # add small randomness so it's not perfectly aligned
+        #     x += random.randint(-20, 20)
 
-            # spawn in top 1/4
-            y = random.randint(0, app.height // 4)
+        #     # spawn in top 1/4
+        #     y = random.randint(0, app.height // 4)
 
-            enemy = entities.Basic_Enemy(
-                frames=utils.load_spritesheet(
-                    sheet_name="enemy_basic.png",
-                    frame_width=utils.FRAME_SIZE,
-                    frame_height=utils.FRAME_SIZE
-                ),
-                start_pos=(x, y)
-            )
+        #     enemy = entities.Basic_Enemy(
+        #         frames=utils.load_spritesheet(
+        #             sheet_name="enemy_basic.png",
+        #             frame_width=utils.FRAME_SIZE,
+        #             frame_height=utils.FRAME_SIZE
+        #         ),
+        #         start_pos=(x, y)
+        #     )
 
-            self.enemy_ships.add(enemy)
+        #     self.enemy_ships.add(enemy)
 
         # Spawning Player
         player_speed = 5
@@ -197,25 +197,10 @@ class GameState(State):
         self.enemy_ships.draw(screen)
         self.ally_bullets.draw(screen)
         self.enemy_bullets.draw(screen)
-
-
-        if self.countdown_active:
-            font = pygame.font.Font(None, 200)
-
-            count = int(self.countdown) + 1  # makes it show 3,2,1
-
-            if count > 0:
-                text = font.render(str(count), True, (255, 255, 255))
-            else:
-                text = font.render("GO", True, (255, 255, 255))
-
-            rect = text.get_rect(center=(app.width // 2, app.height // 2))
-            screen.blit(text, rect)
-
         
         # Draws Text for Readiness Countdown
         if self.countdown_active:
-            font = pygame.font.Font(None, 200)
+            font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 140)
             count = int(self.countdown) + 1  # makes it show 3,2,1
 
             if count > 0:
@@ -236,7 +221,7 @@ class GameState(State):
         screen.blit(counter_text, (10, 10))
         font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 20)
 
-        for i in range(self.lives):
-            heart = font.render("♥", True, (255, 0, 0))
-            screen.blit(heart, (10 + i * 30, screen.get_height() - 40))
+        heart = font.render("♥" + str(self.lives), True, (255, 0, 0))
+        screen.blit(heart, (10 + 30, screen.get_height() - 40))
+            
 
