@@ -1,7 +1,6 @@
 import pygame
 import random
 import math
-from states.utils import load_spritesheet
 from states import settings
 
 # Class for menu star effect
@@ -51,9 +50,19 @@ class Game_Entity(pygame.sprite.Sprite):
     def update(self):
         pass
 
-class Bullet(Game_Entity):
+class Bullet(pygame.sprite.Sprite):
     def __init__(self, frames, speed, start_pos, direct):
-        super().__init__(frames, speed, start_pos)
+        super().__init__()
+        # Sprite Loading
+        self.image = pygame.image.load("assets/" + frames).convert()
+        self.image.set_colorkey((160, 200, 152))
+
+        # Bounding Box
+        self.rect = self.image.get_rect(center=start_pos)
+        # Hitbox
+        self.hitbox = self.rect.scale_by(1)
+
+        self.speed = speed
 
         self.x_direct = direct[0] # Should be set to 0, 1, or -1
         self.y_direct = direct[1] # Should be set to 0, 1, or -1
@@ -124,11 +133,7 @@ class Player_Auto(Player):
     def shoot(self, bullet_group):
         # Spawns the bullet and adds it to bullet group
         player_bullet = Bullet(
-            frames=load_spritesheet(
-                sheet_name="basic_bullet.png",
-                frame_width=10,
-                frame_height=16
-            ),
+            frames="basic_bullet.png",
             speed=settings.BULLET_SPEED,
             start_pos=(self.rect.centerx, self.rect.top),
             direct=(0, -1)
@@ -154,7 +159,7 @@ class Player_Sniper(Player):
 # Basic Enemy type
 class Basic_Enemy(Game_Entity):
     def __init__(self, frames, start_pos):
-        super().__init__(frames, speed=settings.basic_enemy_spd, start_pos=start_pos)
+        super().__init__(frames=frames, speed=settings.basic_enemy_spd, start_pos=start_pos)
 
         # Hitbox
         self.hitbox = self.rect.scale_by(0.4)
@@ -165,8 +170,6 @@ class Basic_Enemy(Game_Entity):
 
         # how often direction changes
         self.change_timer = random.uniform(1.0, 3.0)
-        
-
 
         # Shooting cooldown tracking
         self.shoot_cooldown = random.uniform(1.0, 5.0)
@@ -174,11 +177,7 @@ class Basic_Enemy(Game_Entity):
 
     def shoot(self, bullet_group):
         enemy_bullet = Bullet(
-            frames=load_spritesheet(
-                sheet_name="basic_bullet.png",
-                frame_width=10,
-                frame_height=16
-            ),
+            frames="basic_bullet.png",
             speed=settings.BULLET_SPEED,
             start_pos=(self.rect.centerx, self.rect.bottom),
             direct=(0, 1)

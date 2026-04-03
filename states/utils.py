@@ -79,14 +79,12 @@ def build_level(level_name, enemy_ships, temp_type):
 
     # Loads the background image named in level_data into a pygame image
     bg_image = pygame.image.load(os.path.join(asset_folder, level["bg_img"]))
-    
-    #needs to parse enemy types from level_data somehow
 
     # Spawns enemy waves
     # Loops for however many waves there are
     for wav_index in range(len(level["waves"])):
-        
-        
+        #needs to parse enemy types from level_data somehow
+
         spawn_enemy_wave(
             enemy_type=temp_type,
             enemy_group=enemy_ships,

@@ -1,6 +1,5 @@
 import pygame
 import os
-import random
 from states import settings
 from states import utils
 from states.base_state import State
@@ -47,31 +46,6 @@ class GameState(State):
             enemy_ships=self.enemy_ships,
             temp_type=entities.Basic_Enemy
         )
-        # num_enemies = 10
-        # columns = num_enemies
-
-        # spacing_x = app.width // columns
-
-        # for i in range(num_enemies):
-        #     # base position in column
-        #     x = i * spacing_x + spacing_x // 2
-
-        #     # add small randomness so it's not perfectly aligned
-        #     x += random.randint(-20, 20)
-
-        #     # spawn in top 1/4
-        #     y = random.randint(0, app.height // 4)
-
-        #     enemy = entities.Basic_Enemy(
-        #         frames=utils.load_spritesheet(
-        #             sheet_name="enemy_basic.png",
-        #             frame_width=utils.FRAME_SIZE,
-        #             frame_height=utils.FRAME_SIZE
-        #         ),
-        #         start_pos=(x, y)
-        #     )
-
-        #     self.enemy_ships.add(enemy)
 
         # Spawning Player
         player_speed = 5
@@ -198,9 +172,11 @@ class GameState(State):
         self.ally_bullets.draw(screen)
         self.enemy_bullets.draw(screen)
         
+        font_file = os.path.join(asset_folder, "fonts/PressStart2P-vaV7.ttf")
+
         # Draws Text for Readiness Countdown
         if self.countdown_active:
-            font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 140)
+            font = pygame.font.Font(font_file, 140)
             count = int(self.countdown) + 1  # makes it show 3,2,1
 
             if count > 0:
@@ -216,12 +192,13 @@ class GameState(State):
         pygame.draw.rect(screen, (255,255,255), self.player.hitbox)
 
         # Draw hit counter
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.Font(font_file, 20)
         counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
-        font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 20)
-
-        heart = font.render("♥" + str(self.lives), True, (255, 0, 0))
-        screen.blit(heart, (10 + 30, screen.get_height() - 40))
+        
+        #Draws Lives Counter
+        font = pygame.font.Font(font_file, 20)
+        heart = font.render("♥x" + str(self.lives), True, (255, 0, 0))
+        screen.blit(heart, (35, screen.get_height() - 40))
             
 
