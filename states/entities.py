@@ -121,8 +121,8 @@ class Player(Game_Entity):
             dy += self.speed
 
         self.rect.x += dx
-        self.hitbox.x += dx
         self.rect.y += dy
+        self.hitbox.x += dx
         self.hitbox.y += dy
 
 # Class for the standard firing mode

@@ -2,9 +2,9 @@ import pygame
 import os
 from states import settings
 from states import utils
+from states import entities
 from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
-from states import entities
 from states.upgrade_state import UpgradeState
 
 # assets folder is at repo root
@@ -85,7 +85,7 @@ class GameState(State):
                 self.player.shoot(self.ally_bullets)
     
     def update(self, app, dt):
-        # Keeps GameState from updating
+        # Keeps GameState from updating during countdown
         if self.countdown_active:
             self.countdown -= dt
 
@@ -112,30 +112,22 @@ class GameState(State):
                 if enemy.can_shoot:
                     enemy.shoot(self.enemy_bullets)
 
-        # If enemy touches player
-        if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
+        # If enemy touches player or if enemy bullet hits player
+        if (pygame.sprite.spritecollide(self.player, self.enemy_ships, True) or pygame.sprite.spritecollide(self.player, self.enemy_bullets, True)):
             if hasattr(app, "testing") and app.testing:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
                 return
 
-
             self.lives -= 1
             self.player.rect.center = self.player_start_pos
+            self.player.hitbox.center = self.player_start_pos
 
             if self.lives <= 0:
-                app.change_state(DeathState("You Died", self.enemy_hit_count))
                 #sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
                 #pygame.mixer.Sound.play(sfx_player_boom)
-                return
-
-        # If enemy bullet hits player
-        if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
-            self.lives -= 1
-            self.player.rect.center = self.player_start_pos
-
-            if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
                 return
+
         # Update shooting cooldown
         if not self.player.can_shoot:
             self.player.shoot_cooldown -= dt
