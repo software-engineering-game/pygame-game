@@ -22,7 +22,7 @@ class MainMenuState(State):
         self.high_score = utils.load_high_score()
 
         # Menu options
-        self.options = ["Start Game", "How To Play", "Options", "Credits", "Quit"]
+        self.options = ["Start Game", "Leaderboard", "How To Play", "Options", "Credits", "Quit"]
         
         if not hasattr(self, "selected"):
             self.selected = 0
@@ -46,18 +46,22 @@ class MainMenuState(State):
                     app.change_state(GameState())
 
                 elif self.selected == 1:
+                    from states.leaderboard_state import LeaderboardState
+                    app.change_state(LeaderboardState())
+
+                elif self.selected == 2:
                     from states.how_to_play_state import HowToPlayState
                     app.change_state(HowToPlayState(self))
 
-                elif self.selected == 2:
+                elif self.selected == 3:
                     from states.options_state import OptionsState
                     app.change_state(OptionsState(self))
 
-                elif self.selected == 3:
+                elif self.selected == 4:
                     from states.credits_state import CreditsState
                     app.change_state(CreditsState(self))
-
-                elif self.selected == 4:
+                
+                elif self.selected == 5:
                     from states.confirm_quit_state import ConfirmQuitState
                     app.change_state(ConfirmQuitState(self))
 

@@ -4,8 +4,9 @@ from states import settings
 from states import utils
 from states import entities
 from states.base_state import State
-from states.death_state import DeathState  #ADDED: death screen
+from states.death_state import DeathState
 from states.upgrade_state import UpgradeState
+from states.win_state import WinState
 
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
@@ -219,7 +220,7 @@ class GameState(State):
             is_last_level = self.level_index >= len(self.level_sequence) - 1
 
             if is_last_wave and is_last_level:
-                app.change_state(DeathState("You Win!", self.enemy_hit_count))
+                app.change_state(WinState("You Win!", self.enemy_hit_count))
                 return
 
             self.waiting_for_upgrade = True
