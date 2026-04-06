@@ -1,11 +1,10 @@
 import pygame
 import os
-import random
 from states import settings
 from states import utils
+from states import entities
 from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
-from states import entities
 from states.upgrade_state import UpgradeState
 
 # assets folder is at repo root
@@ -20,6 +19,10 @@ class GameState(State):
         pygame.init()
         pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
         
+        # reset upgrade-tuned stats at run start
+        settings.BULLET_SPEED = settings.DEFAULT_BULLET_SPEED
+        settings.BULLET_COOLDOWN = settings.DEFAULT_BULLET_COOLDOWN
+
         # Sets the background color, and draws the image
         self.bg_color = (0, 0, 0)
         bg_name = "background_asteroids.png"
@@ -38,42 +41,25 @@ class GameState(State):
         if hasattr(app, "testing") and app.testing:
             self.countdown_active = False
 
-        # Spawning Enemies
+        # progression state
+        self.level_sequence = utils.get_level_sequence()
+        if not self.level_sequence:
+            raise ValueError("No levels found in level_data.json")
+        self.level_index = 0
+        self.current_level_name = self.level_sequence[self.level_index]
+        self.current_level_data = utils.load_level(self.current_level_name)
+        self.current_wave_index = 0
+        self.pending_level_index = None
+        self.pending_wave_index = None
+        self.waiting_for_upgrade = False
+
+        # spawn first wave of first level
         self.enemy_ships.empty()
-
-        # Loading Level Data
         self.bg_image = utils.build_level(
-            level_name="first_level",
+            level_name=self.current_level_name,
             enemy_ships=self.enemy_ships,
-            temp_type=entities.Basic_Enemy
+            wave_index=self.current_wave_index
         )
-        num_enemies = 10
-        columns = num_enemies
-
-        spacing_x = app.width // columns
-
-        for i in range(num_enemies):
-            # base position in column
-            x = i * spacing_x + spacing_x // 2
-
-            # add small randomness so it's not perfectly aligned
-            x += random.randint(-20, 20)
-
-            # spawn in top 1/4
-            y = random.randint(0, app.height // 4)
-
-            enemy = entities.Basic_Enemy(
-                frames=utils.load_spritesheet(
-                    sheet_name="enemy_basic.png",
-                    frame_width=utils.FRAME_SIZE,
-                    frame_height=utils.FRAME_SIZE
-                ),
-                start_pos=(x, y)
-            )
-
-            self.enemy_ships.add(enemy)
-
-
 
         # Spawning Player
         player_speed = 5
@@ -96,6 +82,36 @@ class GameState(State):
         if GameState.saved_player_position is not None:
             self.player.rect.center = GameState.saved_player_position
 
+    def _resume_after_upgrade(self):
+        if self.pending_level_index is not None:
+            self.level_index = self.pending_level_index
+            self.current_level_name = self.level_sequence[self.level_index]
+            self.current_level_data = utils.load_level(self.current_level_name)
+
+        if self.pending_wave_index is not None:
+            self.current_wave_index = self.pending_wave_index
+
+        self.pending_level_index = None
+        self.pending_wave_index = None
+        self.waiting_for_upgrade = False
+
+        # reset projectiles between waves so transitions are fair
+        self.enemy_ships.empty()
+        self.enemy_bullets.empty()
+        self.ally_bullets.empty()
+        self.bg_image = utils.build_level(
+            level_name=self.current_level_name,
+            enemy_ships=self.enemy_ships,
+            wave_index=self.current_wave_index
+        )
+
+        # short countdown before next wave starts
+        self.countdown = 1.5
+        self.countdown_active = True
+
+    def on_upgrade_complete(self):
+        self._resume_after_upgrade()
+
     def handle_event(self, app, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             # Save player position before pausing
@@ -105,6 +121,9 @@ class GameState(State):
 
                 # Keybind to quickly debug something
         if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
+            self.waiting_for_upgrade = True
+            self.pending_level_index = self.level_index
+            self.pending_wave_index = self.current_wave_index
             app.change_state(UpgradeState(app, self))
         
         # Shooting input
@@ -129,6 +148,8 @@ class GameState(State):
 
         player_pos = (self.player.rect.x, self.player.rect.y)
         self.enemy_ships.update(player_pos=player_pos)
+        for enemy in self.enemy_ships:
+            enemy.rect.clamp_ip(play_area)
 
         # Enemy auto-fire logic for basic enemies
         for enemy in self.enemy_ships:
@@ -191,6 +212,27 @@ class GameState(State):
             pygame.mixer.Sound.play(sfx_boom)
             self.enemy_hit_count += len(collisions)
 
+        # Wave progression: clear wave -> upgrade pick -> spawn next wave/level
+        if not self.enemy_ships and not self.waiting_for_upgrade:
+            total_waves = len(self.current_level_data["waves"])
+            is_last_wave = self.current_wave_index >= total_waves - 1
+            is_last_level = self.level_index >= len(self.level_sequence) - 1
+
+            if is_last_wave and is_last_level:
+                app.change_state(DeathState("You Win!", self.enemy_hit_count))
+                return
+
+            self.waiting_for_upgrade = True
+            if not is_last_wave:
+                self.pending_level_index = self.level_index
+                self.pending_wave_index = self.current_wave_index + 1
+            else:
+                self.pending_level_index = self.level_index + 1
+                self.pending_wave_index = 0
+
+            app.change_state(UpgradeState(app, self))
+            return
+
 
     def draw(self, app, screen):
         screen.fill(self.bg_color)
@@ -236,6 +278,12 @@ class GameState(State):
         font = pygame.font.Font(None, 36)
         counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
+        level_text = font.render(
+            f"Level: {self.current_level_data['level_num']}  Wave: {self.current_wave_index + 1}/{len(self.current_level_data['waves'])}",
+            True,
+            (255, 255, 255)
+        )
+        screen.blit(level_text, (10, 45))
         font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 20)
 
         for i in range(self.lives):

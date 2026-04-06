@@ -36,7 +36,7 @@
    
    "second_level": {
       "level_num": 3,
-      "bg_img":    "background_test.png",
+      "bg_img":    "background_asteroids.png",
       "waves": [
          {
             "enemy_type":   "Basic_Enemy",
