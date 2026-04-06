@@ -42,8 +42,6 @@ class Game_Entity(pygame.sprite.Sprite):
 
         # Bounding Box
         self.rect = self.image.get_rect(center=start_pos)
-        # Hitbox
-        self.hitbox = self.rect.scale_by(1)
 
         self.speed = speed
     
@@ -58,9 +56,9 @@ class Bullet(pygame.sprite.Sprite):
         self.image.set_colorkey((160, 200, 152))
 
         # Bounding Box
-        self.rect = self.image.get_rect(center=start_pos)
+        self.bounding_box = self.image.get_rect(center=start_pos)
         # Hitbox
-        self.hitbox = self.rect.scale_by(1)
+        self.rect = self.bounding_box.scale_by(1)
 
         self.speed = speed
 
@@ -86,8 +84,9 @@ class Player(Game_Entity):
         super().__init__(frames, speed, start_pos)
 
         # Hitbox
-        self.hitbox = self.rect.scale_by(0.3)
-        self.hitbox.center = (self.rect.centerx, self.rect.centery)
+        self.hitbox = self.rect.scale_by(0.4)
+        self.hitbox.centerx = self.rect.centerx
+        self.hitbox.centery = self.rect.centery
 
         # Shooting cooldown tracking
         self.shoot_cooldown = 0.0
@@ -163,6 +162,8 @@ class Basic_Enemy(Game_Entity):
 
         # Hitbox
         self.hitbox = self.rect.scale_by(0.4)
+        self.hitbox.centerx = self.rect.centerx
+        self.hitbox.centery = self.rect.centery
 
         self.vertical_speed = random.uniform(0.8, 1.5)
         self.vx = random.uniform(-1.5, 1.5)
@@ -219,7 +220,7 @@ class Swarm_Enemy(Game_Entity):
         self.original_image = self.image
 
         # Hitbox
-        self.hitbox = self.rect.scale_by(0.4)
+        self.rect = self.bounding_box.scale_by(0.4)
 
         # Player Tracking Variables
         self.velocity = (0,0)
@@ -254,7 +255,7 @@ class Bomber_Enemy(Game_Entity):
         super().__init__(frames, speed=settings.bomber_enemy_spd, start_pos=start_pos)
 
         # Hitbox
-        self.hitbox = self.rect.scale_by(0.4)
+        self.rect = self.bounding_box.scale_by(0.4)
 
     def shoot(self, bullet_group):
         # for when I write the bomber specific mechanics

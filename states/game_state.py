@@ -41,14 +41,15 @@ class GameState(State):
         self.enemy_ships.empty()
 
         # Loading Level Data
-        self.bg_image = utils.build_level(
-            level_name="first_level",
-            enemy_ships=self.enemy_ships,
-            temp_type=entities.Basic_Enemy
-        )
+        # self.bg_image = utils.build_level(
+        #     level_name="first_level",
+        #     enemy_ships=self.enemy_ships,
+        #     temp_type=entities.Basic_Enemy
+        # )
 
         # Spawning Player
-        player_speed = 5
+        self.player_speed = 5
+        self.player_start_pos = (app.width // 2, app.height - 50)
         self.player = entities.Player_Auto(
             # Loads the sprite sheet into the player's frames
             frames=utils.load_spritesheet(
@@ -56,11 +57,10 @@ class GameState(State):
                 frame_width=utils.FRAME_SIZE,
                 frame_height=utils.FRAME_SIZE
             ),
-            speed=player_speed,
-            start_pos=(app.width // 2, app.height - 50),
+            speed=self.player_speed,
+            start_pos=self.player_start_pos,
         )
         self.ally_ships.add(self.player)
-        self.player_start_pos = (app.width // 2, app.height - 50)
         self.enemy_hit_count = 0
         self.lives = 3
 
@@ -99,7 +99,7 @@ class GameState(State):
         play_area = pygame.Rect(0, 0, app.width, app.height)
         self.player.rect.clamp_ip(play_area)
 
-        player_pos = (self.player.rect.x, self.player.rect.y)
+        player_pos = (self.player.rect.centerx, self.player.rect.centery)
         self.enemy_ships.update(player_pos=player_pos)
 
         # Enemy auto-fire logic for basic enemies
@@ -181,7 +181,8 @@ class GameState(State):
 
 
         # delete after testing
-        pygame.draw.rect(screen, (255,255,255), self.player.hitbox)
+        pygame.draw.rect(screen, (255,0,0), self.player.rect)
+        pygame.draw.rect(screen, (0,255,0), self.player.hitbox)
 
         # Draw hit counter
         font = pygame.font.Font(font_file, 20)
@@ -189,6 +190,7 @@ class GameState(State):
         screen.blit(counter_text, (10, 10))
         
         #Draws Lives Counter
+        #screen.blit(pygame.image.load("assets/icon_lives.png"), (35,settings.HEIGHT - 40))
         font = pygame.font.Font(font_file, 20)
         heart = font.render("♥x" + str(self.lives), True, (255, 0, 0))
         screen.blit(heart, (35, screen.get_height() - 40))
