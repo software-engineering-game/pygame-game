@@ -16,7 +16,8 @@ if PROJECT_ROOT not in sys.path:
 os.chdir(PROJECT_ROOT)
 
 from states.death_state import DeathState
-from states.game_state import Bullet
+from states.entities import Bullet
+from states.utils import load_spritesheet
 from states.game_state import GameState
 
 pygame.init()
@@ -36,21 +37,21 @@ class FakeApp:
 #----------Bullet Tests----------
 
 def test_bullet_despawn():
-    bullet = Bullet("assets", "basic_bullet.png", 5, (100,100), (0,-1))
+    bullet = Bullet(frames=load_spritesheet("basic_bullet.png", 10, 16), speed=5, start_pos=(100,100), direct=(0,-1))
 
     bullet.rect.y = -100
     bullet.update()
     assert not bullet.alive()
 
 def test_bullet_moves_up():
-    bullet = Bullet("assets", "basic_bullet.png", 5, (100,100), (0,-1))
+    bullet = Bullet(frames=load_spritesheet("basic_bullet.png", 10, 16), speed=5, start_pos=(100,100), direct=(0,-1))
 
     start_y = bullet.rect.y
     bullet.update()
     assert bullet.rect.y < start_y
 
 def test_bullets_alive_onscreen():
-    bullet = Bullet("assets", "basic_bullet.png", 5, (100,100), (0,-1))
+    bullet = Bullet(frames=load_spritesheet("basic_bullet.png", 10, 16), speed=5, start_pos=(100,100), direct=(0,-1))
 
     group = pygame.sprite.Group()
     group.add(bullet)

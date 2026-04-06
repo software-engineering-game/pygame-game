@@ -1,27 +1,7 @@
 import pygame
-import random
-import math
 from states.base_state import State
+from states.entities import Stars
 from states import utils
-
-class Stars:
-    def __init__(self, w, h):
-        self.x = random.randint(0, w - 1)
-        self.y = random.randint(0, h - 1)
-        self.r = random.choice([1, 1, 1, 2])
-        self.base = random.randint(100, 180)
-        self.amp = random.randint(20, 80)
-        self.speed = random.uniform(1.0, 4.0)
-        self.phase = random.uniform(0, math.tau)
-
-    def brightness(self, t):
-        b = self.base + self.amp * math.sin(t * self.speed + self.phase)
-        return max(0, min(255, int(b)))
-    
-    def draw(self, screen, t):
-        b = self.brightness(t)
-        pygame.draw.circle(screen, (b, b, b), (self.x, self.y), self.r)
-
 
 class MainMenuState(State):
 
@@ -42,7 +22,7 @@ class MainMenuState(State):
         self.high_score = utils.load_high_score()
 
         # Menu options
-        self.options = ["Start Game", "How To Play", "Options", "Credits", "Quit"]
+        self.options = ["Start Game", "Leaderboard", "How To Play", "Options", "Credits", "Quit"]
         
         if not hasattr(self, "selected"):
             self.selected = 0
@@ -66,18 +46,22 @@ class MainMenuState(State):
                     app.change_state(GameState())
 
                 elif self.selected == 1:
+                    from states.leaderboard_state import LeaderboardState
+                    app.change_state(LeaderboardState())
+
+                elif self.selected == 2:
                     from states.how_to_play_state import HowToPlayState
                     app.change_state(HowToPlayState(self))
 
-                elif self.selected == 2:
+                elif self.selected == 3:
                     from states.options_state import OptionsState
                     app.change_state(OptionsState(self))
 
-                elif self.selected == 3:
+                elif self.selected == 4:
                     from states.credits_state import CreditsState
                     app.change_state(CreditsState(self))
-
-                elif self.selected == 4:
+                
+                elif self.selected == 5:
                     from states.confirm_quit_state import ConfirmQuitState
                     app.change_state(ConfirmQuitState(self))
 
