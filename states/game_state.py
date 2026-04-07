@@ -196,8 +196,6 @@ class GameState(State):
         
         # Sets the background color, and draws the image
         self.bg_color = (0, 0, 0)
-        #bg_name = "background_asteroids.png"
-        #self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
 
         # Creates the sprite groups
         self.ally_ships = pygame.sprite.Group()
@@ -205,20 +203,16 @@ class GameState(State):
         self.enemy_ships = pygame.sprite.Group()
         self.enemy_bullets = pygame.sprite.Group()
 
+        self.current_level = "first_level"
+        self.level_order = ["first_level", "swarm_level", "second_level"]
+
         # Building Level
         self.bg_image = utils.build_level(
             asset_folder=asset_folder,
-            level_name="first_level",
+            level_name=self.current_level,
             enemy_ships=self.enemy_ships,
             temp_type=Basic_Enemy
         )
-
-        # self.ram_ship = Swarm_Enemy(
-        #     asset_folder=asset_folder,
-        #     sprite_name="enemy_swarm.png",
-        #     start_pos=(settings.WIDTH / 2, settings.HEIGHT / 2)
-        # )
-        # self.enemy_ships.add(self.ram_ship)
 
         # Spawning Player
         player_speed = 5
@@ -240,6 +234,22 @@ class GameState(State):
         # Restore saved position if returning from pause
         if GameState.saved_player_position is not None:
             self.player.rect.center = GameState.saved_player_position
+
+    def load_next_level(self):
+        current_index = self.level_order.index(self.current_level)
+
+        if current_index + 1 < len(self.level_order):
+            self.current_level = self.level_order[current_index + 1]
+            self.enemy_ships.empty()
+
+            self.bg_image = utils.build_level(
+                asset_folder=asset_folder,
+                level_name=self.current_level,
+                enemy_ships=self.enemy_ships,
+                temp_type=Basic_Enemy
+            )
+
+            self.enemy_hit_count = 0
 
     def handle_event(self, app, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -304,9 +314,14 @@ class GameState(State):
             True,  # Remove bullet on collision
             True   # Remove enemy on collision
         )
-        #Score tracking for hits,
+
+        # Score tracking for hits
         if collisions:
             self.enemy_hit_count += len(collisions)
+
+        # Level transition trigger
+        if self.enemy_hit_count >= 10:
+            self.load_next_level()
 
     def draw(self, app, screen):
         screen.fill(self.bg_color)
@@ -323,4 +338,3 @@ class GameState(State):
         font = pygame.font.Font(None, 36)
         counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
-
