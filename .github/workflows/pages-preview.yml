@@ -102,8 +102,12 @@ jobs:
           script: |
             echo "Restarting server..."
             mkdir -p ~/game/build/web
-            pkill -f "http.server 15089" || true
+            pids=$(ps -ef | grep 'python3 -m http.server 15089' | grep -v grep | awk '{print $2}')
+            if [ -n "$pids" ]; then
+              kill $pids || true
+              sleep 1
+            fi
             cd ~/game/build/web || exit 1
-            nohup python3 -m http.server 15089 > server.log 2>&1 &
+            nohup python3 -m http.server 15089 >/dev/null 2>&1 </dev/null &
             sleep 2
-            ps aux | grep http.server | grep -v grep || true
+            ps -ef | grep 'python3 -m http.server 15089' | grep -v grep
