@@ -29,10 +29,9 @@ jobs:
           rm -rf build build/web-cache
           python -u -m pygbag --build main.py
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload artifact for Pages
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: web-build
           path: build/web
 
   deploy-to-server:
