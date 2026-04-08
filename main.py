@@ -38,6 +38,9 @@ async def main():
                 app.state.handle_event(app, event)
 
         app.state.update(app, dt)
+
+        screen.fill((0, 0, 0))
+
         app.state.draw(app, screen)
 
         pygame.display.flip()
