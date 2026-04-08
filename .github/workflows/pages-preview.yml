@@ -27,7 +27,7 @@ jobs:
       - name: Build game
         run: |
           rm -rf build build/web-cache
-          python -m pygbag --build --ume_block 0 .
+          python -u -m pygbag --build main.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
