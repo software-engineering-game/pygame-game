@@ -28,8 +28,7 @@ async def main():
     clock = pygame.time.Clock()
 
     while app.running:
-        dt = 1 / settings.FPS
-        await asyncio.sleep(1 / settings.FPS)
+        dt = clock.tick(settings.FPS) / 1000.0
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -41,10 +40,10 @@ async def main():
 
         screen.fill((0, 0, 0))
 
-        pygame.draw.rect(screen, (255, 0, 0), (100, 100, 200, 200))
+        app.state.draw(app, screen)
 
         pygame.display.flip()
-        await asyncio.sleep(1 / settings.FPS)
+        await asyncio.sleep(0)
 
     pygame.quit()
 

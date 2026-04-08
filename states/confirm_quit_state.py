@@ -14,7 +14,7 @@ class ConfirmQuitState(State):
         self.options = ["Yes", "No"]
 
     def handle_event(self, app, event):
-        sfx_menu = pygame.mixer.Sound("assets/sfx/menu1.wav")
+        sfx_menu = pygame.mixer.Sound("assets/sfx_ogg/menu1.ogg")
         if event.type == pygame.KEYDOWN:
 
             if event.key in (pygame.K_LEFT, pygame.K_RIGHT):

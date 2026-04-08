@@ -174,7 +174,7 @@ class GameState(State):
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+                sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
                 pygame.mixer.Sound.play(sfx_player_boom)
                 return
 
@@ -209,7 +209,7 @@ class GameState(State):
         )
         #Score tracking for hits,
         if collisions:
-            sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
+            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
             pygame.mixer.Sound.play(sfx_boom)
             self.enemy_hit_count += len(collisions)
 
