@@ -54,6 +54,8 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           source: "build/*"
           target: "~/game/build/web"
+          strip_components: 1
+          overwrite: true
 
       - name: Restart server
         uses: appleboy/ssh-action@v1.0.3
