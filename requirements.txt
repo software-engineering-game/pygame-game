@@ -1,2 +1,2 @@
 pygame>=2.5.0
-pygbag>=0.8
+pygbag>=0.9.2
