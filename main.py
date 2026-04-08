@@ -41,7 +41,7 @@ async def main():
 
         screen.fill((0, 0, 0))
 
-        app.state.draw(app, screen)
+        pygame.draw.rect(screen, (255, 0, 0), (100, 100, 200, 200))
 
         pygame.display.flip()
         await asyncio.sleep(1 / settings.FPS)
