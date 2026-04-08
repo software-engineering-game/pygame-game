@@ -47,4 +47,6 @@ async def main():
 
     pygame.quit()
 
-asyncio.run(main())
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
