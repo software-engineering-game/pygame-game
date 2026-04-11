@@ -17,17 +17,15 @@ class GameState(State):
 
     def on_enter(self, app):
         self.app = app
-        pygame.init()
-        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
+        #pygame.init()
+        #pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
         
         # reset upgrade-tuned stats at run start
         settings.BULLET_SPEED = settings.DEFAULT_BULLET_SPEED
         settings.BULLET_COOLDOWN = settings.DEFAULT_BULLET_COOLDOWN
 
-        # Sets the background color, and draws the image
+        # Sets the background color
         self.bg_color = (0, 0, 0)
-        bg_name = "background_asteroids.png"
-        self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
 
         # Creates the sprite groups
         self.ally_ships = pygame.sprite.Group()
@@ -56,9 +54,9 @@ class GameState(State):
         self.enemy_ships.empty()
         self.bg_image = utils.build_level(
             level_name=self.current_level_name,
-            enemy_ships=self.enemy_ships,
-            wave_index=self.current_wave_index
+            enemy_ships=self.enemy_ships
         )
+        self.current_level_num = 1
 
         self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
         self.bullet_hitboxes = []
@@ -90,11 +88,7 @@ class GameState(State):
             self.current_level_name = self.level_sequence[self.level_index]
             self.current_level_data = utils.load_level(self.current_level_name)
 
-        if self.pending_wave_index is not None:
-            self.current_wave_index = self.pending_wave_index
-
         self.pending_level_index = None
-        self.pending_wave_index = None
         self.waiting_for_upgrade = False
 
         # reset projectiles between waves so transitions are fair
@@ -105,6 +99,7 @@ class GameState(State):
             level_name=self.current_level_name,
             enemy_ships=self.enemy_ships
         )
+        self.current_level_num += 1
 
         # short countdown before next wave starts
         self.countdown = 1.5
@@ -124,7 +119,6 @@ class GameState(State):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
             self.waiting_for_upgrade = True
             self.pending_level_index = self.level_index
-            self.pending_wave_index = self.current_wave_index
             app.change_state(UpgradeState(app, self))
         
         # Shooting input
@@ -177,10 +171,10 @@ class GameState(State):
 
         # If lives reaches zero
         if self.lives <= 0:
-                sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
-                pygame.mixer.Sound.play(sfx_player_boom)
-                app.change_state(DeathState("You Died", self.enemy_hit_count))
-                return
+            #sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+            #pygame.mixer.Sound.play(sfx_player_boom)
+            app.change_state(DeathState("You Died", self.enemy_hit_count))
+            return
 
         # Update shooting cooldown
         if not self.player.can_shoot:
@@ -205,27 +199,23 @@ class GameState(State):
         )
         #Score tracking for hits,
         if collisions:
-            sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
-            pygame.mixer.Sound.play(sfx_boom)
+            #sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
+            #pygame.mixer.Sound.play(sfx_boom)
             self.enemy_hit_count += len(collisions)
 
-        # Wave progression: clear wave -> upgrade pick -> spawn next wave/level
+        # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
-            total_waves = len(self.current_level_data["waves"])
-            is_last_wave = self.current_wave_index >= total_waves - 1
             is_last_level = self.level_index >= len(self.level_sequence) - 1
 
-            if is_last_wave and is_last_level:
+            if is_last_level:
                 app.change_state(WinState("You Win!", self.enemy_hit_count))
                 return
 
             self.waiting_for_upgrade = True
-            if not is_last_wave:
-                self.pending_level_index = self.level_index
-                self.pending_wave_index = self.current_wave_index + 1
-            else:
+            if not is_last_level:
                 self.pending_level_index = self.level_index + 1
-                self.pending_wave_index = 0
+            else:
+                self.pending_level_index = self.level_index
 
             app.change_state(UpgradeState(app, self))
             return
@@ -259,7 +249,7 @@ class GameState(State):
 
         # Draw hit counter
         font = pygame.font.Font(font_file, 20)
-        counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
+        counter_text = font.render(f"Score: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
         
         # Draws Lives Counter
@@ -268,10 +258,10 @@ class GameState(State):
         heart = font.render("♥x" + str(self.lives), True, (255, 0, 0))
         screen.blit(heart, (35, screen.get_height() - 40))
         
-        #level_text = font.render(
-        #    f"Level: {self.current_level_num}",
-        #    True,
-        #    (255, 255, 255)
-        #)
-        #screen.blit(level_text, (10, 45))
+        level_text = font.render(
+           f"Level: {self.current_level_num}",
+           True,
+           (255, 255, 255)
+        )
+        screen.blit(level_text, (10, 45))
 

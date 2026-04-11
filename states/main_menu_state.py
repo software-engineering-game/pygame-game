@@ -17,7 +17,7 @@ class MainMenuState(State):
         self.menu_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
         self.score_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 16)
 
-        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
+        # pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
 
         self.high_score = utils.load_high_score()
 
@@ -28,16 +28,16 @@ class MainMenuState(State):
             self.selected = 0
 
     def handle_event(self, app, event):
-        sfx_menu = pygame.mixer.Sound("assets/sfx/menu1.wav")
+        # sfx_menu = pygame.mixer.Sound("assets/sfx/menu1.wav")
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_UP:
                 self.selected = (self.selected - 1) % len(self.options)
-                pygame.mixer.Sound.play(sfx_menu)
+                # pygame.mixer.Sound.play(sfx_menu)
 
             elif event.key == pygame.K_DOWN:
                 self.selected = (self.selected + 1) % len(self.options)
-                pygame.mixer.Sound.play(sfx_menu)
+                # pygame.mixer.Sound.play(sfx_menu)
 
             elif event.key == pygame.K_RETURN:
 
