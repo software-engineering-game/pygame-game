@@ -1,18 +1,18 @@
-# pygame-game
-This repository is for our pygame for software engineering.
+# Pygame Space Dodgers
+
+## Explanation
+This repository is for the pygame developed by Team Echo, for Software Engineering Spring 2026.
 
 # Game Name
-Space Dodgers (Can be changed if not all agreed on)
+Space Dodgers
 
 # Controls
-Movement is currently hardcoded to arrow keys,
-but I did put in place the foundation for keybind options in the future
 
 ## Movement
-- Move up = up arrow key
-- Move down = down arrow key
-- Move left = left arrow key
-- Move right = right arrow key
+- Move up: W or up arrow key
+- Move down: S or down arrow key
+- Move left: A or left arrow key
+- Move right: D or right arrow key
 
 ## Shooting
 - Shoot = Spacebar (hold to shoot continuously)
