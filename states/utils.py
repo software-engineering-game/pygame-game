@@ -1,7 +1,6 @@
 import pygame
 import os
 import json
-from states import entities
 from typing import Type
 from states import settings
 
@@ -74,14 +73,6 @@ def load_level(level_name):
     except (FileNotFoundError, json.JSONDecodeError, KeyError):
         return 0
 
-# Parses string into an enemy class
-def parse_enemy_type(enemy_type):
-    if (enemy_type == "Swarm_Enemy"):
-        return entities.Swarm_Enemy
-    elif (enemy_type == "Bomber_Enemy"):
-        return entities.Bomber_Enemy
-    else:
-        return entities.Basic_Enemy
 def load_all_levels():
     try:
         with open(LEVEL_DATA, "r") as file:
@@ -115,7 +106,7 @@ def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing)
                 enemy.rect.clamp_ip(pygame.Rect(0, 0, settings.WIDTH, settings.HEIGHT))
                 enemy_group.add(enemy)
 
-def build_level(level_name, enemy_ships, wave_index=None):
+def build_level(level_name, enemy_ships):
     # Loads the data for one level as a python dictionary
     level = load_level(level_name=level_name)
     if not level:
@@ -125,10 +116,6 @@ def build_level(level_name, enemy_ships, wave_index=None):
     bg_image = pygame.image.load(os.path.join(asset_folder, level["bg_img"]))
 
     # Spawns enemy waves
-    # Loops for however many waves there are
-    for wav_index in range(len(level["waves"])):
-        # Parses enemy type from level_data.json
-        parse_enemy_type(level["waves"][wav_index]["enemy_type"])
     # Import locally to avoid circular imports (entities -> utils for spritesheets)
     from states import entities
 
@@ -139,13 +126,7 @@ def build_level(level_name, enemy_ships, wave_index=None):
     }
 
     # Spawns enemy waves (or one specific wave when wave_index is set)
-    if wave_index is None:
-        waves_to_spawn = level["waves"]
-    else:
-        waves = level["waves"]
-        if wave_index < 0 or wave_index >= len(waves):
-            raise ValueError(f"Wave index {wave_index} out of range for level '{level_name}'")
-        waves_to_spawn = [waves[wave_index]]
+    waves_to_spawn = level["waves"]
 
     for wave in waves_to_spawn:
         enemy_type_name = wave.get("enemy_type")

@@ -18,7 +18,7 @@ class GameState(State):
     def on_enter(self, app):
         self.app = app
         pygame.init()
-        #pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
+        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
         
         # reset upgrade-tuned stats at run start
         settings.BULLET_SPEED = settings.DEFAULT_BULLET_SPEED
@@ -49,9 +49,7 @@ class GameState(State):
         self.level_index = 0
         self.current_level_name = self.level_sequence[self.level_index]
         self.current_level_data = utils.load_level(self.current_level_name)
-        self.current_wave_index = 0
         self.pending_level_index = None
-        self.pending_wave_index = None
         self.waiting_for_upgrade = False
 
         # spawn first wave of first level
@@ -172,8 +170,7 @@ class GameState(State):
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
                 return
 
-            bullet_index = self.player.check_collisions(self.bullet_hitboxes)
-            self.enemy_bullets.sprites()[bullet_index].kill()
+            pygame.sprite.spritecollide(self.player,self.enemy_bullets,True)
 
             self.lives -= 1
             self.player.rect.center = self.player_start_pos
@@ -181,8 +178,8 @@ class GameState(State):
 
         # If lives reaches zero
         if self.lives <= 0:
-                #sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
-                #pygame.mixer.Sound.play(sfx_player_boom)
+                sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+                pygame.mixer.Sound.play(sfx_player_boom)
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
                 return
 
@@ -209,8 +206,8 @@ class GameState(State):
         )
         #Score tracking for hits,
         if collisions:
-            #sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
-            #pygame.mixer.Sound.play(sfx_boom)
+            sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
+            pygame.mixer.Sound.play(sfx_boom)
             self.enemy_hit_count += len(collisions)
 
         # Wave progression: clear wave -> upgrade pick -> spawn next wave/level
@@ -273,7 +270,7 @@ class GameState(State):
         screen.blit(heart, (35, screen.get_height() - 40))
         
         #level_text = font.render(
-        #    f"Level: {self.current_level_data['level_num']}  Wave: {self.current_wave_index + 1}/{len(self.current_level_data['waves'])}",
+        #    f"Level: {self.current_level_num}",
         #    True,
         #    (255, 255, 255)
         #)

@@ -16,7 +16,7 @@ class UpgradeState(State):
         self.options = ["Bullet Speed +2", "Fire Rate +10%"]
 
     def handle_event(self, app, event):
-        #sfx_menu = pygame.mixer.Sound("assets/sfx/menu1.wav")
+        sfx_menu = pygame.mixer.Sound("assets/sfx/menu1.wav")
         if event.type == pygame.KEYDOWN:
 
             if event.key in (pygame.K_UP, pygame.K_DOWN):

@@ -228,7 +228,9 @@ class Swarm_Enemy(Game_Entity):
         self.original_image = self.image
 
         # Hitbox
-        self.hitbox = self.bounding_box.scale_by(0.6)
+        self.hitbox = self.rect.scale_by(0.6)
+        self.hitbox.centerx = self.rect.centerx
+        self.hitbox.centery = self.rect.centery
 
         # Player Tracking Variables
         self.velocity = (0,0)
@@ -265,7 +267,7 @@ class Bomber_Enemy(Game_Entity):
         super().__init__(frames, speed=settings.bomber_enemy_spd, start_pos=start_pos)
 
         # Hitbox
-        self.hitbox = self.bounding_box.scale_by(0.6)
+        self.hitbox = self.rect.scale_by(0.6)
 
     def shoot(self, bullet_group):
         # for when I write the bomber specific mechanics
