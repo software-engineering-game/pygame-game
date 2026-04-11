@@ -1,6 +1,7 @@
 import pygame
 import os
 import json
+from states import entities
 
 # This exists to key out spritesheet backgrounds
 SHEET_BG = (160, 200, 152)
@@ -49,6 +50,14 @@ def load_spritesheet(sheet_name, frame_width, frame_height):
             frames.append(image)
     return frames
 
+# Returns a list of all the hitboxes from a sprite group
+def extract_hitboxes(sprite_group):
+    hitbox_list = []
+    sprite_list = sprite_group.sprites()
+    for i in range(len(sprite_list)):
+        hitbox_list.append(sprite_list[i].hitbox)
+    return hitbox_list
+
 #
 # Loading Level Data
 #
@@ -62,6 +71,12 @@ def load_level(level_name):
             return data.get(level_name)
     except (FileNotFoundError, json.JSONDecodeError, KeyError):
         return 0
+
+def parse_enemy_type(enemy_type):
+    if (enemy_type == "Basic_Enemy"):
+        return entities.Basic_Enemy
+    
+    pass
 
 def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing):
     for j in range(size[1]):     # Rows
@@ -77,13 +92,16 @@ def build_level(level_name, enemy_ships, temp_type):
     # Loads the data for one level as a python dictionary
     level = load_level(level_name=level_name)
 
-    # Loads the background image named in level_data into a pygame image
+    # Loads the background image named in level_data to a pygame image
     bg_image = pygame.image.load(os.path.join(asset_folder, level["bg_img"]))
 
     # Spawns enemy waves
     # Loops for however many waves there are
     for wav_index in range(len(level["waves"])):
+        
         #needs to parse enemy types from level_data somehow
+        parse_enemy_type(level["waves"][wav_index]["enemy_type"])
+
 
         spawn_enemy_wave(
             enemy_type=temp_type,

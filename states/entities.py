@@ -2,6 +2,7 @@ import pygame
 import random
 import math
 from states import settings
+from states.utils import load_spritesheet
 
 # Class for menu star effect
 class Stars:
@@ -48,19 +49,12 @@ class Game_Entity(pygame.sprite.Sprite):
     def update(self):
         pass
 
-class Bullet(pygame.sprite.Sprite):
+class Bullet(Game_Entity):
     def __init__(self, frames, speed, start_pos, direct):
-        super().__init__()
-        # Sprite Loading
-        self.image = pygame.image.load("assets/" + frames).convert()
-        self.image.set_colorkey((160, 200, 152))
+        super().__init__(frames, speed, start_pos)
 
-        # Bounding Box
-        self.bounding_box = self.image.get_rect(center=start_pos)
         # Hitbox
-        self.rect = self.bounding_box.scale_by(1)
-
-        self.speed = speed
+        self.hitbox = self.rect.scale_by(1)
 
         self.x_direct = direct[0] # Should be set to 0, 1, or -1
         self.y_direct = direct[1] # Should be set to 0, 1, or -1
@@ -94,6 +88,11 @@ class Player(Game_Entity):
 
     def shoot(self, bullet_group):
         pass
+
+    def check_collisions(self, rect_list):
+        if self.hitbox.collidelist(rect_list) > -1:
+            return True
+        return False
 
     def update(self, keys):
         dx = dy = 0
@@ -132,7 +131,11 @@ class Player_Auto(Player):
     def shoot(self, bullet_group):
         # Spawns the bullet and adds it to bullet group
         player_bullet = Bullet(
-            frames="basic_bullet.png",
+            frames=load_spritesheet(
+                sheet_name="basic_bullet.png",
+                frame_width=10,
+                frame_height=16
+            ),
             speed=settings.BULLET_SPEED,
             start_pos=(self.rect.centerx, self.rect.top),
             direct=(0, -1)
@@ -161,7 +164,7 @@ class Basic_Enemy(Game_Entity):
         super().__init__(frames=frames, speed=settings.basic_enemy_spd, start_pos=start_pos)
 
         # Hitbox
-        self.hitbox = self.rect.scale_by(0.4)
+        self.hitbox = self.rect.scale_by(0.6)
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
 
@@ -178,7 +181,11 @@ class Basic_Enemy(Game_Entity):
 
     def shoot(self, bullet_group):
         enemy_bullet = Bullet(
-            frames="basic_bullet.png",
+            frames=load_spritesheet(
+                sheet_name="basic_bullet.png",
+                frame_width=10,
+                frame_height=16
+            ),
             speed=settings.BULLET_SPEED,
             start_pos=(self.rect.centerx, self.rect.bottom),
             direct=(0, 1)
@@ -191,6 +198,8 @@ class Basic_Enemy(Game_Entity):
         # Move based on velocity
         self.rect.x += self.vx
         self.rect.y += self.vy
+        self.hitbox.x += self.vx
+        self.hitbox.y += self.vy
 
         # Occasionally change direction (this is the key to "flow")
         self.change_timer -= 0.016  # approx frame time
@@ -220,7 +229,7 @@ class Swarm_Enemy(Game_Entity):
         self.original_image = self.image
 
         # Hitbox
-        self.rect = self.bounding_box.scale_by(0.4)
+        self.hitbox = self.bounding_box.scale_by(0.6)
 
         # Player Tracking Variables
         self.velocity = (0,0)
@@ -248,6 +257,8 @@ class Swarm_Enemy(Game_Entity):
 
         self.rect.x += dx
         self.rect.y += dy
+        self.hitbox.x += dx
+        self.hitbox.y += dy
 
 # Bomber Enemy Type
 class Bomber_Enemy(Game_Entity):
@@ -255,7 +266,7 @@ class Bomber_Enemy(Game_Entity):
         super().__init__(frames, speed=settings.bomber_enemy_spd, start_pos=start_pos)
 
         # Hitbox
-        self.rect = self.bounding_box.scale_by(0.4)
+        self.hitbox = self.bounding_box.scale_by(0.6)
 
     def shoot(self, bullet_group):
         # for when I write the bomber specific mechanics

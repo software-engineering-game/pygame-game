@@ -41,13 +41,15 @@ class GameState(State):
         self.enemy_ships.empty()
 
         # Loading Level Data
-        # self.bg_image = utils.build_level(
-        #     level_name="first_level",
-        #     enemy_ships=self.enemy_ships,
-        #     temp_type=entities.Basic_Enemy
-        # )
+        self.bg_image = utils.build_level(
+            level_name="first_level",
+            enemy_ships=self.enemy_ships,
+            temp_type=entities.Basic_Enemy
+        )
 
-        # Spawning Player
+        self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
+
+        # Spawning Player with class Player_Auto
         self.player_speed = 5
         self.player_start_pos = (app.width // 2, app.height - 50)
         self.player = entities.Player_Auto(
@@ -113,7 +115,7 @@ class GameState(State):
                     enemy.shoot(self.enemy_bullets)
 
         # If enemy touches player or if enemy bullet hits player
-        if (pygame.sprite.spritecollide(self.player, self.enemy_ships, True) or pygame.sprite.spritecollide(self.player, self.enemy_bullets, True)):
+        if (self.player.check_collisions(self.enemy_hitboxes) or pygame.sprite.spritecollide(self.player, self.enemy_bullets, True)):
             if hasattr(app, "testing") and app.testing:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
                 return
@@ -183,6 +185,7 @@ class GameState(State):
         # delete after testing
         pygame.draw.rect(screen, (255,0,0), self.player.rect)
         pygame.draw.rect(screen, (0,255,0), self.player.hitbox)
+        pygame.draw.rect(screen, (0,0,255), self.enemy_hitboxes[1])
 
         # Draw hit counter
         font = pygame.font.Font(font_file, 20)

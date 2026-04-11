@@ -64,15 +64,18 @@ class CreditsState(State):
 
         lines = [
             "Dev Team:",
-            "Nicholas Vuletich, Ian,",
+            "Nicholas Vuletich, Bishal",
             "Crawford Barnett, Mayah Nix,",
             "Samaa Hediya, Ayush Patel",
             "",
-            "Artists:",
+            "Audio Programming and Design:",
+            "Ian Scheetz",
+            "",
+            "Artist:",
             "Thomas Bond"
         ]
 
-        y_start = (app.height // 2) - 80
+        y_start = (app.height // 2) - 120
         line_spacing = 35
 
         for i, line in enumerate(lines):
