@@ -98,7 +98,7 @@ class Player(Game_Entity):
     def check_collisions(self, rect_list):
         collision_index = self.hitbox.collidelist(rect_list)
         if collision_index > -1:
-            return collision_index
+            return True
         return False
 
     def update(self, keys):

@@ -68,6 +68,7 @@ def test_player_dies_on_collision():
 
     # moves the enemy into the player
     enemy = next(iter(game_state.enemy_ships))
+    enemy.rect.center = game_state.player.rect.center
     enemy.hitbox.center = game_state.player.hitbox.center
 
     game_state.update(app, dt=0.016)
