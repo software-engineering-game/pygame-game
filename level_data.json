@@ -33,7 +33,7 @@
    },
    
    "second_level": {
-      "bg_img":    "background_test.png",
+      "bg_img":    "background_asteroids.png",
       "waves": [
          {
             "enemy_type":   "Basic_Enemy",
