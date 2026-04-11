@@ -122,7 +122,8 @@ class GameState(State):
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
                 return
 
-            #placeholder, self.player.check_collisions(self.bullet_hitboxes)
+            bullet_index = self.player.check_collisions(self.bullet_hitboxes)
+            self.enemy_bullets.sprites()[bullet_index].kill()
 
             self.lives -= 1
             self.player.rect.center = self.player_start_pos
@@ -149,7 +150,7 @@ class GameState(State):
         self.ally_bullets.update()
         self.enemy_bullets.update()
         
-        # see if bullet hit an enemy
+        # Checks if ally_bullet hit an enemy_ship
         collisions = pygame.sprite.groupcollide(
             self.ally_bullets,
             self.enemy_ships,
@@ -166,6 +167,11 @@ class GameState(State):
     def draw(self, app, screen):
         screen.fill(self.bg_color)
         screen.blit(self.bg_image, (0, 0))
+        
+        # delete after testing
+        pygame.draw.rect(screen, (255,0,0), self.player.rect)
+        pygame.draw.rect(screen, (0,255,0), self.player.hitbox)
+        
         self.ally_ships.draw(screen)
         self.enemy_ships.draw(screen)
         self.ally_bullets.draw(screen)
@@ -185,14 +191,6 @@ class GameState(State):
 
             rect = text.get_rect(center=(app.width // 2, app.height // 2))
             screen.blit(text, rect)
-
-
-        # delete after testing
-        pygame.draw.rect(screen, (255,0,0), self.player.rect)
-        pygame.draw.rect(screen, (0,255,0), self.player.hitbox)
-        pygame.draw.rect(screen, (0,0,255), self.enemy_hitboxes[1])
-        if len(self.bullet_hitboxes) > 0:
-            pygame.draw.rect(screen, (0,0,255), self.bullet_hitboxes[0])
 
         # Draw hit counter
         font = pygame.font.Font(font_file, 20)

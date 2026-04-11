@@ -62,7 +62,7 @@ class Bullet(pygame.sprite.Sprite):
         self.speed = speed
         self.x_direct = direct[0] # Should be set to 0, 1, or -1
         self.y_direct = direct[1] # Should be set to 0, 1, or -1
-    
+
     def update(self):
         self.rect.x += self.x_direct * self.speed
         self.rect.y += self.y_direct * self.speed
