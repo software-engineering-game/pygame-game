@@ -4,7 +4,6 @@ from states.entities import Stars
 from states import utils
 
 class MainMenuState(State):
-
     def on_enter(self, app):
         # Time for stars
         self.t = 0
@@ -17,7 +16,8 @@ class MainMenuState(State):
         self.title_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 48)
         self.menu_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
         self.score_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 16)
-        
+
+        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
 
         self.high_score = utils.load_high_score()
 

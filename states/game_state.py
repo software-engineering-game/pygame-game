@@ -103,8 +103,7 @@ class GameState(State):
         self.ally_bullets.empty()
         self.bg_image = utils.build_level(
             level_name=self.current_level_name,
-            enemy_ships=self.enemy_ships,
-            wave_index=self.current_wave_index
+            enemy_ships=self.enemy_ships
         )
 
         # short countdown before next wave starts
