@@ -165,13 +165,11 @@ class GameState(State):
 
 
     def draw(self, app, screen):
+        # Background
         screen.fill(self.bg_color)
         screen.blit(self.bg_image, (0, 0))
         
-        # delete after testing
-        pygame.draw.rect(screen, (255,0,0), self.player.rect)
-        pygame.draw.rect(screen, (0,255,0), self.player.hitbox)
-        
+        # Game Entities
         self.ally_ships.draw(screen)
         self.enemy_ships.draw(screen)
         self.ally_bullets.draw(screen)
@@ -202,5 +200,3 @@ class GameState(State):
         font = pygame.font.Font(font_file, 20)
         heart = font.render("♥x" + str(self.lives), True, (255, 0, 0))
         screen.blit(heart, (35, screen.get_height() - 40))
-            
-
