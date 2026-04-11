@@ -108,7 +108,7 @@ def test_space_applies_cooldown_upgrade_and_returns_to_previous():
 		event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_SPACE)
 		state.handle_event(app, event)
 
-		assert settings.BULLET_COOLDOWN == 0.1
+		assert settings.BULLET_COOLDOWN == 0.3
 		assert app.changed_to is previous
 	finally:
 		settings.BULLET_COOLDOWN = original_cooldown
