@@ -65,7 +65,7 @@ def test_on_enter_initializes_selection_and_options():
 	_app, _previous, state = _make_state()
 
 	assert state.selected == 0
-	assert state.options == ["Faster Bullet Speed", "Faster Cooldown"]
+	assert state.options == ["Bullet Speed +2", "Fire Rate +10%"]
 	assert state.font is not None
 	assert state.small_font is not None
 
