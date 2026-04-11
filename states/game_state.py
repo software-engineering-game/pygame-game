@@ -163,6 +163,7 @@ class GameState(State):
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
                 return
 
+            pygame.sprite.spritecollide(self.player,self.enemy_ships,False)
             pygame.sprite.spritecollide(self.player,self.enemy_bullets,True)
 
             self.lives -= 1
