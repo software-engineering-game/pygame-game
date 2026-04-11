@@ -57,7 +57,7 @@ class Bullet(pygame.sprite.Sprite):
         # Bounding Box
         self.rect = self.image.get_rect(center=start_pos)
         # Hitbox
-        self.hitbox = self.rect.scale_by(1)
+        self.hitbox = self.rect
 
         self.speed = speed
         self.x_direct = direct[0] # Should be set to 0, 1, or -1
@@ -66,6 +66,8 @@ class Bullet(pygame.sprite.Sprite):
     def update(self):
         self.rect.x += self.x_direct * self.speed
         self.rect.y += self.y_direct * self.speed
+        #self.hitbox.x += self.x_direct * self.speed
+        #self.hitbox.y += self.y_direct * self.speed
         # Remove bullet if it goes off screen
         if self.rect.bottom < 0:
             self.kill()
@@ -94,8 +96,9 @@ class Player(Game_Entity):
         pass
 
     def check_collisions(self, rect_list):
-        if self.hitbox.collidelist(rect_list) > -1:
-            return True
+        collision_index = self.hitbox.collidelist(rect_list)
+        if collision_index > -1:
+            return collision_index
         return False
 
     def update(self, keys):

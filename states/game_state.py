@@ -48,6 +48,7 @@ class GameState(State):
         )
 
         self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
+        self.bullet_hitboxes = []
 
         # Spawning Player with class Player_Auto
         self.player_speed = 5
@@ -113,18 +114,22 @@ class GameState(State):
 
                 if enemy.can_shoot:
                     enemy.shoot(self.enemy_bullets)
+                    self.bullet_hitboxes = utils.extract_hitboxes(self.enemy_bullets)
 
-        # If enemy touches player or if enemy bullet hits player
-        if (self.player.check_collisions(self.enemy_hitboxes) or pygame.sprite.spritecollide(self.player, self.enemy_bullets, True)):
+        # If enemy touches player or enemy bullet hits player
+        if (self.player.check_collisions(self.enemy_hitboxes) or self.player.check_collisions(self.bullet_hitboxes)):
             if hasattr(app, "testing") and app.testing:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
                 return
+
+            #placeholder, self.player.check_collisions(self.bullet_hitboxes)
 
             self.lives -= 1
             self.player.rect.center = self.player_start_pos
             self.player.hitbox.center = self.player_start_pos
 
-            if self.lives <= 0:
+        # If lives reaches zero
+        if self.lives <= 0:
                 #sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
                 #pygame.mixer.Sound.play(sfx_player_boom)
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
@@ -186,6 +191,8 @@ class GameState(State):
         pygame.draw.rect(screen, (255,0,0), self.player.rect)
         pygame.draw.rect(screen, (0,255,0), self.player.hitbox)
         pygame.draw.rect(screen, (0,0,255), self.enemy_hitboxes[1])
+        if len(self.bullet_hitboxes) > 0:
+            pygame.draw.rect(screen, (0,0,255), self.bullet_hitboxes[0])
 
         # Draw hit counter
         font = pygame.font.Font(font_file, 20)

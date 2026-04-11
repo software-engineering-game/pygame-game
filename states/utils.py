@@ -72,11 +72,14 @@ def load_level(level_name):
     except (FileNotFoundError, json.JSONDecodeError, KeyError):
         return 0
 
+# Parses string into an enemy class
 def parse_enemy_type(enemy_type):
-    if (enemy_type == "Basic_Enemy"):
+    if (enemy_type == "Swarm_Enemy"):
+        return entities.Swarm_Enemy
+    elif (enemy_type == "Bomber_Enemy"):
+        return entities.Bomber_Enemy
+    else:
         return entities.Basic_Enemy
-    
-    pass
 
 def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing):
     for j in range(size[1]):     # Rows
@@ -98,10 +101,8 @@ def build_level(level_name, enemy_ships, temp_type):
     # Spawns enemy waves
     # Loops for however many waves there are
     for wav_index in range(len(level["waves"])):
-        
-        #needs to parse enemy types from level_data somehow
+        # Parses enemy type from level_data.json
         parse_enemy_type(level["waves"][wav_index]["enemy_type"])
-
 
         spawn_enemy_wave(
             enemy_type=temp_type,
