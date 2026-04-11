@@ -28,7 +28,7 @@ WAVE_CORNER_X = 120
 WAVE_CORNER_Y = 120
 
 # Bullet settings
-DEFAULT_BULLET_SPEED = 8
+DEFAULT_BULLET_SPEED = 13
 DEFAULT_BULLET_COOLDOWN = 0.2  # seconds between shots
 
 # runtime-tuned by upgrades
