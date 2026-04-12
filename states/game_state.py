@@ -17,8 +17,8 @@ class GameState(State):
 
     def on_enter(self, app):
         self.app = app
-        #pygame.init()
-        #pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
+        pygame.init()
+        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
         
         # reset upgrade-tuned stats at run start
         settings.BULLET_SPEED = settings.DEFAULT_BULLET_SPEED
@@ -172,8 +172,8 @@ class GameState(State):
 
         # If lives reaches zero
         if self.lives <= 0:
-            #sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
-            #pygame.mixer.Sound.play(sfx_player_boom)
+            sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+            pygame.mixer.Sound.play(sfx_player_boom)
             app.change_state(DeathState("You Died", self.enemy_hit_count))
             return
 
@@ -200,8 +200,8 @@ class GameState(State):
         )
         #Score tracking for hits,
         if collisions:
-            #sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
-            #pygame.mixer.Sound.play(sfx_boom)
+            sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
+            pygame.mixer.Sound.play(sfx_boom)
             self.enemy_hit_count += len(collisions)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
