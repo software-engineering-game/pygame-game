@@ -11,6 +11,7 @@ from states.win_state import WinState
 # assets folder is at repo root
 repo_root = os.path.dirname(os.path.dirname(__file__))
 asset_folder = os.path.join(repo_root, "assets")
+font_file = "assets/fonts/PressStart2P-vaV7.ttf"
 
 class GameState(State):
     saved_player_position = None
@@ -271,13 +272,9 @@ class GameState(State):
             rect = text.get_rect(center=(app.width // 2, app.height // 2))
             screen.blit(text, rect)
 
-
-        # delete after testing
-        # pygame.draw.rect(screen, (255,255,255), self.player.hitbox)
-
         # Draw hit counter
-        font = pygame.font.Font(None, 36)
-        counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
+        font = pygame.font.Font(font_file, 36)
+        counter_text = font.render(f"SCore: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
         level_text = font.render(
             f"Level: {self.current_level_data['level_num']}  Wave: {self.current_wave_index + 1}/{len(self.current_level_data['waves'])}",
@@ -285,9 +282,9 @@ class GameState(State):
             (255, 255, 255)
         )
         screen.blit(level_text, (10, 45))
-        font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 20)
 
-        for i in range(self.lives):
-            heart = font.render("♥", True, (255, 0, 0))
-            screen.blit(heart, (10 + i * 30, screen.get_height() - 40))
+        # Draw Lives Counter
+        font = pygame.font.Font(font_file, 20)
+        heart = font.render("♥X" + str(self.lives), True, (255, 0, 0))
+        screen.blit(heart, (10 + i * 30, screen.get_height() - 40))
 
