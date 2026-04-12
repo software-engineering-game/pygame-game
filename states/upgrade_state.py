@@ -31,6 +31,8 @@ class UpgradeState(State):
                     self._resume_previous_state(app)
             elif event.key == pygame.K_ESCAPE:
                 self._resume_previous_state(app)
+            else:
+                self._resume_previous_state(app)
 
     def _resume_previous_state(self, app):
         if hasattr(self.previous_state, "on_upgrade_complete"):
