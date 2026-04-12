@@ -24,6 +24,7 @@ from states.upgrade_state import UpgradeState
 
 class FakeApp:
 	def __init__(self):
+		self.testing = True
 		self.changed_to = None
 
 	def change_state(self, state):
@@ -90,7 +91,7 @@ def test_enter_applies_bullet_speed_upgrade_and_returns_to_previous():
 	original_speed = settings.BULLET_SPEED
 	try:
 		state.selected = 0
-		event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RETURN)
+		event = pygame.event.Event(pygame.KEYDOWN, key=settings.keybind_menu_confirm)
 		state.handle_event(app, event)
 
 		assert settings.BULLET_SPEED == 15
@@ -105,10 +106,10 @@ def test_space_applies_cooldown_upgrade_and_returns_to_previous():
 	original_cooldown = settings.BULLET_COOLDOWN
 	try:
 		state.selected = 1
-		event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_SPACE)
+		event = pygame.event.Event(pygame.KEYDOWN, key=settings.keybind_menu_confirm)
 		state.handle_event(app, event)
 
-		assert settings.BULLET_COOLDOWN == 0.3
+		assert settings.BULLET_COOLDOWN == 0.45
 		assert app.changed_to is previous
 	finally:
 		settings.BULLET_COOLDOWN = original_cooldown

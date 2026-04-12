@@ -22,7 +22,7 @@ class UpgradeState(State):
             if event.key in (pygame.K_UP, pygame.K_DOWN):
                 self.selected = (self.selected + 1) % 2
                 # pygame.mixer.Sound.play(sfx_menu)
-            elif event.key == pygame.K_RETURN:
+            elif event.key == settings.keybind_menu_confirm:
                 if self.selected == 0:
                     settings.BULLET_SPEED = min(25, settings.BULLET_SPEED + 2)
                     self._resume_previous_state(app)
@@ -35,7 +35,7 @@ class UpgradeState(State):
     def _resume_previous_state(self, app):
         if hasattr(self.previous_state, "on_upgrade_complete"):
             self.previous_state.on_upgrade_complete()
-        app.state = self.previous_state
+        app.change_state(self.previous_state)
 
     def update(self, app, dt):
         pass

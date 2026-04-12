@@ -20,7 +20,7 @@ class ConfirmQuitState(State):
             if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                 self.selected = (self.selected + 1) % 2
                 #pygame.mixer.Sound.play(sfx_menu)
-            elif event.key == pygame.K_RETURN:
+            elif event.key == settings.keybind_menu_confirm:
                 if self.selected == 0:
                     app.running = False
                 else:
