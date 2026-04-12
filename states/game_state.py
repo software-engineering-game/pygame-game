@@ -12,6 +12,7 @@ from states.win_state import WinState
 repo_root = os.path.dirname(os.path.dirname(__file__))
 asset_folder = os.path.join(repo_root, "assets")
 font_file = "assets/fonts/PressStart2P-vaV7.ttf"
+font_color = (255,255,255) # Currently set to white
 
 class GameState(State):
     saved_player_position = None
@@ -25,10 +26,10 @@ class GameState(State):
         settings.BULLET_SPEED = settings.DEFAULT_BULLET_SPEED
         settings.BULLET_COOLDOWN = settings.DEFAULT_BULLET_COOLDOWN
 
-        # Sets the background color, and draws the image
+        # Sets the background color, and loads lives_icon
         self.bg_color = (0, 0, 0)
-        bg_name = "background_asteroids.png"
-        self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
+        self.lives_icon = pygame.image.load(os.path.join(asset_folder, "icon_lives.png"))
+        self.lives_icon.set_colorkey(utils.SHEET_BG)
 
         # Creates the sprite groups
         self.ally_ships = pygame.sprite.Group()
@@ -246,14 +247,14 @@ class GameState(State):
 
 
         if self.countdown_active:
-            font = pygame.font.Font(None, 200)
+            font = pygame.font.Font(font_file, 200)
 
             count = int(self.countdown) + 1  # makes it show 3,2,1
 
             if count > 0:
-                text = font.render(str(count), True, (255, 255, 255))
+                text = font.render(str(count), True, font_color)
             else:
-                text = font.render("GO", True, (255, 255, 255))
+                text = font.render("GO", True, font_color)
 
             rect = text.get_rect(center=(app.width // 2, app.height // 2))
             screen.blit(text, rect)
@@ -261,30 +262,31 @@ class GameState(State):
         
         # Draws Text for Readiness Countdown
         if self.countdown_active:
-            font = pygame.font.Font(None, 200)
+            font = pygame.font.Font(font_file, 180)
             count = int(self.countdown) + 1  # makes it show 3,2,1
 
             if count > 0:
-                text = font.render(str(count), True, (255, 255, 255))
+                text = font.render(str(count), True, font_color)
             else:
-                text = font.render("GO", True, (255, 255, 255))
+                text = font.render("GO", True, font_color)
 
             rect = text.get_rect(center=(app.width // 2, app.height // 2))
             screen.blit(text, rect)
 
         # Draw hit counter
-        font = pygame.font.Font(font_file, 36)
-        counter_text = font.render(f"SCore: {self.enemy_hit_count}", True, (255, 255, 255))
+        font = pygame.font.Font(font_file, 26)
+        counter_text = font.render(f"Score: {self.enemy_hit_count}", True, font_color)
         screen.blit(counter_text, (10, 10))
         level_text = font.render(
             f"Level: {self.current_level_data['level_num']}  Wave: {self.current_wave_index + 1}/{len(self.current_level_data['waves'])}",
             True,
-            (255, 255, 255)
+            font_color
         )
         screen.blit(level_text, (10, 45))
 
         # Draw Lives Counter
         font = pygame.font.Font(font_file, 20)
-        heart = font.render("♥X" + str(self.lives), True, (255, 0, 0))
-        screen.blit(heart, (10 + i * 30, screen.get_height() - 40))
+        live_count = font.render("X" + str(self.lives), True, font_color)
+        screen.blit(self.lives_icon,(20, screen.get_height() - 45))
+        screen.blit(live_count, (60, screen.get_height() - 35))
 
