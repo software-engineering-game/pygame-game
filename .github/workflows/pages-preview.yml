@@ -1,9 +1,9 @@
-name: Deploy to GitHub Pages (pygbag)
+name: Deploy Game (pygbag)
 
 on:
-  workflow_dispatch:
   push:
     branches: ["main"]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -11,63 +11,53 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages-pygbag
+  group: deploy-pygbag
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install system dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-
-      - name: Install pygbag
-        run: |
           python -m pip install --upgrade pip
-          python -m pip install pygbag
+          python -m pip install "pygbag>=0.9.2"
 
-      - name: Cache pygbag toolchain
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache
-            ~/.local/share/pygbag
-          key: pygbag-${{ runner.os }}-${{ hashFiles('**/*.py', 'requirements.txt') }}
-          restore-keys: |
-            pygbag-${{ runner.os }}-
-
-      - name: Remove prototype folder for web build
-        run: rm -rf prototype
-
-      - name: Build web version (CI + timeout)
+      - name: Build game
         run: |
-          set -euxo pipefail
-          timeout 12m python -u -m pygbag --build --ume_block 0 .
+          rm -rf build build/web-cache
+          python -u -m pygbag --build --ume_block 0 .
 
-      - name: Debug output folders
+      - name: Debug build output
         run: |
+          echo "build:"
           ls -la build || true
+          echo "build/web:"
           ls -la build/web || true
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
 
-  deploy:
+      - name: Upload server artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web
+
+  deploy-pages:
     runs-on: ubuntu-latest
     needs: build
     environment:
@@ -75,3 +65,49 @@ jobs:
     steps:
       - name: Deploy to Pages
         uses: actions/deploy-pages@v4
+
+  deploy-to-server:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download server artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: deploy
+
+      - name: Show downloaded files
+        run: |
+          echo "deploy:"
+          ls -la deploy || true
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "deploy/*"
+          target: "~/game/build/web"
+          overwrite: true
+          strip_components: 1
+
+      - name: Restart server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "Restarting server..."
+            mkdir -p ~/game/build/web
+            pids=$(ps -ef | grep 'python3 -m http.server 15089' | grep -v grep | awk '{print $2}')
+            if [ -n "$pids" ]; then
+              kill $pids || true
+              sleep 1
+            fi
+            cd ~/game/build/web || exit 1
+            nohup python3 -m http.server 15089 >/dev/null 2>&1 </dev/null &
+            sleep 2
+            ps -ef | grep 'python3 -m http.server 15089' | grep -v grep
