@@ -202,17 +202,18 @@ class GameState(State):
             True,   # remove bullet
             False   # do NOT remove enemy
         )
-        #Score tracking for hits,
+
+        # Score tracking for hits
         if collisions:
             for bullet, enemies in collisions.items():
                 for enemy in enemies:
                     if isinstance(enemy, entities.Basic_Enemy):
                         enemy.take_damage(1)
                         self.enemy_hit_count += 1
-                if enemy.health <= 0:
-                    enemy.kill()
-                    sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
-                    pygame.mixer.Sound.play(sfx_boom)
+                        if enemy.health <= 0:
+                            enemy.kill()
+                            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
+                            pygame.mixer.Sound.play(sfx_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
@@ -230,7 +231,7 @@ class GameState(State):
 
             app.change_state(UpgradeState(app, self))
             return
-
+          
 
     def draw(self, app, screen):
         # Background
