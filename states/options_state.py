@@ -1,26 +1,6 @@
 from states.base_state import State
-import random
-import math
+from states.entities import Stars
 import pygame
-
-class Stars:
-    def __init__(self, w, h):
-        self.x = random.randint(0, w - 1)
-        self.y = random.randint(0, h - 1)
-        self.r = random.choice([1, 1, 1, 2])
-        self.base = random.randint(100, 180)
-        self.amp = random.randint(20, 80)
-        self.speed = random.uniform(1.0, 4.0)
-        self.phase = random.uniform(0, math.tau)
-
-    def brightness(self, t):
-        b = self.base + self.amp * math.sin(t * self.speed + self.phase)
-        return max(0, min(255, int(b)))
-    
-    def draw(self, screen, t):
-        b = self.brightness(t)
-        pygame.draw.circle(screen, (b, b, b), (self.x, self.y), self.r)
-
 
 class OptionsState(State):
     def __init__(self, previous_state=None):

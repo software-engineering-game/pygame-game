@@ -1,10 +1,15 @@
 import pygame
 import os
 import json
+from typing import Type
+from states import settings
 
 # This exists to key out spritesheet backgrounds
 SHEET_BG = (160, 200, 152)
 FRAME_SIZE = 64
+
+repo_root = os.path.dirname(os.path.dirname(__file__))
+asset_folder = os.path.join(repo_root, "assets")
 
 #
 # High Score
@@ -34,9 +39,9 @@ def save_high_score(score):
 
 # Takes a spritesheet and splits it into a list of frames
 # Returns the frames as a list of pygame images
-def load_spritesheet(asset_folder, sheet_name, key_color, frame_width, frame_height):
+def load_spritesheet(sheet_name, frame_width, frame_height):
     sprite_sheet = pygame.image.load(os.path.join(asset_folder, sheet_name)).convert()
-    sprite_sheet.set_colorkey(key_color)
+    sprite_sheet.set_colorkey(SHEET_BG)
     frames = []
     for j in range(0, sprite_sheet.get_height(), frame_height):
         for i in range(0, sprite_sheet.get_width(), frame_width):
@@ -45,6 +50,14 @@ def load_spritesheet(asset_folder, sheet_name, key_color, frame_width, frame_hei
             image.blit(sprite_sheet, (0, 0), rect)
             frames.append(image)
     return frames
+
+# Returns a list of all the hitboxes from a sprite group
+def extract_hitboxes(sprite_group):
+    hitbox_list = []
+    sprite_list = sprite_group.sprites()
+    for i in range(len(sprite_list)):
+        hitbox_list.append(sprite_list[i].hitbox)
+    return hitbox_list
 
 #
 # Loading Level Data
@@ -60,7 +73,27 @@ def load_level(level_name):
     except (FileNotFoundError, json.JSONDecodeError, KeyError):
         return 0
 
+def load_all_levels():
+    try:
+        with open(LEVEL_DATA, "r") as file:
+            data = json.load(file)
+            return data if isinstance(data, dict) else {}
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
 
+def get_level_sequence():
+    levels = load_all_levels()
+    # Skip test/debug levels from normal progression flow.
+    playable_levels = {
+        level_name: level_data
+        for level_name, level_data in levels.items()
+        if "test" not in level_name.lower()
+    }
+    sorted_levels = sorted(
+        playable_levels.items(),
+        key=lambda item: item[1].get("level_num", 999999)
+    )
+    return [level_name for level_name, _ in sorted_levels]
 
 def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing):
     for j in range(size[1]):     # Rows
@@ -70,35 +103,48 @@ def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing)
                     corner_pos[1] + j * spacing[1]
                 )
                 enemy = enemy_type(frames=frames, start_pos=(x, y))
+                enemy.rect.clamp_ip(pygame.Rect(0, 0, settings.WIDTH, settings.HEIGHT))
                 enemy_group.add(enemy)
 
-def build_level(asset_folder, level_name, enemy_ships, temp_type):
+def build_level(level_name, enemy_ships):
     # Loads the data for one level as a python dictionary
     level = load_level(level_name=level_name)
+    if not level:
+        raise ValueError(f"Unknown level: {level_name}")
 
-    # Loads the background image named in level_data into a pygame image
+    # Loads the background image named in level_data to a pygame image
     bg_image = pygame.image.load(os.path.join(asset_folder, level["bg_img"]))
-    
-    #needs to parse enemy types from level_data somehow
 
     # Spawns enemy waves
-    # Loops for however many waves there are
-    for wav_index in range(len(level["waves"])):
-        
-        
+    # Import locally to avoid circular imports (entities -> utils for spritesheets)
+    from states import entities
+
+    enemy_type_map: dict[str, Type[pygame.sprite.Sprite]] = {
+        "Basic_Enemy": entities.Basic_Enemy,
+        "Swarm_Enemy": entities.Swarm_Enemy,
+        "Bomber_Enemy": entities.Bomber_Enemy,
+    }
+
+    # Spawns enemy waves (or one specific wave when wave_index is set)
+    waves_to_spawn = level["waves"]
+
+    for wave in waves_to_spawn:
+        enemy_type_name = wave.get("enemy_type")
+        enemy_type = enemy_type_map.get(enemy_type_name)
+        if enemy_type is None:
+            raise ValueError(f"Unknown enemy_type '{enemy_type_name}' in level '{level_name}'")
+
         spawn_enemy_wave(
-            enemy_type=temp_type,
+            enemy_type=enemy_type,
             enemy_group=enemy_ships,
             frames=load_spritesheet(
-                asset_folder=asset_folder,
-                sheet_name=level["waves"][wav_index]["sprite_sheet"],
-                key_color=SHEET_BG,
+                sheet_name=wave["sprite_sheet"],
                 frame_width=66,
                 frame_height=FRAME_SIZE
             ),
-            corner_pos=level["waves"][wav_index]["wave_position"],
-            size=level["waves"][wav_index]["wave_size"],
-            spacing=level["waves"][wav_index]["wave_spacing"]
+            corner_pos=wave["wave_position"],
+            size=wave["wave_size"],
+            spacing=wave["wave_spacing"]
         )
     
     # Returns the background image name to tie it into level data

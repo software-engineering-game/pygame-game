@@ -1,6 +1,5 @@
 {
    "test_level": {
-      "level_num":     666,
       "bg_img":        "background_test.png",
       "waves": [
          {
@@ -21,13 +20,12 @@
    },
    
    "first_level": {
-      "level_num": 1,
       "bg_img":    "background_asteroids.png",
       "waves": [
          {
             "enemy_type":   "Basic_Enemy",
             "sprite_sheet": "enemy_basic.png",
-            "wave_position": [120, 120],
+            "wave_position": [160, 100],
             "wave_size": [6,2],
             "wave_spacing": [80, 80]
          }
@@ -35,14 +33,13 @@
    },
    
    "second_level": {
-      "level_num": 3,
-      "bg_img":    "background_test.png",
+      "bg_img":    "background_asteroids.png",
       "waves": [
          {
             "enemy_type":   "Basic_Enemy",
             "sprite_sheet": "enemy_basic.png",
             "wave_position": [100, 120],
-            "wave_size": [5, 2],
+            "wave_size": [3, 2],
             "wave_spacing": [80, 80]
          },
          {
@@ -56,7 +53,6 @@
    },
 
    "swarm_level": {
-      "level_num": 2,
       "bg_img":    "background_asteroids.png",
       "waves": [
          {

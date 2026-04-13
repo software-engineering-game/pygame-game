@@ -16,7 +16,7 @@ if PROJECT_ROOT not in sys.path:
 os.chdir(PROJECT_ROOT)
 
 from states.death_state import DeathState
-from states.game_state import Bullet
+from states.entities import Bullet
 from states.game_state import GameState
 
 pygame.init()
@@ -28,6 +28,7 @@ class FakeApp:
         self.width = 800
         self.height = 600
         self.changed_to = None
+        self.testing = True
 
     def change_state(self, state):
         self.changed_to = state
@@ -35,21 +36,21 @@ class FakeApp:
 #----------Bullet Tests----------
 
 def test_bullet_despawn():
-    bullet = Bullet("assets", "basic_bullet.png", 5, (100,100), (0,-1))
+    bullet = Bullet(frames="basic_bullet.png", speed=5, start_pos=(100,100), direct=(0,-1))
 
     bullet.rect.y = -100
     bullet.update()
     assert not bullet.alive()
 
 def test_bullet_moves_up():
-    bullet = Bullet("assets", "basic_bullet.png", 5, (100,100), (0,-1))
+    bullet = Bullet(frames="basic_bullet.png", speed=5, start_pos=(100,100), direct=(0,-1))
 
     start_y = bullet.rect.y
     bullet.update()
     assert bullet.rect.y < start_y
 
 def test_bullets_alive_onscreen():
-    bullet = Bullet("assets", "basic_bullet.png", 5, (100,100), (0,-1))
+    bullet = Bullet(frames="basic_bullet.png", speed=5, start_pos=(100,100), direct=(0,-1))
 
     group = pygame.sprite.Group()
     group.add(bullet)
@@ -68,6 +69,7 @@ def test_player_dies_on_collision():
     # moves the enemy into the player
     enemy = next(iter(game_state.enemy_ships))
     enemy.rect.center = game_state.player.rect.center
+    enemy.hitbox.center = game_state.player.hitbox.center
 
     game_state.update(app, dt=0.016)
 
@@ -94,5 +96,26 @@ def player_stays_in_bounds():
 
     assert game_state.player.rect.left >= 0
     assert game_state.player.rect.right >= 0
+
+#----------Enemy hit counter increase Test----------
+
+def test_enemy_hit_counter_increments():
+    app = FakeApp()
+
+    game_state = GameState()
+    game_state.on_enter(app)
+
+    enemy = next(iter(game_state.enemy_ships))
+
+    bullet = pygame.sprite.Sprite()
+    bullet.rect = enemy.rect.copy()
+
+    game_state.ally_bullets.add(bullet)
+
+    assert game_state.enemy_hit_count == 0
+
+    game_state.update(app, dt=0.016)
+
+    assert game_state.enemy_hit_count == 1
 
 
