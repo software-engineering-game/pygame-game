@@ -4,7 +4,7 @@ from states import settings
 from states import utils
 from states import entities
 from states.base_state import State
-from states.death_state import DeathState
+from states.death_state import DeathState  #ADDED: death screen
 from states.upgrade_state import UpgradeState
 from states.win_state import WinState
 
@@ -24,10 +24,8 @@ class GameState(State):
         settings.BULLET_SPEED = settings.DEFAULT_BULLET_SPEED
         settings.BULLET_COOLDOWN = settings.DEFAULT_BULLET_COOLDOWN
 
-        # Sets the background color, and draws the image
+        # Sets the background color
         self.bg_color = (0, 0, 0)
-        bg_name = "background_asteroids.png"
-        self.bg_image = pygame.image.load(os.path.join(asset_folder, bg_name))
 
         # Creates the sprite groups
         self.ally_ships = pygame.sprite.Group()
@@ -49,21 +47,23 @@ class GameState(State):
         self.level_index = 0
         self.current_level_name = self.level_sequence[self.level_index]
         self.current_level_data = utils.load_level(self.current_level_name)
-        self.current_wave_index = 0
         self.pending_level_index = None
-        self.pending_wave_index = None
         self.waiting_for_upgrade = False
 
         # spawn first wave of first level
         self.enemy_ships.empty()
         self.bg_image = utils.build_level(
             level_name=self.current_level_name,
-            enemy_ships=self.enemy_ships,
-            wave_index=self.current_wave_index
+            enemy_ships=self.enemy_ships
         )
+        self.current_level_num = 1
 
-        # Spawning Player
-        player_speed = 5
+        self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
+        self.bullet_hitboxes = []
+
+        # Spawning Player with class Player_Auto
+        self.player_speed = 5
+        self.player_start_pos = (app.width // 2, app.height - 50)
         self.player = entities.Player_Auto(
             # Loads the sprite sheet into the player's frames
             frames=utils.load_spritesheet(
@@ -71,11 +71,10 @@ class GameState(State):
                 frame_width=utils.FRAME_SIZE,
                 frame_height=utils.FRAME_SIZE
             ),
-            speed=player_speed,
-            start_pos=(app.width // 2, app.height - 50),
+            speed=self.player_speed,
+            start_pos=self.player_start_pos,
         )
         self.ally_ships.add(self.player)
-        self.player_start_pos = (app.width // 2, app.height - 50)
         self.enemy_hit_count = 0
         self.lives = 3
 
@@ -89,11 +88,7 @@ class GameState(State):
             self.current_level_name = self.level_sequence[self.level_index]
             self.current_level_data = utils.load_level(self.current_level_name)
 
-        if self.pending_wave_index is not None:
-            self.current_wave_index = self.pending_wave_index
-
         self.pending_level_index = None
-        self.pending_wave_index = None
         self.waiting_for_upgrade = False
 
         # reset projectiles between waves so transitions are fair
@@ -102,9 +97,9 @@ class GameState(State):
         self.ally_bullets.empty()
         self.bg_image = utils.build_level(
             level_name=self.current_level_name,
-            enemy_ships=self.enemy_ships,
-            wave_index=self.current_wave_index
+            enemy_ships=self.enemy_ships
         )
+        self.current_level_num += 1
 
         # short countdown before next wave starts
         self.countdown = 1.5
@@ -124,7 +119,6 @@ class GameState(State):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
             self.waiting_for_upgrade = True
             self.pending_level_index = self.level_index
-            self.pending_wave_index = self.current_wave_index
             app.change_state(UpgradeState(app, self))
         
         # Shooting input
@@ -133,7 +127,7 @@ class GameState(State):
                 self.player.shoot(self.ally_bullets)
     
     def update(self, app, dt):
-        # Keeps GameState from updating
+        # Keeps GameState from updating during countdown
         if self.countdown_active:
             self.countdown -= dt
 
@@ -147,7 +141,7 @@ class GameState(State):
         play_area = pygame.Rect(0, 0, app.width, app.height)
         self.player.rect.clamp_ip(play_area)
 
-        player_pos = (self.player.rect.x, self.player.rect.y)
+        player_pos = (self.player.rect.centerx, self.player.rect.centery)
         self.enemy_ships.update(player_pos=player_pos)
         for enemy in self.enemy_ships:
             enemy.rect.clamp_ip(play_area)
@@ -161,16 +155,20 @@ class GameState(State):
 
                 if enemy.can_shoot:
                     enemy.shoot(self.enemy_bullets)
+                    self.bullet_hitboxes = utils.extract_hitboxes(self.enemy_bullets)
 
-        # If enemy touches player
-        if pygame.sprite.spritecollide(self.player, self.enemy_ships, False):
+        # If enemy touches player or enemy bullet hits player
+        if (self.player.check_collisions(self.enemy_hitboxes) or self.player.check_collisions(self.bullet_hitboxes)):
             if hasattr(app, "testing") and app.testing:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
                 return
 
+            pygame.sprite.spritecollide(self.player,self.enemy_ships,False)
+            pygame.sprite.spritecollide(self.player,self.enemy_bullets,True)
 
             self.lives -= 1
             self.player.rect.center = self.player_start_pos
+            self.player.hitbox.center = self.player_start_pos
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
@@ -183,9 +181,6 @@ class GameState(State):
             self.lives -= 1
             self.player.rect.center = self.player_start_pos
 
-            if self.lives <= 0:
-                app.change_state(DeathState("You Died", self.enemy_hit_count))
-                return
         # Update shooting cooldown
         if not self.player.can_shoot:
             self.player.shoot_cooldown -= dt
@@ -200,7 +195,7 @@ class GameState(State):
         self.ally_bullets.update()
         self.enemy_bullets.update()
         
-        # see if bullet hit an enemy
+        # Checks if ally_bullet hit an enemy_ship
         collisions = pygame.sprite.groupcollide(
             self.ally_bullets,
             self.enemy_ships,
@@ -219,31 +214,30 @@ class GameState(State):
                     sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
                     pygame.mixer.Sound.play(sfx_boom)
 
-        # Wave progression: clear wave -> upgrade pick -> spawn next wave/level
+        # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
-            total_waves = len(self.current_level_data["waves"])
-            is_last_wave = self.current_wave_index >= total_waves - 1
             is_last_level = self.level_index >= len(self.level_sequence) - 1
 
-            if is_last_wave and is_last_level:
+            if is_last_level:
                 app.change_state(WinState("You Win!", self.enemy_hit_count))
                 return
 
             self.waiting_for_upgrade = True
-            if not is_last_wave:
-                self.pending_level_index = self.level_index
-                self.pending_wave_index = self.current_wave_index + 1
-            else:
+            if not is_last_level:
                 self.pending_level_index = self.level_index + 1
-                self.pending_wave_index = 0
+            else:
+                self.pending_level_index = self.level_index
 
             app.change_state(UpgradeState(app, self))
             return
 
 
     def draw(self, app, screen):
+        # Background
         screen.fill(self.bg_color)
         screen.blit(self.bg_image, (0, 0))
+        
+        # Game Entities
         self.ally_ships.draw(screen)
         self.enemy_ships.draw(screen)
         for enemy in self.enemy_ships:
@@ -251,25 +245,12 @@ class GameState(State):
                 enemy.draw_health_bar(screen)
         self.ally_bullets.draw(screen)
         self.enemy_bullets.draw(screen)
-
-
-        if self.countdown_active:
-            font = pygame.font.Font(None, 200)
-
-            count = int(self.countdown) + 1  # makes it show 3,2,1
-
-            if count > 0:
-                text = font.render(str(count), True, (255, 255, 255))
-            else:
-                text = font.render("GO", True, (255, 255, 255))
-
-            rect = text.get_rect(center=(app.width // 2, app.height // 2))
-            screen.blit(text, rect)
-
         
+        font_file = os.path.join(asset_folder, "fonts/PressStart2P-vaV7.ttf")
+
         # Draws Text for Readiness Countdown
         if self.countdown_active:
-            font = pygame.font.Font(None, 200)
+            font = pygame.font.Font(font_file, 140)
             count = int(self.countdown) + 1  # makes it show 3,2,1
 
             if count > 0:
@@ -280,23 +261,21 @@ class GameState(State):
             rect = text.get_rect(center=(app.width // 2, app.height // 2))
             screen.blit(text, rect)
 
-
-        # delete after testing
-        # pygame.draw.rect(screen, (255,255,255), self.player.hitbox)
-
         # Draw hit counter
-        font = pygame.font.Font(None, 36)
-        counter_text = font.render(f"Hits: {self.enemy_hit_count}", True, (255, 255, 255))
+        font = pygame.font.Font(font_file, 20)
+        counter_text = font.render(f"Score: {self.enemy_hit_count}", True, (255, 255, 255))
         screen.blit(counter_text, (10, 10))
+        
+        # Draws Lives Counter
+        #screen.blit(pygame.image.load("assets/icon_lives.png"), (35,settings.HEIGHT - 40))
+        font = pygame.font.Font(font_file, 20)
+        heart = font.render("♥x" + str(self.lives), True, (255, 0, 0))
+        screen.blit(heart, (35, screen.get_height() - 40))
+        
         level_text = font.render(
-            f"Level: {self.current_level_data['level_num']}  Wave: {self.current_wave_index + 1}/{len(self.current_level_data['waves'])}",
-            True,
-            (255, 255, 255)
+           f"Level: {self.current_level_num}",
+           True,
+           (255, 255, 255)
         )
         screen.blit(level_text, (10, 45))
-        font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 20)
-
-        for i in range(self.lives):
-            heart = font.render("♥", True, (255, 0, 0))
-            screen.blit(heart, (10 + i * 30, screen.get_height() - 40))
 

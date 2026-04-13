@@ -1,10 +1,10 @@
 import pygame
+from states import settings
 from states.base_state import State
 from states.entities import Stars
 from states import utils
 
 class MainMenuState(State):
-
     def on_enter(self, app):
         # Time for stars
         self.t = 0
@@ -41,7 +41,7 @@ class MainMenuState(State):
                 self.selected = (self.selected + 1) % len(self.options)
                 pygame.mixer.Sound.play(sfx_menu)
 
-            elif event.key == pygame.K_RETURN:
+            elif event.key == settings.keybind_menu_confirm:
 
                 if self.selected == 0:
                     from states.game_state import GameState
