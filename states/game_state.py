@@ -1,5 +1,6 @@
 import pygame
 import os
+import random
 from states import settings
 from states import utils
 from states import entities
@@ -77,6 +78,8 @@ class GameState(State):
         self.ally_ships.add(self.player)
         self.enemy_hit_count = 0
         self.lives = 3
+        self.player_invincible = False
+        self.player_invincible_timer = 0.0
 
         # Restore saved position if returning from pause
         if GameState.saved_player_position is not None:
@@ -138,13 +141,72 @@ class GameState(State):
         keys = pygame.key.get_pressed()
         self.player.update(keys)
 
+        if self.player_invincible:
+            self.player_invincible_timer -= dt
+            if self.player_invincible_timer <= 0:
+                self.player_invincible = False
+                self.player_invincible_timer = 0.0
+
         play_area = pygame.Rect(0, 0, app.width, app.height)
         self.player.rect.clamp_ip(play_area)
 
         player_pos = (self.player.rect.centerx, self.player.rect.centery)
-        self.enemy_ships.update(player_pos=player_pos)
+        #self.enemy_ships.update(player_pos=player_pos)
+        #for enemy in self.enemy_ships:
+            #enemy.rect.clamp_ip(play_area)
+
         for enemy in self.enemy_ships:
-            enemy.rect.clamp_ip(play_area)
+            if not hasattr(enemy, "move_timer"):
+                enemy.pos = pygame.Vector2(enemy.rect.x, enemy.rect.y)
+                enemy.move_timer = random.uniform(1.0, 3.0)
+                enemy.pause_timer = 0
+                enemy.velocity = pygame.Vector2(
+                    random.uniform(-30, 30),
+                    random.uniform(40, 80)
+                )
+                enemy.shoot_cooldown = random.uniform(2.0, 4.0)
+                enemy.can_shoot = False
+
+            if enemy.pause_timer > 0:
+                enemy.pause_timer -= dt
+            else:
+                enemy.pos += enemy.velocity * dt
+                enemy.rect.x = int(enemy.pos.x)
+                enemy.rect.y = int(enemy.pos.y)
+
+                enemy.move_timer -= dt
+
+                if enemy.move_timer <= 0:
+                    if random.random() < 0.4:
+                        enemy.pause_timer = random.uniform(0.5, 1.5)
+                    else:
+                        enemy.velocity = pygame.Vector2(
+                            random.uniform(-30, 30),
+                            random.uniform(40, 80)
+                        )
+
+                    enemy.move_timer = random.uniform(1.0, 3.0)
+
+        for enemy in self.enemy_ships:
+            if enemy.rect.top > app.height:
+                enemy.pos.y = -enemy.rect.height
+                enemy.pos.x = random.randint(0, app.width - enemy.rect.width)
+                enemy.rect.x = int(enemy.pos.x)
+                enemy.rect.y = int(enemy.pos.y)
+
+            if enemy.rect.left < 0:
+                enemy.pos.x = 0
+                enemy.velocity.x *= -1
+                enemy.rect.x = int(enemy.pos.x)
+
+            elif enemy.rect.right > app.width:
+                enemy.pos.x = app.width - enemy.rect.width
+                enemy.velocity.x *= -1
+                enemy.rect.x = int(enemy.pos.x)
+
+        # Refresh bullet hitboxes after bullets move
+        self.bullet_hitboxes = utils.extract_hitboxes(self.enemy_bullets)
+
 
         # Enemy auto-fire logic for basic enemies
         for enemy in self.enemy_ships:
@@ -155,62 +217,64 @@ class GameState(State):
 
                 if enemy.can_shoot:
                     enemy.shoot(self.enemy_bullets)
-                    self.bullet_hitboxes = utils.extract_hitboxes(self.enemy_bullets)
+                    enemy.shoot_cooldown = random.uniform(3.0, 5.0)
+                    enemy.can_shoot = False
 
-        # If enemy touches player or enemy bullet hits player
-        if (self.player.check_collisions(self.enemy_hitboxes) or self.player.check_collisions(self.bullet_hitboxes)):
+        # Update player shooting cooldown
+        if not self.player.can_shoot:
+            self.player.shoot_cooldown -= dt
+            if self.player.shoot_cooldown <= 0:
+                self.player.can_shoot = True
+
+        # Allow continuous shooting by holding spacebar
+        if keys[settings.keybind_player_shoot] and self.player.can_shoot:
+            self.player.shoot(self.ally_bullets)
+
+        # Update bullets
+        self.ally_bullets.update()
+        self.enemy_bullets.update()
+
+
+        # Checks if ally_bullet hit an enemy_ship
+        collisions = pygame.sprite.groupcollide(
+            self.ally_bullets,
+            self.enemy_ships,
+            True,
+            False
+        )
+
+        self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
+
+        if not self.player_invincible and (
+            self.player.check_collisions(self.enemy_hitboxes) or
+            self.player.check_collisions(self.bullet_hitboxes)
+        ):
             if hasattr(app, "testing") and app.testing:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
                 return
 
-            pygame.sprite.spritecollide(self.player,self.enemy_ships,False)
-            pygame.sprite.spritecollide(self.player,self.enemy_bullets,True)
+            pygame.sprite.spritecollide(self.player, self.enemy_ships, False)
+            pygame.sprite.spritecollide(self.player, self.enemy_bullets, True)
 
             self.lives -= 1
-            self.player.rect.center = self.player_start_pos
-            self.player.hitbox.center = self.player_start_pos
+            self.player_invincible = True
+            self.player_invincible_timer = 1.0
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
                 sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
                 pygame.mixer.Sound.play(sfx_player_boom)
                 return
-
-        # If enemy bullet hits player
-        if pygame.sprite.spritecollide(self.player, self.enemy_bullets, True):
-            self.lives -= 1
-            self.player.rect.center = self.player_start_pos
-
-        # Update shooting cooldown
-        if not self.player.can_shoot:
-            self.player.shoot_cooldown -= dt
-            if self.player.shoot_cooldown <= 0:
-                self.player.can_shoot = True
-        
-        # Allow continuous shooting by holding spacebar
-        if keys[settings.keybind_player_shoot] and self.player.can_shoot:
-            self.player.shoot(self.ally_bullets)
-        
-        # Update bullets
-        self.ally_bullets.update()
-        self.enemy_bullets.update()
-        
-        # Checks if ally_bullet hit an enemy_ship
-        collisions = pygame.sprite.groupcollide(
-            self.ally_bullets,
-            self.enemy_ships,
-            True,   # remove bullet
-            False   # do NOT remove enemy
-        )
+            
 
         # Score tracking for hits
         if collisions:
             for bullet, enemies in collisions.items():
                 for enemy in enemies:
-                    if isinstance(enemy, entities.Basic_Enemy):
+                    if hasattr(enemy, "take_damage"):
                         enemy.take_damage(1)
                         self.enemy_hit_count += 1
-                        if enemy.health <= 0:
+                        if hasattr(enemy, "health") and enemy.health <= 0:
                             enemy.kill()
                             sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
                             pygame.mixer.Sound.play(sfx_boom)
