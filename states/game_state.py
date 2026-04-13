@@ -213,12 +213,11 @@ class GameState(State):
                 for enemy in enemies:
                     if isinstance(enemy, entities.Basic_Enemy):
                         enemy.take_damage(1)
-
-                        if enemy.health <= 0:
-                            enemy.kill()
-                            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
-                            pygame.mixer.Sound.play(sfx_boom)
-                            self.enemy_hit_count += 1
+                        self.enemy_hit_count += 1
+                if enemy.health <= 0:
+                    enemy.kill()
+                    sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
+                    pygame.mixer.Sound.play(sfx_boom)
 
         # Wave progression: clear wave -> upgrade pick -> spawn next wave/level
         if not self.enemy_ships and not self.waiting_for_upgrade:
