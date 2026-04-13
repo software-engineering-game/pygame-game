@@ -174,7 +174,7 @@ class GameState(State):
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                sfx_player_boom = pygame.mixer.Sound("assets/sfx/p_boom.wav")
+                sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
                 pygame.mixer.Sound.play(sfx_player_boom)
                 return
 
@@ -202,16 +202,22 @@ class GameState(State):
         
         # see if bullet hit an enemy
         collisions = pygame.sprite.groupcollide(
-            self.ally_bullets, 
-            self.enemy_ships, 
-            True,  # Remove bullet on collision
-            True   # Remove enemy on collision
+            self.ally_bullets,
+            self.enemy_ships,
+            True,   # remove bullet
+            False   # do NOT remove enemy
         )
         #Score tracking for hits,
         if collisions:
-            sfx_boom = pygame.mixer.Sound("assets/sfx/en_boom.wav")
-            pygame.mixer.Sound.play(sfx_boom)
-            self.enemy_hit_count += len(collisions)
+            for bullet, enemies in collisions.items():
+                for enemy in enemies:
+                    if isinstance(enemy, entities.Basic_Enemy):
+                        enemy.take_damage(1)
+                        self.enemy_hit_count += 1
+                if enemy.health <= 0:
+                    enemy.kill()
+                    sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
+                    pygame.mixer.Sound.play(sfx_boom)
 
         # Wave progression: clear wave -> upgrade pick -> spawn next wave/level
         if not self.enemy_ships and not self.waiting_for_upgrade:
@@ -240,6 +246,9 @@ class GameState(State):
         screen.blit(self.bg_image, (0, 0))
         self.ally_ships.draw(screen)
         self.enemy_ships.draw(screen)
+        for enemy in self.enemy_ships:
+            if hasattr(enemy, "draw_health_bar"):
+                enemy.draw_health_bar(screen)
         self.ally_bullets.draw(screen)
         self.enemy_bullets.draw(screen)
 
