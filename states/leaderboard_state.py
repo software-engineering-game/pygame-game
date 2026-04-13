@@ -1,6 +1,7 @@
 from states.base_state import State
 from states.main_menu_state import MainMenuState
 from states.entities import Stars
+from states import settings
 import pygame
 import json
 import os
@@ -34,7 +35,7 @@ class LeaderboardState(State):
 
     def handle_event(self, app, event):
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
+            if event.key == settings.keybind_menu_confirm or event.key == pygame.K_ESCAPE:
                 app.change_state(MainMenuState())
 
     def update(self, app, dt):
