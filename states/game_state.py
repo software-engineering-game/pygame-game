@@ -20,7 +20,7 @@ class GameState(State):
     def on_enter(self, app):
         self.app = app
         pygame.init()
-        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
+        #pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
         
         # reset upgrade-tuned stats at run start
         settings.BULLET_SPEED = settings.DEFAULT_BULLET_SPEED
@@ -270,8 +270,8 @@ class GameState(State):
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
-                pygame.mixer.Sound.play(sfx_player_boom)
+                #sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
+                #pygame.mixer.Sound.play(sfx_player_boom)
                 return
             
 
@@ -284,8 +284,8 @@ class GameState(State):
                         self.enemy_hit_count += 1
                         if hasattr(enemy, "health") and enemy.health <= 0:
                             enemy.kill()
-                            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
-                            pygame.mixer.Sound.play(sfx_boom)
+                            #sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
+                            #pygame.mixer.Sound.play(sfx_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
@@ -337,7 +337,7 @@ class GameState(State):
         counter_text = self.score_font.render(f"Score: {self.enemy_hit_count}", True, font_color)
         screen.blit(counter_text, (10, 10))
         level_text = self.score_font.render(
-            f"Level: {self.current_level_data['level_num']}  Wave: {self.current_wave_index + 1}/{len(self.current_level_data['waves'])}",
+            f"Level: {self.current_level_num}",
             True,
             font_color
         )
