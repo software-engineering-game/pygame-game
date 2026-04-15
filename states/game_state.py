@@ -28,6 +28,9 @@ class GameState(State):
     pending_level_index = None
     waiting_for_upgrade = False
 
+    enemy_hit_count = 0
+    lives = 3
+
     def on_enter(self, app):
         self.app = app
         pygame.init()
@@ -85,8 +88,6 @@ class GameState(State):
             start_pos=self.player_start_pos,
         )
         self.ally_ships.add(self.player)
-        self.enemy_hit_count = 0
-        self.lives = 3
         self.player_invincible = False
         self.player_invincible_timer = 0.0
 
