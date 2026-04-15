@@ -272,7 +272,7 @@ class GameState(State):
         screen.blit(level_text, (10, 45))
 
         # Draw Lives Counter
-        live_count = self.lives_font.render("X" + str(self.lives), True, font_color)
+        live_count = self.lives_font.render("x" + str(self.lives), True, font_color)
         screen.blit(self.lives_icon,(20, screen.get_height() - 45))
         screen.blit(live_count, (60, screen.get_height() - 35))
 
