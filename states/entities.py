@@ -147,12 +147,15 @@ class Player_Auto(Player):
         self.can_shoot = False
         self.shoot_cooldown = settings.bullet_cooldown
 
-#
+# Class for Shotgun firing mode
 class Player_Shotgun(Player):
     def __init__(self, frames, speed, start_pos):
         super().__init__(frames, speed, start_pos)
 
-#
+    def shoot(self, bullet_group):
+        pass
+
+# Class for Sniper firing mode
 class Player_Sniper(Player):
     def __init__(self, frames, speed, start_pos):
         super().__init__(frames, speed, start_pos)
