@@ -127,8 +127,8 @@ class Player(Game_Entity):
 
         self.rect.x += dx
         self.rect.y += dy
-        self.hitbox.x += dx
-        self.hitbox.y += dy
+        self.hitbox.centerx = self.rect.centerx
+        self.hitbox.centery = self.rect.centery
 
 # Class for the standard firing mode
 class Player_Auto(Player):

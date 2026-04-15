@@ -16,6 +16,17 @@ font_color = (255,255,255) # Currently set to white
 
 class GameState(State):
     saved_player_position = None
+    current_level_num = 0
+
+    # progression state
+    level_sequence = utils.get_level_sequence()
+    if not level_sequence:
+        raise ValueError("No levels found in level_data.json")
+    level_index = 0
+    current_level_name = level_sequence[level_index]
+    current_level_data = utils.load_level(current_level_name)
+    pending_level_index = None
+    waiting_for_upgrade = False
 
     def on_enter(self, app):
         self.app = app
@@ -49,23 +60,13 @@ class GameState(State):
         if hasattr(app, "testing") and app.testing:
             self.countdown_active = False
 
-        # progression state
-        self.level_sequence = utils.get_level_sequence()
-        if not self.level_sequence:
-            raise ValueError("No levels found in level_data.json")
-        self.level_index = 0
-        self.current_level_name = self.level_sequence[self.level_index]
-        self.current_level_data = utils.load_level(self.current_level_name)
-        self.pending_level_index = None
-        self.waiting_for_upgrade = False
-
-        # spawn first wave of first level
+        # Spawns Level
         self.enemy_ships.empty()
         self.bg_image = utils.build_level(
             level_name=self.current_level_name,
             enemy_ships=self.enemy_ships
         )
-        self.current_level_num = 1
+        self.current_level_num += 1
 
         self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
         self.bullet_hitboxes = []
@@ -159,58 +160,56 @@ class GameState(State):
         self.player.rect.clamp_ip(play_area)
 
         player_pos = (self.player.rect.centerx, self.player.rect.centery)
-        #self.enemy_ships.update(player_pos=player_pos)
-        #for enemy in self.enemy_ships:
-            #enemy.rect.clamp_ip(play_area)
+        self.enemy_ships.update(player_pos=player_pos)
 
-        for enemy in self.enemy_ships:
-            if not hasattr(enemy, "move_timer"):
-                enemy.pos = pygame.Vector2(enemy.rect.x, enemy.rect.y)
-                enemy.move_timer = random.uniform(1.0, 3.0)
-                enemy.pause_timer = 0
-                enemy.velocity = pygame.Vector2(
-                    random.uniform(-30, 30),
-                    random.uniform(40, 80)
-                )
-                enemy.shoot_cooldown = random.uniform(2.0, 4.0)
-                enemy.can_shoot = False
+        # for enemy in self.enemy_ships:
+        #     if not hasattr(enemy, "move_timer"):
+        #         enemy.pos = pygame.Vector2(enemy.rect.x, enemy.rect.y)
+        #         enemy.move_timer = random.uniform(1.0, 3.0)
+        #         enemy.pause_timer = 0
+        #         enemy.velocity = pygame.Vector2(
+        #             random.uniform(-30, 30),
+        #             random.uniform(40, 80)
+        #         )
+        #         enemy.shoot_cooldown = random.uniform(2.0, 4.0)
+        #         enemy.can_shoot = False
 
-            if enemy.pause_timer > 0:
-                enemy.pause_timer -= dt
-            else:
-                enemy.pos += enemy.velocity * dt
-                enemy.rect.x = int(enemy.pos.x)
-                enemy.rect.y = int(enemy.pos.y)
+        #     if enemy.pause_timer > 0:
+        #         enemy.pause_timer -= dt
+        #     else:
+        #         enemy.pos += enemy.velocity * dt
+        #         enemy.rect.x = int(enemy.pos.x)
+        #         enemy.rect.y = int(enemy.pos.y)
 
-                enemy.move_timer -= dt
+        #         enemy.move_timer -= dt
 
-                if enemy.move_timer <= 0:
-                    if random.random() < 0.4:
-                        enemy.pause_timer = random.uniform(0.5, 1.5)
-                    else:
-                        enemy.velocity = pygame.Vector2(
-                            random.uniform(-30, 30),
-                            random.uniform(40, 80)
-                        )
+        #         if enemy.move_timer <= 0:
+        #             if random.random() < 0.4:
+        #                 enemy.pause_timer = random.uniform(0.5, 1.5)
+        #             else:
+        #                 enemy.velocity = pygame.Vector2(
+        #                     random.uniform(-30, 30),
+        #                     random.uniform(40, 80)
+        #                 )
 
-                    enemy.move_timer = random.uniform(1.0, 3.0)
+        #             enemy.move_timer = random.uniform(1.0, 3.0)
 
-        for enemy in self.enemy_ships:
-            if enemy.rect.top > app.height:
-                enemy.pos.y = -enemy.rect.height
-                enemy.pos.x = random.randint(0, app.width - enemy.rect.width)
-                enemy.rect.x = int(enemy.pos.x)
-                enemy.rect.y = int(enemy.pos.y)
+        # for enemy in self.enemy_ships:
+        #     if enemy.rect.top > app.height:
+        #         enemy.pos.y = -enemy.rect.height
+        #         enemy.pos.x = random.randint(0, app.width - enemy.rect.width)
+        #         enemy.rect.x = int(enemy.pos.x)
+        #         enemy.rect.y = int(enemy.pos.y)
 
-            if enemy.rect.left < 0:
-                enemy.pos.x = 0
-                enemy.velocity.x *= -1
-                enemy.rect.x = int(enemy.pos.x)
+        #     if enemy.rect.left < 0:
+        #         enemy.pos.x = 0
+        #         enemy.velocity.x *= -1
+        #         enemy.rect.x = int(enemy.pos.x)
 
-            elif enemy.rect.right > app.width:
-                enemy.pos.x = app.width - enemy.rect.width
-                enemy.velocity.x *= -1
-                enemy.rect.x = int(enemy.pos.x)
+        #     elif enemy.rect.right > app.width:
+        #         enemy.pos.x = app.width - enemy.rect.width
+        #         enemy.velocity.x *= -1
+        #         enemy.rect.x = int(enemy.pos.x)
 
         # Refresh bullet hitboxes after bullets move
         self.bullet_hitboxes = utils.extract_hitboxes(self.enemy_bullets)
@@ -248,7 +247,7 @@ class GameState(State):
             self.ally_bullets,
             self.enemy_ships,
             True,
-            False
+            True
         )
 
         self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
@@ -341,14 +340,15 @@ class GameState(State):
         counter_text = self.score_font.render(f"Score: {self.enemy_hit_count}", True, font_color)
         screen.blit(counter_text, (10, 10))
         level_text = self.score_font.render(
-            f"Level: {self.current_level_num}",
+            f"Level: {self.level_index + 1}",
             True,
             font_color
         )
         screen.blit(level_text, (10, 45))
 
         pygame.draw.rect(screen, (0,0,255), self.player.hitbox)
-        pygame.draw.rect(screen, (0,0,255), self.enemy_hitboxes[0])
+        if len(self.enemy_hitboxes) > 0:
+            pygame.draw.rect(screen, (0,0,255), self.enemy_hitboxes[0])
         #pygame.draw.rect(screen, (0,0,255), self.bullet_hitboxes[0])
 
         # Draw Lives Counter
