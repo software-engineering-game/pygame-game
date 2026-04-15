@@ -88,31 +88,31 @@ def test_up_or_down_toggles_selected_option():
 def test_enter_applies_bullet_speed_upgrade_and_returns_to_previous():
 	app, previous, state = _make_state()
 
-	original_speed = settings.BULLET_SPEED
+	original_speed = settings.bullet_spd
 	try:
 		state.selected = 0
 		event = pygame.event.Event(pygame.KEYDOWN, key=settings.keybind_menu_confirm)
 		state.handle_event(app, event)
 
-		assert settings.BULLET_SPEED == 15
+		assert settings.bullet_spd == 15
 		assert app.changed_to is previous
 	finally:
-		settings.BULLET_SPEED = original_speed
+		settings.bullet_spd = original_speed
 
 
 def test_space_applies_cooldown_upgrade_and_returns_to_previous():
 	app, previous, state = _make_state()
 
-	original_cooldown = settings.BULLET_COOLDOWN
+	original_cooldown = settings.bullet_cooldown
 	try:
 		state.selected = 1
 		event = pygame.event.Event(pygame.KEYDOWN, key=settings.keybind_menu_confirm)
 		state.handle_event(app, event)
 
-		assert settings.BULLET_COOLDOWN == 0.45
+		assert settings.bullet_cooldown == 0.45
 		assert app.changed_to is previous
 	finally:
-		settings.BULLET_COOLDOWN = original_cooldown
+		settings.bullet_cooldown = original_cooldown
 
 
 def test_escape_returns_to_previous_without_applying_upgrades():
