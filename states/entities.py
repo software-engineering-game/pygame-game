@@ -167,12 +167,11 @@ class Basic_Enemy(Game_Entity):
         super().__init__(frames=frames, speed=settings.basic_enemy_spd, start_pos=start_pos)
 
         # Hitbox
-
         self.hitbox = self.rect.scale_by(0.6)
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
       
-        self.max_health = 3
+        self.max_health = 1
         self.health = self.max_health
 
 
@@ -190,18 +189,18 @@ class Basic_Enemy(Game_Entity):
     def take_damage(self, amount=1):
         self.health -= amount
 
-    def draw_health_bar(self, screen):
-        bar_width = self.rect.width
-        bar_height = 5
+    # def draw_health_bar(self, screen):
+    #     bar_width = self.rect.width
+    #     bar_height = 5
 
-        health_ratio = self.health / self.max_health
-        fill_width = int(bar_width * health_ratio)
+    #     health_ratio = self.health / self.max_health
+    #     fill_width = int(bar_width * health_ratio)
 
-        pygame.draw.rect(screen, (255, 0, 0),
-                         (self.rect.x, self.rect.y - 8, bar_width, bar_height))
+    #     pygame.draw.rect(screen, (255, 0, 0),
+    #                      (self.rect.x, self.rect.y - 8, bar_width, bar_height))
 
-        pygame.draw.rect(screen, (0, 255, 0),
-                         (self.rect.x, self.rect.y - 8, fill_width, bar_height))
+    #     pygame.draw.rect(screen, (0, 255, 0),
+    #                      (self.rect.x, self.rect.y - 8, fill_width, bar_height))
 
     def shoot(self, bullet_group):
         enemy_bullet = Bullet(
