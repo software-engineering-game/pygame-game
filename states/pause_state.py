@@ -48,10 +48,11 @@ class PauseScreen(State):
         screen.blit(quit_text, quit_text_rect)
 
     def handle_event(self, app, event):
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            #ADDED: resume without re-running GameState.on_enter()
-            app.state = self.previous_state
-            return
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                #ADDED: resume without re-running GameState.on_enter()
+                app.state = self.previous_state
+                return
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.resume_button.collidepoint(event.pos):

@@ -51,6 +51,14 @@ def load_spritesheet(sheet_name, frame_width, frame_height):
             frames.append(image)
     return frames
 
+# Returns a list of all the hitboxes from a sprite group
+def extract_hitboxes(sprite_group):
+    hitbox_list = []
+    sprite_list = sprite_group.sprites()
+    for i in range(len(sprite_list)):
+        hitbox_list.append(sprite_list[i].hitbox)
+    return hitbox_list
+
 #
 # Loading Level Data
 #
@@ -98,15 +106,16 @@ def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing)
                 enemy.rect.clamp_ip(pygame.Rect(0, 0, settings.WIDTH, settings.HEIGHT))
                 enemy_group.add(enemy)
 
-def build_level(level_name, enemy_ships, wave_index=None):
+def build_level(level_name, enemy_ships):
     # Loads the data for one level as a python dictionary
     level = load_level(level_name=level_name)
     if not level:
         raise ValueError(f"Unknown level: {level_name}")
 
-    # Loads the background image named in level_data into a pygame image
+    # Loads the background image named in level_data to a pygame image
     bg_image = pygame.image.load(os.path.join(asset_folder, level["bg_img"]))
 
+    # Spawns enemy waves
     # Import locally to avoid circular imports (entities -> utils for spritesheets)
     from states import entities
 
@@ -117,13 +126,7 @@ def build_level(level_name, enemy_ships, wave_index=None):
     }
 
     # Spawns enemy waves (or one specific wave when wave_index is set)
-    if wave_index is None:
-        waves_to_spawn = level["waves"]
-    else:
-        waves = level["waves"]
-        if wave_index < 0 or wave_index >= len(waves):
-            raise ValueError(f"Wave index {wave_index} out of range for level '{level_name}'")
-        waves_to_spawn = [waves[wave_index]]
+    waves_to_spawn = level["waves"]
 
     for wave in waves_to_spawn:
         enemy_type_name = wave.get("enemy_type")

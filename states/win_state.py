@@ -1,6 +1,7 @@
 from states.base_state import State
 from states.main_menu_state import MainMenuState
 from states.entities import Stars
+from states import settings
 import json
 import os
 import pygame
@@ -25,7 +26,7 @@ class WinState(State):
         if event.type == pygame.KEYDOWN:
 
             if self.entering_name:
-                if event.key == pygame.K_RETURN:
+                if event.key == settings.keybind_menu_confirm:
                     if self.name.strip() == "":
                         self.name = "AAA"
 
@@ -40,7 +41,7 @@ class WinState(State):
                         self.name += event.unicode.upper()
 
             else:
-                if event.key == pygame.K_RETURN:
+                if event.key == settings.keybind_menu_confirm:
                     app.change_state(MainMenuState())
 
     def save_score(self):

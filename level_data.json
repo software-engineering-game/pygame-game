@@ -1,6 +1,5 @@
 {
    "test_level": {
-      "level_num":     666,
       "bg_img":        "background_test.png",
       "waves": [
          {
@@ -21,7 +20,6 @@
    },
    
    "first_level": {
-      "level_num": 1,
       "bg_img":    "background_asteroids.png",
       "waves": [
          {
@@ -35,7 +33,6 @@
    },
    
    "second_level": {
-      "level_num": 3,
       "bg_img":    "background_asteroids.png",
       "waves": [
          {
@@ -56,7 +53,6 @@
    },
 
    "swarm_level": {
-      "level_num": 2,
       "bg_img":    "background_asteroids.png",
       "waves": [
          {
