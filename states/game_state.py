@@ -56,6 +56,7 @@ class GameState(State):
         self.level_index = 0
         self.current_level_name = self.level_sequence[self.level_index]
         self.current_level_data = utils.load_level(self.current_level_name)
+        self.current_wave_index = 0
         self.pending_level_index = None
         self.waiting_for_upgrade = False
 
@@ -98,6 +99,7 @@ class GameState(State):
             self.level_index = self.pending_level_index
             self.current_level_name = self.level_sequence[self.level_index]
             self.current_level_data = utils.load_level(self.current_level_name)
+            self.current_wave_index = 0
 
         self.pending_level_index = None
         self.waiting_for_upgrade = False
