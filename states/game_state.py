@@ -265,8 +265,12 @@ class GameState(State):
             pygame.sprite.spritecollide(self.player, self.enemy_bullets, True)
 
             self.lives -= 1
+            # Sets Invinicibility
             self.player_invincible = True
             self.player_invincible_timer = 1.0
+            # Resets player position
+            self.player.rect.center = self.player_start_pos
+            self.player.hitbox.center = self.player_start_pos
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
