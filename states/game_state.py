@@ -34,11 +34,10 @@ class GameState(State):
     def on_enter(self, app):
         self.app = app
         pygame.init()
-        #pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
         
         # reset upgrade-tuned stats at run start
-        settings.BULLET_SPEED = settings.DEFAULT_BULLET_SPEED
-        settings.BULLET_COOLDOWN = settings.DEFAULT_BULLET_COOLDOWN
+        settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
+        settings.bullet_cooldown = settings.DEFAULT_BULLET_COOLDOWN
 
         # Sets the background color, and loads lives_icon
         self.bg_color = (0, 0, 0)

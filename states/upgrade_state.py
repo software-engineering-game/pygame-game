@@ -24,10 +24,10 @@ class UpgradeState(State):
                 #pygame.mixer.Sound.play(sfx_menu)
             elif event.key == settings.keybind_menu_confirm:
                 if self.selected == 0:
-                    settings.BULLET_SPEED = min(25, settings.BULLET_SPEED + 2)
+                    settings.bullet_spd = min(25, settings.bullet_spd + 2)
                     self._resume_previous_state(app)
                 else:
-                    settings.BULLET_COOLDOWN = max(0.05, settings.BULLET_COOLDOWN * 0.9)
+                    settings.bullet_cooldown = max(0.05, settings.bullet_cooldown * 0.9)
                     self._resume_previous_state(app)
             elif event.key == pygame.K_ESCAPE:
                 self._resume_previous_state(app)
@@ -54,7 +54,7 @@ class UpgradeState(State):
         screen.blit(text, rect)
 
         stats_text = self.tiny_font.render(
-            f"bullet speed: {settings.BULLET_SPEED}   cooldown: {settings.BULLET_COOLDOWN:.2f}s",
+            f"bullet speed: {settings.bullet_spd}   cooldown: {settings.bullet_cooldown:.2f}s",
             True,
             (200, 200, 200)
         )

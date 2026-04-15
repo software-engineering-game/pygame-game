@@ -139,13 +139,13 @@ class Player_Auto(Player):
         # Spawns the bullet and adds it to bullet group
         player_bullet = Bullet(
             frames="basic_bullet.png",
-            speed=settings.BULLET_SPEED,
+            speed=settings.bullet_spd,
             start_pos=(self.rect.centerx, self.rect.top),
             direct=(0, -1)
         )
         bullet_group.add(player_bullet)
         self.can_shoot = False
-        self.shoot_cooldown = settings.BULLET_COOLDOWN
+        self.shoot_cooldown = settings.bullet_cooldown
 
 #
 class Player_Shotgun(Player):
@@ -204,7 +204,7 @@ class Basic_Enemy(Game_Entity):
     def shoot(self, bullet_group):
         enemy_bullet = Bullet(
             frames="basic_bullet.png",
-            speed=settings.BULLET_SPEED,
+            speed=settings.DEFAULT_BULLET_SPEED,
             start_pos=(self.rect.centerx, self.rect.bottom),
             direct=(0, 1)
         )
