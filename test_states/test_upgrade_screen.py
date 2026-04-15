@@ -109,7 +109,7 @@ def test_space_applies_cooldown_upgrade_and_returns_to_previous():
 		event = pygame.event.Event(pygame.KEYDOWN, key=settings.keybind_menu_confirm)
 		state.handle_event(app, event)
 
-		assert settings.bullet_cooldown == 0.45
+		assert settings.bullet_cooldown == 0.27
 		assert app.changed_to is previous
 	finally:
 		settings.bullet_cooldown = original_cooldown
@@ -118,15 +118,15 @@ def test_space_applies_cooldown_upgrade_and_returns_to_previous():
 def test_escape_returns_to_previous_without_applying_upgrades():
 	app, previous, state = _make_state()
 
-	original_speed = settings.BULLET_SPEED
-	original_cooldown = settings.BULLET_COOLDOWN
+	original_speed = settings.bullet_spd
+	original_cooldown = settings.bullet_cooldown
 
 	event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE)
 	state.handle_event(app, event)
 
 	assert app.changed_to is previous
-	assert settings.BULLET_SPEED == original_speed
-	assert settings.BULLET_COOLDOWN == original_cooldown
+	assert settings.bullet_spd == original_speed
+	assert settings.bullet_cooldown == original_cooldown
 
 
 def test_non_keydown_events_do_nothing():
