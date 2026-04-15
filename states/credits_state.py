@@ -64,9 +64,9 @@ class CreditsState(State):
 
         lines = [
             "Dev Team:",
-            "Nicholas Vuletich, Bishal,",
+            "Nicholas Vuletich, Ian Scheetz,",
             "Crawford Barnett, Mayah Nix,",
-            "Samaa Hediya, Ayush Patel",
+            "Samaa Hediya, Ayush Patel, Bishal Regmi",
             "",
             "Audio Programming and Design:",
             "Ian Scheetz",
