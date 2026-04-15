@@ -21,7 +21,7 @@ class UpgradeState(State):
 
             if event.key in (pygame.K_UP, pygame.K_DOWN):
                 self.selected = (self.selected + 1) % 2
-                #pygame.mixer.Sound.play(sfx_menu)
+                pygame.mixer.Sound.play(sfx_menu)
             elif event.key == settings.keybind_menu_confirm:
                 if self.selected == 0:
                     settings.bullet_spd = min(25, settings.bullet_spd + 2)
