@@ -34,6 +34,7 @@ class GameState(State):
     def on_enter(self, app):
         self.app = app
         pygame.init()
+        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
         
         # reset upgrade-tuned stats at run start
         settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
@@ -273,10 +274,9 @@ class GameState(State):
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                #sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
-                #pygame.mixer.Sound.play(sfx_player_boom)
+                sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
+                pygame.mixer.Sound.play(sfx_player_boom)
                 return
-            
 
         # Score tracking for hits
         if collisions:
@@ -287,8 +287,8 @@ class GameState(State):
                         self.enemy_hit_count += 1
                         if hasattr(enemy, "health") and enemy.health <= 0:
                             enemy.kill()
-                            #sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
-                            #pygame.mixer.Sound.play(sfx_boom)
+                            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
+                            pygame.mixer.Sound.play(sfx_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
@@ -346,10 +346,11 @@ class GameState(State):
         )
         screen.blit(level_text, (10, 45))
 
-        pygame.draw.rect(screen, (0,0,255), self.player.hitbox)
-        if len(self.enemy_hitboxes) > 0:
-            pygame.draw.rect(screen, (0,0,255), self.enemy_hitboxes[0])
-        #pygame.draw.rect(screen, (0,0,255), self.bullet_hitboxes[0])
+        #pygame.draw.rect(screen, (0,0,255), self.player.hitbox)
+        #if len(self.enemy_hitboxes) > 0:
+        #    pygame.draw.rect(screen, (0,0,255), self.enemy_hitboxes[0])
+        #if len(self.bullet_hitboxes) > 0:
+        #    pygame.draw.rect(screen, (0,0,255), self.bullet_hitboxes[0])
 
         # Draw Lives Counter
         live_count = self.lives_font.render("x" + str(self.lives), True, font_color)

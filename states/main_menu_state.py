@@ -14,12 +14,16 @@ class MainMenuState(State):
         self.stars = [Stars(app.width, app.height) for _ in range(num_stars)]
 
         # Fonts
+
+        self.logo_image = pygame.image.load("assets/logo_redo.png")
+        self.logo_image.set_colorkey(utils.SHEET_BG)
+
         self.title_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 48)
         self.menu_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
         self.score_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 16)
 
         #mixer initializer
-        #pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
+        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
 
         self.high_score = utils.load_high_score()
 
@@ -30,16 +34,16 @@ class MainMenuState(State):
             self.selected = 0
 
     def handle_event(self, app, event):
-        #sfx_menu = pygame.mixer.Sound("assets/sfx_ogg/menu1.ogg")
+        sfx_menu = pygame.mixer.Sound("assets/sfx_ogg/menu1.ogg")
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_UP:
                 self.selected = (self.selected - 1) % len(self.options)
-                #pygame.mixer.Sound.play(sfx_menu)
+                pygame.mixer.Sound.play(sfx_menu)
 
             elif event.key == pygame.K_DOWN:
                 self.selected = (self.selected + 1) % len(self.options)
-                #pygame.mixer.Sound.play(sfx_menu)
+                pygame.mixer.Sound.play(sfx_menu)
 
             elif event.key == settings.keybind_menu_confirm:
 
@@ -84,9 +88,11 @@ class MainMenuState(State):
             star.draw(screen, self.t)
 
         # Title
-        title_text = self.title_font.render("Space Dodgers", True, (255, 255, 0))
-        title_rect = title_text.get_rect(center=(app.width // 2, app.height // 5))
-        screen.blit(title_text, title_rect)
+        logo_rect = self.logo_image.get_rect(center=(app.width // 2, app.height // 5))
+        screen.blit(self.logo_image, logo_rect)
+        #title_text = self.title_font.render("Space Dodgers", True, (255, 255, 0))
+        #title_rect = title_text.get_rect(center=(app.width // 2, app.height // 5))
+        #screen.blit(title_text, title_rect)
 
         # High score below title
         if self.high_score > 0:
