@@ -353,7 +353,7 @@ class GameState(State):
         #    pygame.draw.rect(screen, (0,0,255), self.bullet_hitboxes[0])
 
         # Draw Lives Counter
-        live_count = self.lives_font.render("x" + str(self.lives), True, font_color)
+        live_count = self.lives_font.render(f"x{self.lives}", True, font_color)
         screen.blit(self.lives_icon,(20, screen.get_height() - 45))
         screen.blit(live_count, (60, screen.get_height() - 35))
 

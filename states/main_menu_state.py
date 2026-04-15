@@ -13,11 +13,11 @@ class MainMenuState(State):
         num_stars = 200
         self.stars = [Stars(app.width, app.height) for _ in range(num_stars)]
 
-        # Fonts
-
-        self.logo_image = pygame.image.load("assets/logo_redo.png")
+        # Logo Image
+        self.logo_image = pygame.image.load("assets/logo.png")
         self.logo_image.set_colorkey(utils.SHEET_BG)
 
+        # Fonts
         self.title_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 48)
         self.menu_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
         self.score_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 16)
