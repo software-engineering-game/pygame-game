@@ -330,8 +330,8 @@ class GameState(State):
             else:
                 text = self.countdown_font.render("GO", True, font_color)
 
-            rect = text.get_rect(center=(app.width // 2, app.height // 2))
-            screen.blit(text, rect)
+            countdown_rect = text.get_rect(center=(app.width // 2, app.height // 2))
+            screen.blit(text, countdown_rect)
 
         # Draw Score and Level Counters
         counter_text = self.score_font.render(f"Score: {self.enemy_hit_count}", True, font_color)
@@ -342,6 +342,10 @@ class GameState(State):
             font_color
         )
         screen.blit(level_text, (10, 45))
+
+        pygame.draw.rect(screen, (0,0,255), self.player.hitbox)
+        pygame.draw.rect(screen, (0,0,255), self.enemy_hitboxes[0])
+        #pygame.draw.rect(screen, (0,0,255), self.bullet_hitboxes[0])
 
         # Draw Lives Counter
         live_count = self.lives_font.render("x" + str(self.lives), True, font_color)

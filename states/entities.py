@@ -84,7 +84,7 @@ class Player(Game_Entity):
         super().__init__(frames, speed, start_pos)
 
         # Hitbox
-        self.hitbox = self.rect.scale_by(0.4)
+        self.hitbox = self.rect.scale_by(0.5)
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
 
@@ -167,13 +167,12 @@ class Basic_Enemy(Game_Entity):
         super().__init__(frames=frames, speed=settings.basic_enemy_spd, start_pos=start_pos)
 
         # Hitbox
-        self.hitbox = self.rect.scale_by(0.6)
+        self.hitbox = self.rect.scale_by(0.8)
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
       
         self.max_health = 1
         self.health = self.max_health
-
 
         self.vertical_speed = random.uniform(0.8, 1.5)
         self.vx = random.uniform(-1.5, 1.5)
@@ -214,12 +213,6 @@ class Basic_Enemy(Game_Entity):
         self.shoot_cooldown = random.uniform(2.0, 5.0)
 
     def update(self, player_pos):
-        # Move based on velocity
-        self.rect.x += self.vx
-        self.rect.y += self.vy
-        self.hitbox.x += self.vx
-        self.hitbox.y += self.vy
-
         # Occasionally change direction (this is the key to "flow")
         self.change_timer -= 0.016  # approx frame time
 
@@ -241,6 +234,12 @@ class Basic_Enemy(Game_Entity):
             self.rect.x = random.randint(50, settings.WIDTH - 50)
             self.rect.y = random.randint(-100, -40)
 
+        # Move based on velocity
+        self.rect.x += self.vx
+        self.rect.y += self.vy
+        self.hitbox.x += self.vx
+        self.hitbox.y += self.vy
+
 # Swarm Enemy Type
 class Swarm_Enemy(Game_Entity):
     def __init__(self, frames, start_pos):
@@ -248,7 +247,7 @@ class Swarm_Enemy(Game_Entity):
         self.original_image = self.image
 
         # Hitbox
-        self.hitbox = self.rect.scale_by(0.6)
+        self.hitbox = self.rect.scale_by(0.8)
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
 
@@ -287,7 +286,9 @@ class Bomber_Enemy(Game_Entity):
         super().__init__(frames, speed=settings.bomber_enemy_spd, start_pos=start_pos)
 
         # Hitbox
-        self.hitbox = self.rect.scale_by(0.6)
+        self.hitbox = self.rect.scale_by(0.8)
+        self.hitbox.centerx = self.rect.centerx
+        self.hitbox.centery = self.rect.centery
 
     def shoot(self, bullet_group):
         # for when I write the bomber specific mechanics
