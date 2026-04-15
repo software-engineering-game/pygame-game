@@ -37,14 +37,15 @@ class MainMenuState(State):
         sfx_menu = pygame.mixer.Sound("assets/sfx_ogg/menu1.ogg")
         if event.type == pygame.KEYDOWN:
 
+            # Switching Selection
             if event.key == pygame.K_UP:
                 self.selected = (self.selected - 1) % len(self.options)
                 pygame.mixer.Sound.play(sfx_menu)
-
             elif event.key == pygame.K_DOWN:
                 self.selected = (self.selected + 1) % len(self.options)
                 pygame.mixer.Sound.play(sfx_menu)
 
+            # Confirming Menu Selection
             elif event.key == settings.keybind_menu_confirm:
 
                 if self.selected == 0:
@@ -71,8 +72,8 @@ class MainMenuState(State):
                     from states.confirm_quit_state import ConfirmQuitState
                     app.change_state(ConfirmQuitState(self))
 
-
-            elif event.key == pygame.K_ESCAPE:
+            # Exiting Menu
+            elif event.key == settings.keybind_menu_exit:
                 from states.confirm_quit_state import ConfirmQuitState
                 app.change_state(ConfirmQuitState(self))
 
