@@ -312,8 +312,14 @@ class GameState(State):
             self.player_invincible = True
             self.player_invincible_timer = 1.0
             # Resets player position
-            self.player.rect.center = self.player_start_pos
-            self.player.hitbox.center = self.player_start_pos
+            #self.player.rect.center = self.player_start_pos
+            #self.player.hitbox.center = self.player_start_pos
+
+            sfx_player_hit = pygame.mixer.Sound("assets/sfx_ogg/p_hit.ogg")
+            if self.lives != 0:
+                if settings.SFX_ON:
+                    pygame.mixer.Sound.play(sfx_player_hit)
+
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))

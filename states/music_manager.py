@@ -23,6 +23,7 @@ class music_manager:
             return
 
         pygame.mixer.music.load(path)
+        pygame.mixer.music.set_volume(0.25)
         pygame.mixer.music.play(loops)
         self.current_track = path
 
