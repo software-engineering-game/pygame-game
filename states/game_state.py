@@ -16,7 +16,7 @@ asset_folder = os.path.join(repo_root, "assets")
 font_color = (255,255,255) # Currently set to white
 
 class GameState(State):
-    saved_player_position = None
+    #saved_player_position = None
     music_track = "game"
     current_level_num = 0
 
@@ -131,8 +131,8 @@ class GameState(State):
         self.player_invincible_timer = 0.0
 
         # Restore saved position if returning from pause
-        if GameState.saved_player_position is not None:
-            self.player.rect.center = GameState.saved_player_position
+        #if GameState.saved_player_position is not None:
+        #    self.player.rect.center = GameState.saved_player_position
 
     def on_exit(self, app):
         pass
@@ -312,8 +312,14 @@ class GameState(State):
             self.player_invincible = True
             self.player_invincible_timer = 1.0
             # Resets player position
-            self.player.rect.center = self.player_start_pos
-            self.player.hitbox.center = self.player_start_pos
+            #self.player.rect.center = self.player_start_pos
+            #self.player.hitbox.center = self.player_start_pos
+
+            sfx_player_hit = pygame.mixer.Sound("assets/sfx_ogg/p_hit.ogg")
+            if self.lives != 0:
+                if settings.SFX_ON:
+                    pygame.mixer.Sound.play(sfx_player_hit)
+
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))

@@ -1,5 +1,6 @@
 import pygame
 import os
+from states import settings
 
 repo_root = os.path.dirname(os.path.dirname(__file__))
 
@@ -12,6 +13,8 @@ class music_manager:
         self.current_track = None
 
     def play_track(self, name, loops=-1):
+        if not settings.MUSIC_ON:
+            return
         path = self.TRACKS.get(name)
         if not path:
             return
@@ -20,6 +23,7 @@ class music_manager:
             return
 
         pygame.mixer.music.load(path)
+        pygame.mixer.music.set_volume(0.25)
         pygame.mixer.music.play(loops)
         self.current_track = path
 
