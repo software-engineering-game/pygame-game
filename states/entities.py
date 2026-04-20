@@ -116,13 +116,13 @@ class Player(Game_Entity):
         # Setting up WASD movement 
         keys = pygame.key.get_pressed()
         
-        if keys[settings.keybind_player_left] or keys[pygame.K_a]:
+        if keys[settings.keybind_player_left]:
             dx -= self.speed
-        if keys[settings.keybind_player_right] or keys[pygame.K_d]:
+        if keys[settings.keybind_player_right]:
             dx += self.speed
-        if keys[settings.keybind_player_up] or keys[pygame.K_w]:
+        if keys[settings.keybind_player_up]:
             dy -= self.speed
-        if keys[settings.keybind_player_down] or keys[pygame.K_s]:
+        if keys[settings.keybind_player_down]:
             dy += self.speed
 
         self.rect.x += dx
