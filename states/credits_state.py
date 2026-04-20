@@ -63,20 +63,18 @@ class CreditsState(State):
         title_rect = title_text.get_rect(center=(app.width // 2, app.height // 15))
 
         lines = [
-            "Backend Programming:",
-            "Nicholas Vuletich, Myah Nix",
-            "",
-            "Dev Team:",
-            "Samaa Hediya, Crawford Barnett",
+            "Programmers:",
+            "Samaa Hediya, Nicholas Vuletich, Myah Nix",
             "",
             "Enemy Behavior and Level Design:",
-            "Bishal Regmi",
+            "Bishal Regmi, Crawford Barnett",
             "",
             "Audio Programming and Design:",
             "Ian Scheetz",
             "",
             "Artist:",
             "Thomas Bond",
+            "",
             "Logo Concept:",
             "Ayush Patel"
         ]
