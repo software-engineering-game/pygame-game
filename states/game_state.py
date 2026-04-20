@@ -4,6 +4,7 @@ import random
 from states import settings
 from states import utils
 from states import entities
+from states import music_manager
 from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
 from states.upgrade_state import UpgradeState
@@ -16,12 +17,17 @@ font_color = (255,255,255) # Currently set to white
 
 class GameState(State):
     saved_player_position = None
+    music_track = "game"
 
     def on_enter(self, app):
         self.app = app
         pygame.init()
-        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
+        pygame.mixer.init()
         
+        #
+        if hasattr(app, "music"):
+            app.music.play_track(self.music_track)
+
         # reset upgrade-tuned stats at run start
         settings.BULLET_SPEED = settings.DEFAULT_BULLET_SPEED
         settings.BULLET_COOLDOWN = settings.DEFAULT_BULLET_COOLDOWN
@@ -93,6 +99,9 @@ class GameState(State):
         # Restore saved position if returning from pause
         if GameState.saved_player_position is not None:
             self.player.rect.center = GameState.saved_player_position
+
+    def on_exit(self, app):
+        pass
 
     def _resume_after_upgrade(self):
         if self.pending_level_index is not None:
