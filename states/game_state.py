@@ -273,7 +273,8 @@ class GameState(State):
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
                 sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
-                pygame.mixer.Sound.play(sfx_player_boom)
+                if settings.SFX_ON:
+                    pygame.mixer.Sound.play(sfx_player_boom)
                 return
             
 
@@ -287,7 +288,8 @@ class GameState(State):
                         if hasattr(enemy, "health") and enemy.health <= 0:
                             enemy.kill()
                             sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
-                            pygame.mixer.Sound.play(sfx_boom)
+                            if settings.SFX_ON:    
+                                pygame.mixer.Sound.play(sfx_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
