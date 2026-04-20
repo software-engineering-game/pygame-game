@@ -16,7 +16,7 @@ asset_folder = os.path.join(repo_root, "assets")
 font_color = (255,255,255) # Currently set to white
 
 class GameState(State):
-    saved_player_position = None
+    #saved_player_position = None
     music_track = "game"
     current_level_num = 0
 
@@ -131,8 +131,8 @@ class GameState(State):
         self.player_invincible_timer = 0.0
 
         # Restore saved position if returning from pause
-        if GameState.saved_player_position is not None:
-            self.player.rect.center = GameState.saved_player_position
+        #if GameState.saved_player_position is not None:
+        #    self.player.rect.center = GameState.saved_player_position
 
     def on_exit(self, app):
         pass
