@@ -102,11 +102,11 @@ class MainMenuState(State):
         # High score below title
         if self.high_score > 0:
             hs_text = self.score_font.render(f"High Score: {self.high_score}", True, (255, 215, 0))
-            hs_rect = hs_text.get_rect(center=(app.width // 2, app.height // 5 + 50))
+            hs_rect = hs_text.get_rect(center=(app.width // 2, app.height // 3 + 50))
             screen.blit(hs_text, hs_rect)
 
         # Menu nav
-        menu_top = app.height // 3
+        menu_top = app.height // 3 + 50
         x = 60
         line_height = 60
 
