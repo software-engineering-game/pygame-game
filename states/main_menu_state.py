@@ -17,6 +17,10 @@ class MainMenuState(State):
         num_stars = 200
         self.stars = [Stars(app.width, app.height) for _ in range(num_stars)]
 
+        # Logo Image
+        self.logo_image = pygame.image.load("assets/logo.png")
+        self.logo_image.set_colorkey(utils.SHEET_BG)
+
         # Fonts
         self.title_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 48)
         self.menu_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
@@ -37,14 +41,15 @@ class MainMenuState(State):
         sfx_menu = pygame.mixer.Sound("assets/sfx_ogg/menu1.ogg")
         if event.type == pygame.KEYDOWN:
 
+            # Switching Selection
             if event.key == pygame.K_UP:
                 self.selected = (self.selected - 1) % len(self.options)
                 pygame.mixer.Sound.play(sfx_menu)
-
             elif event.key == pygame.K_DOWN:
                 self.selected = (self.selected + 1) % len(self.options)
                 pygame.mixer.Sound.play(sfx_menu)
 
+            # Confirming Menu Selection
             elif event.key == settings.keybind_menu_confirm:
 
                 if self.selected == 0:
@@ -71,8 +76,8 @@ class MainMenuState(State):
                     from states.confirm_quit_state import ConfirmQuitState
                     app.change_state(ConfirmQuitState(self))
 
-
-            elif event.key == pygame.K_ESCAPE:
+            # Exiting Menu
+            elif event.key == settings.keybind_menu_exit:
                 from states.confirm_quit_state import ConfirmQuitState
                 app.change_state(ConfirmQuitState(self))
 
@@ -88,9 +93,11 @@ class MainMenuState(State):
             star.draw(screen, self.t)
 
         # Title
-        title_text = self.title_font.render("Space Dodgers", True, (255, 255, 0))
-        title_rect = title_text.get_rect(center=(app.width // 2, app.height // 5))
-        screen.blit(title_text, title_rect)
+        logo_rect = self.logo_image.get_rect(center=(app.width // 2, app.height // 5))
+        screen.blit(self.logo_image, logo_rect)
+        #title_text = self.title_font.render("Space Dodgers", True, (255, 255, 0))
+        #title_rect = title_text.get_rect(center=(app.width // 2, app.height // 5))
+        #screen.blit(title_text, title_rect)
 
         # High score below title
         if self.high_score > 0:
