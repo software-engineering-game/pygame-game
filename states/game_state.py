@@ -45,6 +45,7 @@ class GameState(State):
     def on_enter(self, app):
         self.app = app
         pygame.init()
+        pygame.mixer.init()
 
         # Cache common SFX so we don't reload on every event.
         self.sfx_enemy_boom = None
