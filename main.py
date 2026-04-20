@@ -2,6 +2,7 @@ import pygame
 import asyncio
 from states.main_menu_state import MainMenuState
 from states import settings
+from states.music_manager import music_manager
 
 class App:
     def __init__(self, screen):
@@ -10,6 +11,7 @@ class App:
         self.height = settings.HEIGHT
         self.running = True
         self.state = None
+        self.music = music_manager()
 
     def change_state(self, new_state):
         if self.state is not None:

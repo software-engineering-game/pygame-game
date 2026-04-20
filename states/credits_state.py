@@ -30,7 +30,7 @@ class CreditsState(State):
         self.font = pygame.font.Font(None, 36)
 
         self.title_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 48)
-        self.names_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 20)
+        self.names_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 16)
 
         # Time for stars
         self.t = 0
@@ -60,24 +60,27 @@ class CreditsState(State):
             star.draw(screen, self.t)
 
         title_text = self.title_font.render("Credits", True, (255, 255, 255))
-        title_rect = title_text.get_rect(center=(app.width // 2, app.height // 5))
+        title_rect = title_text.get_rect(center=(app.width // 2, app.height // 15))
 
         lines = [
-            "Dev Team:",
-            "Nicholas Vuletich, Ian Scheetz,",
-            "Crawford Barnett, Mayah Nix,",
-            "Samaa Hediya, Ayush Patel",
-            "Bishal Regmi",
+            "Programmers:",
+            "Nicholas Vuletich, Myah Nix, Samaa Hediya",
+            "",
+            "Enemy Behavior and Level Design:",
+            "Bishal Regmi, Crawford Barnett",
             "",
             "Audio Programming and Design:",
             "Ian Scheetz",
             "",
             "Artist:",
-            "Thomas Bond"
+            "Thomas Bond",
+            "",
+            "Logo Concept:",
+            "Ayush Patel"
         ]
 
-        y_start = (app.height // 2) - 120
-        line_spacing = 35
+        y_start = (app.height // 6)
+        line_spacing = 30
 
         for i, line in enumerate(lines):
             names_text = self.names_font.render(line, True, (255, 255, 255))
