@@ -56,6 +56,7 @@ class GameState(State):
         self.level_index = 0
         self.current_level_name = self.level_sequence[self.level_index]
         self.current_level_data = utils.load_level(self.current_level_name)
+        self.current_wave_index = 0
         self.pending_level_index = None
         self.waiting_for_upgrade = False
 
@@ -98,6 +99,7 @@ class GameState(State):
             self.level_index = self.pending_level_index
             self.current_level_name = self.level_sequence[self.level_index]
             self.current_level_data = utils.load_level(self.current_level_name)
+            self.current_wave_index = 0
 
         self.pending_level_index = None
         self.waiting_for_upgrade = False
@@ -323,7 +325,6 @@ class GameState(State):
 
         # Draws Text for Readiness Countdown
         if self.countdown_active:
-            font = pygame.font.Font(font_file, 140)
             count = int(self.countdown) + 1  # makes it show 3,2,1
 
             if count > 0:
@@ -334,21 +335,18 @@ class GameState(State):
             rect = text.get_rect(center=(app.width // 2, app.height // 2))
             screen.blit(text, rect)
 
-        # Draw hit counter
-        font = pygame.font.Font(font_file, 20)
-        counter_text = font.render(f"Score: {self.enemy_hit_count}", True, (255, 255, 255))
+        # Draw Score and Level Counters
+        counter_text = self.score_font.render(f"Score: {self.enemy_hit_count}", True, font_color)
         screen.blit(counter_text, (10, 10))
-        
-        # Draws Lives Counter
-        #screen.blit(pygame.image.load("assets/icon_lives.png"), (35,settings.HEIGHT - 40))
-        font = pygame.font.Font(font_file, 20)
-        heart = font.render("♥x" + str(self.lives), True, (255, 0, 0))
-        screen.blit(heart, (35, screen.get_height() - 40))
-        
-        level_text = font.render(
-           f"Level: {self.current_level_num}",
-           True,
-           (255, 255, 255)
+        level_text = self.score_font.render(
+            f"Level: {self.current_level_data['level_num']}  Wave: {self.current_wave_index + 1}/{len(self.current_level_data['waves'])}",
+            True,
+            font_color
         )
         screen.blit(level_text, (10, 45))
+
+        # Draw Lives Counter
+        live_count = self.lives_font.render("x" + str(self.lives), True, font_color)
+        screen.blit(self.lives_icon,(20, screen.get_height() - 45))
+        screen.blit(live_count, (60, screen.get_height() - 35))
 
