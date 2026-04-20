@@ -9,6 +9,10 @@ class MainMenuState(State):
         # Time for stars
         self.t = 0
 
+        #stop game music
+        if hasattr(app, "music"):
+            pygame.mixer.music.fadeout(500)
+
         # Make the stars
         num_stars = 200
         self.stars = [Stars(app.width, app.height) for _ in range(num_stars)]

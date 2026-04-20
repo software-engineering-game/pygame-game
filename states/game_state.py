@@ -4,6 +4,7 @@ import random
 from states import settings
 from states import utils
 from states import entities
+from states import music_manager
 from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
 from states.upgrade_state import UpgradeState
@@ -16,6 +17,7 @@ font_color = (255,255,255) # Currently set to white
 
 class GameState(State):
     saved_player_position = None
+    music_track = "game"
     current_level_num = 0
 
     # progression state
@@ -43,7 +45,6 @@ class GameState(State):
     def on_enter(self, app):
         self.app = app
         pygame.init()
-        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
 
         # Cache common SFX so we don't reload on every event.
         self.sfx_enemy_boom = None
@@ -55,7 +56,10 @@ class GameState(State):
             # Mixer may fail on some systems; game should still run.
             self.sfx_enemy_boom = None
             self.sfx_player_boom = None
-        
+
+        if hasattr(app, "music"):
+            app.music.play_track(self.music_track)
+
         # reset upgrade-tuned stats at run start
         settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
         settings.bullet_cooldown = settings.DEFAULT_BULLET_COOLDOWN
@@ -82,6 +86,20 @@ class GameState(State):
 
         if hasattr(app, "testing") and app.testing:
             self.countdown_active = False
+
+
+        # progression state
+        self.level_sequence = utils.get_level_sequence()
+        if not self.level_sequence:
+            raise ValueError("No levels found in level_data.json")
+        self.level_index = 0
+        self.current_level_name = self.level_sequence[self.level_index]
+        self.current_level_data = utils.load_level(self.current_level_name)
+        self.current_wave_index = 0
+        self.pending_level_index = None
+        self.waiting_for_upgrade = False
+
+        # spawn first wave of first level
 
         # Spawns Level
         self.enemy_ships.empty()
@@ -115,11 +133,15 @@ class GameState(State):
         if GameState.saved_player_position is not None:
             self.player.rect.center = GameState.saved_player_position
 
+    def on_exit(self, app):
+        pass
+
     def _resume_after_upgrade(self):
         if self.pending_level_index is not None:
             self.level_index = self.pending_level_index
             self.current_level_name = self.level_sequence[self.level_index]
             self.current_level_data = utils.load_level(self.current_level_name)
+            self.current_wave_index = 0
 
         self.pending_level_index = None
         self.waiting_for_upgrade = False
