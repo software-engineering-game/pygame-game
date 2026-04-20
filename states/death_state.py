@@ -25,6 +25,10 @@ class DeathState(State):
         self.is_new_high = utils.save_high_score(self.score)
         self.high_score = utils.load_high_score()
 
+        #stop music
+        if hasattr(app, "music"):
+            app.music.stop()
+
         # Time for stars
         self.t = 0
 

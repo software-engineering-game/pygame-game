@@ -4,6 +4,7 @@ import random
 from states import settings
 from states import utils
 from states import entities
+from states import music_manager
 from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
 from states.upgrade_state import UpgradeState
@@ -16,6 +17,7 @@ font_color = (255,255,255) # Currently set to white
 
 class GameState(State):
     saved_player_position = None
+    music_track = "game"
     current_level_num = 0
 
     # progression state
@@ -30,12 +32,35 @@ class GameState(State):
 
     enemy_hit_count = 0
     lives = 3
+    # Ensures that systems do not crash if they do not have audio support in them 
+    def _safe_play_sound(self, sound):
+        if sound is None:
+            return
+        try:
+            sound.play()
+        except pygame.error:
+            # Audio device may be unavailable (e.g., CI/headless).
+            pass
 
     def on_enter(self, app):
         self.app = app
         pygame.init()
-        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
-        
+        pygame.mixer.init()
+
+        # Cache common SFX so we don't reload on every event.
+        self.sfx_enemy_boom = None
+        self.sfx_player_boom = None
+        try:
+            self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
+            self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
+        except pygame.error:
+            # Mixer may fail on some systems; game should still run.
+            self.sfx_enemy_boom = None
+            self.sfx_player_boom = None
+
+        if hasattr(app, "music"):
+            app.music.play_track(self.music_track)
+
         # reset upgrade-tuned stats at run start
         settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
         settings.bullet_cooldown = settings.DEFAULT_BULLET_COOLDOWN
@@ -62,6 +87,20 @@ class GameState(State):
 
         if hasattr(app, "testing") and app.testing:
             self.countdown_active = False
+
+
+        # progression state
+        self.level_sequence = utils.get_level_sequence()
+        if not self.level_sequence:
+            raise ValueError("No levels found in level_data.json")
+        self.level_index = 0
+        self.current_level_name = self.level_sequence[self.level_index]
+        self.current_level_data = utils.load_level(self.current_level_name)
+        self.current_wave_index = 0
+        self.pending_level_index = None
+        self.waiting_for_upgrade = False
+
+        # spawn first wave of first level
 
         # Spawns Level
         self.enemy_ships.empty()
@@ -95,11 +134,15 @@ class GameState(State):
         if GameState.saved_player_position is not None:
             self.player.rect.center = GameState.saved_player_position
 
+    def on_exit(self, app):
+        pass
+
     def _resume_after_upgrade(self):
         if self.pending_level_index is not None:
             self.level_index = self.pending_level_index
             self.current_level_name = self.level_sequence[self.level_index]
             self.current_level_data = utils.load_level(self.current_level_name)
+            self.current_wave_index = 0
 
         self.pending_level_index = None
         self.waiting_for_upgrade = False
@@ -274,21 +317,24 @@ class GameState(State):
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
-                pygame.mixer.Sound.play(sfx_player_boom)
+                self._safe_play_sound(self.sfx_player_boom)
                 return
 
         # Score tracking for hits
         if collisions:
-            for bullet, enemies in collisions.items():
+            # Increment score for *any* enemy hit, regardless of enemy type.
+            self.enemy_hit_count += sum(len(enemies) for enemies in collisions.values()) 
+            # Fixed (was not counting all enemy kills to scores)
+            for enemies in collisions.values():
                 for enemy in enemies:
                     if hasattr(enemy, "take_damage"):
                         enemy.take_damage(1)
-                        self.enemy_hit_count += 1
                         if hasattr(enemy, "health") and enemy.health <= 0:
                             enemy.kill()
-                            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
-                            pygame.mixer.Sound.play(sfx_boom)
+
+                    # `groupcollide(..., dokill=True)` already removes the enemy.
+                    # Play boom for any enemy hit, including Swarm_Enemy.
+                    self._safe_play_sound(self.sfx_enemy_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
@@ -345,6 +391,12 @@ class GameState(State):
             font_color
         )
         screen.blit(level_text, (10, 45))
+
+        #pygame.draw.rect(screen, (0,0,255), self.player.hitbox)
+        #if len(self.enemy_hitboxes) > 0:
+        #    pygame.draw.rect(screen, (0,0,255), self.enemy_hitboxes[0])
+        #if len(self.bullet_hitboxes) > 0:
+        #    pygame.draw.rect(screen, (0,0,255), self.bullet_hitboxes[0])
 
         # Draw Lives Counter
         live_count = self.lives_font.render(f"x{self.lives}", True, font_color)

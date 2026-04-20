@@ -15,6 +15,11 @@ class WinState(State):
         self.leaderboard = []
 
     def on_enter(self, app):
+
+        #stop music
+        if hasattr(app, "music"):
+            pygame.mixer.music.fadeout(500)
+
         # Time for stars
         self.t = 0
 
