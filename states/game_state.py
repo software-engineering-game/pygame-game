@@ -30,11 +30,31 @@ class GameState(State):
 
     enemy_hit_count = 0
     lives = 3
+    # Ensures that systems do not crash if they do not have audio support in them 
+    def _safe_play_sound(self, sound):
+        if sound is None:
+            return
+        try:
+            sound.play()
+        except pygame.error:
+            # Audio device may be unavailable (e.g., CI/headless).
+            pass
 
     def on_enter(self, app):
         self.app = app
         pygame.init()
         pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
+
+        # Cache common SFX so we don't reload on every event.
+        self.sfx_enemy_boom = None
+        self.sfx_player_boom = None
+        try:
+            self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
+            self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
+        except pygame.error:
+            # Mixer may fail on some systems; game should still run.
+            self.sfx_enemy_boom = None
+            self.sfx_player_boom = None
         
         # reset upgrade-tuned stats at run start
         settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
@@ -274,21 +294,24 @@ class GameState(State):
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
-                pygame.mixer.Sound.play(sfx_player_boom)
+                self._safe_play_sound(self.sfx_player_boom)
                 return
 
         # Score tracking for hits
         if collisions:
-            for bullet, enemies in collisions.items():
+            # Increment score for *any* enemy hit, regardless of enemy type.
+            self.enemy_hit_count += sum(len(enemies) for enemies in collisions.values()) 
+            # Fixed (was not counting all enemy kills to scores)
+            for enemies in collisions.values():
                 for enemy in enemies:
                     if hasattr(enemy, "take_damage"):
                         enemy.take_damage(1)
-                        self.enemy_hit_count += 1
                         if hasattr(enemy, "health") and enemy.health <= 0:
                             enemy.kill()
-                            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
-                            pygame.mixer.Sound.play(sfx_boom)
+
+                    # `groupcollide(..., dokill=True)` already removes the enemy.
+                    # Play boom for any enemy hit, including Swarm_Enemy.
+                    self._safe_play_sound(self.sfx_enemy_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
