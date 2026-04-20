@@ -9,7 +9,7 @@ class OptionsState(State):
         self.previous_state = previous_state
 
     def on_enter(self, app):
-        self.font = pygame.font.Font(None, 36)
+        self.font = pygame.font.Font(None, 30)
         self.title_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 48)
         self.options_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
 
