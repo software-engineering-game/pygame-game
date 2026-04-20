@@ -44,10 +44,13 @@ class MainMenuState(State):
             # Switching Selection
             if event.key == pygame.K_UP:
                 self.selected = (self.selected - 1) % len(self.options)
-                pygame.mixer.Sound.play(sfx_menu)
+                if settings.SFX_ON:
+                    pygame.mixer.Sound.play(sfx_menu)
+
             elif event.key == pygame.K_DOWN:
                 self.selected = (self.selected + 1) % len(self.options)
-                pygame.mixer.Sound.play(sfx_menu)
+                if settings.SFX_ON:    
+                    pygame.mixer.Sound.play(sfx_menu)
 
             # Confirming Menu Selection
             elif event.key == settings.keybind_menu_confirm:

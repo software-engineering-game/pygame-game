@@ -317,7 +317,9 @@ class GameState(State):
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                self._safe_play_sound(self.sfx_player_boom)
+                sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
+                if settings.SFX_ON:
+                    pygame.mixer.Sound.play(sfx_player_boom)
                 return
 
         # Score tracking for hits
@@ -331,10 +333,9 @@ class GameState(State):
                         enemy.take_damage(1)
                         if hasattr(enemy, "health") and enemy.health <= 0:
                             enemy.kill()
-
-                    # `groupcollide(..., dokill=True)` already removes the enemy.
-                    # Play boom for any enemy hit, including Swarm_Enemy.
-                    self._safe_play_sound(self.sfx_enemy_boom)
+                            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
+                            if settings.SFX_ON:    
+                                pygame.mixer.Sound.play(sfx_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:

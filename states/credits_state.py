@@ -64,7 +64,7 @@ class CreditsState(State):
 
         lines = [
             "Programmers:",
-            "Samaa Hediya, Nicholas Vuletich, Myah Nix",
+            "Nicholas Vuletich, Myah Nix, Samaa Hediya",
             "",
             "Enemy Behavior and Level Design:",
             "Bishal Regmi, Crawford Barnett",
