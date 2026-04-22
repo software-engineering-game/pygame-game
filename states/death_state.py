@@ -8,9 +8,10 @@ from states import utils
 from states.entities import Stars
 
 class DeathState(State):
-    def __init__(self, message="You Died", score=0):
+    def __init__(self, message="You Died", score=0, update_global_high_score=True):
         self.message = message
         self.score = score
+        self.update_global_high_score = update_global_high_score
         self.is_new_high = False
         self.high_score = 0
         self.title_font = "assets/fonts/PressStart2P-vaV7.ttf"
@@ -22,7 +23,10 @@ class DeathState(State):
         self.score_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
         self.info_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 14)
 
-        self.is_new_high = utils.save_high_score(self.score)
+        if self.update_global_high_score:
+            self.is_new_high = utils.save_high_score(self.score)
+        else:
+            self.is_new_high = False
         self.high_score = utils.load_high_score()
 
         #stop music
