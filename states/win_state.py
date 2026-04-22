@@ -7,11 +7,12 @@ import os
 import pygame
 
 class WinState(State):
-    def __init__(self, message, score):
+    def __init__(self, message, score, save_to_leaderboard=True):
         self.message = message
         self.score = score
+        self.save_to_leaderboard = save_to_leaderboard
         self.name = ""
-        self.entering_name = True
+        self.entering_name = save_to_leaderboard
         self.leaderboard = []
 
     def on_enter(self, app):
@@ -50,6 +51,9 @@ class WinState(State):
                     app.change_state(MainMenuState())
 
     def save_score(self):
+        if not self.save_to_leaderboard:
+            return
+
         file_path = "leaderboard.json"
 
         
@@ -106,18 +110,26 @@ class WinState(State):
             screen.blit(name_text, name_text.get_rect(center=(app.width // 2, app.height // 2 + 60)))
 
         else:
-            # Leaderboard title
-            lb_title = font_small.render("Leaderboard", True, (255, 255, 0))
-            screen.blit(lb_title, lb_title.get_rect(center=(app.width // 2, app.height // 2 + 40)))
+            if self.save_to_leaderboard:
+                # Leaderboard title
+                lb_title = font_small.render("Leaderboard", True, (255, 255, 0))
+                screen.blit(lb_title, lb_title.get_rect(center=(app.width // 2, app.height // 2 + 40)))
 
-            # Show scores
-            for i, entry in enumerate(self.leaderboard):
-                text = font_small.render(
-                    f"{i+1}. {entry['name']} - {entry['score']}",
+                # Show scores
+                for i, entry in enumerate(self.leaderboard):
+                    text = font_small.render(
+                        f"{i+1}. {entry['name']} - {entry['score']}",
+                        True,
+                        (255, 255, 255)
+                    )
+                    screen.blit(text, (app.width // 2 - 100, app.height // 2 + 80 + i * 30))
+            else:
+                note = font_small.render(
+                    "Custom level — not saved to leaderboard",
                     True,
-                    (255, 255, 255)
+                    (180, 200, 180),
                 )
-                screen.blit(text, (app.width // 2 - 100, app.height // 2 + 80 + i * 30))
+                screen.blit(note, note.get_rect(center=(app.width // 2, app.height // 2 + 50)))
 
             cont_text = font_small.render("Press Enter to return to menu", True, (180, 180, 180))
             screen.blit(cont_text, cont_text.get_rect(center=(app.width // 2, app.height - 50)))

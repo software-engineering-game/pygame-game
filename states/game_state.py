@@ -20,6 +20,10 @@ class GameState(State):
     music_track = "game"
     current_level_num = 0
 
+    def __init__(self, custom_level=False, custom_level_path=None):
+        self.custom_level = custom_level
+        self.custom_level_path = custom_level_path
+
     # progression state
     level_sequence = utils.get_level_sequence()
     if not level_sequence:
@@ -46,6 +50,30 @@ class GameState(State):
         self.app = app
         pygame.init()
         pygame.mixer.init()
+
+        self.custom_level_mode = False
+        self.custom_level_dict = None
+        load_path = self.custom_level_path
+        if load_path:
+            custom_dict, load_err = utils.load_custom_level_from_path(load_path)
+            if custom_dict is None:
+                from states.main_menu_state import MainMenuState
+
+                notice = load_err or "Could not load custom level"
+                app.change_state(MainMenuState(menu_notice=notice))
+                return
+            self.custom_level_mode = True
+            self.custom_level_dict = custom_dict
+        elif self.custom_level:
+            custom_dict, load_err = utils.load_custom_level()
+            if custom_dict is None:
+                from states.main_menu_state import MainMenuState
+
+                notice = load_err or "Could not load custom level"
+                app.change_state(MainMenuState(menu_notice=notice))
+                return
+            self.custom_level_mode = True
+            self.custom_level_dict = custom_dict
 
         # Cache common SFX so we don't reload on every event.
         self.sfx_enemy_boom = None
@@ -90,12 +118,18 @@ class GameState(State):
 
 
         # progression state
-        self.level_sequence = utils.get_level_sequence()
-        if not self.level_sequence:
-            raise ValueError("No levels found in level_data.json")
-        self.level_index = 0
-        self.current_level_name = self.level_sequence[self.level_index]
-        self.current_level_data = utils.load_level(self.current_level_name)
+        if self.custom_level_mode:
+            self.level_sequence = [utils.CUSTOM_LEVEL_KEY]
+            self.level_index = 0
+            self.current_level_name = utils.CUSTOM_LEVEL_KEY
+            self.current_level_data = self.custom_level_dict
+        else:
+            self.level_sequence = utils.get_level_sequence()
+            if not self.level_sequence:
+                raise ValueError("No levels found in level_data.json")
+            self.level_index = 0
+            self.current_level_name = self.level_sequence[self.level_index]
+            self.current_level_data = utils.load_level(self.current_level_name)
         self.current_wave_index = 0
         self.pending_level_index = None
         self.waiting_for_upgrade = False
@@ -104,10 +138,17 @@ class GameState(State):
 
         # Spawns Level
         self.enemy_ships.empty()
-        self.bg_image = utils.build_level(
-            level_name=self.current_level_name,
-            enemy_ships=self.enemy_ships
-        )
+        if self.custom_level_mode:
+            self.bg_image = utils.build_level_from_dict(
+                self.custom_level_dict,
+                self.enemy_ships,
+                level_label=utils.CUSTOM_LEVEL_KEY,
+            )
+        else:
+            self.bg_image = utils.build_level(
+                level_name=self.current_level_name,
+                enemy_ships=self.enemy_ships,
+            )
         self.current_level_num += 1
 
         self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
@@ -141,7 +182,10 @@ class GameState(State):
         if self.pending_level_index is not None:
             self.level_index = self.pending_level_index
             self.current_level_name = self.level_sequence[self.level_index]
-            self.current_level_data = utils.load_level(self.current_level_name)
+            if self.custom_level_mode and self.custom_level_dict is not None:
+                self.current_level_data = self.custom_level_dict
+            else:
+                self.current_level_data = utils.load_level(self.current_level_name)
             self.current_wave_index = 0
 
         self.pending_level_index = None
@@ -151,10 +195,17 @@ class GameState(State):
         self.enemy_ships.empty()
         self.enemy_bullets.empty()
         self.ally_bullets.empty()
-        self.bg_image = utils.build_level(
-            level_name=self.current_level_name,
-            enemy_ships=self.enemy_ships
-        )
+        if self.custom_level_mode and self.custom_level_dict is not None:
+            self.bg_image = utils.build_level_from_dict(
+                self.custom_level_dict,
+                self.enemy_ships,
+                level_label=utils.CUSTOM_LEVEL_KEY,
+            )
+        else:
+            self.bg_image = utils.build_level(
+                level_name=self.current_level_name,
+                enemy_ships=self.enemy_ships,
+            )
         self.current_level_num += 1
 
         # short countdown before next wave starts
@@ -301,7 +352,13 @@ class GameState(State):
             self.player.check_collisions(self.bullet_hitboxes)
         ):
             if hasattr(app, "testing") and app.testing:
-                app.change_state(DeathState("You Died", self.enemy_hit_count))
+                app.change_state(
+                    DeathState(
+                        "You Died",
+                        self.enemy_hit_count,
+                        update_global_high_score=not self.custom_level_mode,
+                    )
+                )
                 return
 
             pygame.sprite.spritecollide(self.player, self.enemy_ships, False)
@@ -322,7 +379,13 @@ class GameState(State):
 
 
             if self.lives <= 0:
-                app.change_state(DeathState("You Died", self.enemy_hit_count))
+                app.change_state(
+                    DeathState(
+                        "You Died",
+                        self.enemy_hit_count,
+                        update_global_high_score=not self.custom_level_mode,
+                    )
+                )
                 sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
                 if settings.SFX_ON:
                     pygame.mixer.Sound.play(sfx_player_boom)
@@ -348,7 +411,13 @@ class GameState(State):
             is_last_level = self.level_index >= len(self.level_sequence) - 1
 
             if is_last_level:
-                app.change_state(WinState("You Win!", self.enemy_hit_count))
+                app.change_state(
+                    WinState(
+                        "You Win!",
+                        self.enemy_hit_count,
+                        save_to_leaderboard=not self.custom_level_mode,
+                    )
+                )
                 return
 
             self.waiting_for_upgrade = True

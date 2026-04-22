@@ -18,6 +18,7 @@ os.chdir(PROJECT_ROOT)
 from states.death_state import DeathState
 from states.entities import Bullet
 from states.game_state import GameState
+from states import utils
 
 pygame.init()
 pygame.display.set_mode((1, 1))  # tiny window to test the asset since it needs a display
@@ -83,6 +84,33 @@ def test_game_state_init():
 
     assert game_state.player is not None
     assert len(game_state.enemy_ships) > 0
+
+
+def test_game_state_custom_level_init():
+    game_state = GameState(custom_level=True)
+    game_state.on_enter(FakeApp())
+
+    assert game_state.custom_level_mode is True
+    assert game_state.player is not None
+    assert len(game_state.enemy_ships) > 0
+    assert game_state.level_sequence == [utils.CUSTOM_LEVEL_KEY]
+
+
+def test_game_state_custom_level_by_path():
+    import json
+    import tempfile
+
+    data = utils.default_custom_level_dict()
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(data, f)
+        path = f.name
+    try:
+        game_state = GameState(custom_level_path=path)
+        game_state.on_enter(FakeApp())
+        assert game_state.custom_level_mode is True
+        assert len(game_state.enemy_ships) > 0
+    finally:
+        os.unlink(path)
 
 #----------Player Stays In Bounds Test----------
 

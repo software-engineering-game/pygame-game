@@ -5,6 +5,9 @@ from states.entities import Stars
 from states import utils
 
 class MainMenuState(State):
+    def __init__(self, menu_notice=None):
+        self._menu_notice = menu_notice
+
     def on_enter(self, app):
         # Time for stars
         self.t = 0
@@ -31,9 +34,22 @@ class MainMenuState(State):
 
         self.high_score = utils.load_high_score()
 
+        self.menu_notice = self._menu_notice
+        self._menu_notice = None
+        self.menu_notice_timer = 5.0 if self.menu_notice else 0.0
+
         # Menu options
-        self.options = ["Start Game", "Leaderboard", "How To Play", "Options", "Credits", "Quit"]
-        
+        self.options = [
+            "Start Game",
+            "Play Custom",
+            "Make Level",
+            "Leaderboard",
+            "How To Play",
+            "Options",
+            "Credits",
+            "Quit",
+        ]
+
         if not hasattr(self, "selected"):
             self.selected = 0
 
@@ -57,25 +73,36 @@ class MainMenuState(State):
 
                 if self.selected == 0:
                     from states.game_state import GameState
+
                     app.change_state(GameState())
 
                 elif self.selected == 1:
+                    from states.play_custom_select_state import PlayCustomSelectState
+
+                    app.change_state(PlayCustomSelectState(self))
+
+                elif self.selected == 2:
+                    from states.custom_level_state import CustomLevelState
+
+                    app.change_state(CustomLevelState(self))
+
+                elif self.selected == 3:
                     from states.leaderboard_state import LeaderboardState
                     app.change_state(LeaderboardState())
 
-                elif self.selected == 2:
+                elif self.selected == 4:
                     from states.how_to_play_state import HowToPlayState
                     app.change_state(HowToPlayState(self))
 
-                elif self.selected == 3:
+                elif self.selected == 5:
                     from states.options_state import OptionsState
                     app.change_state(OptionsState(self))
 
-                elif self.selected == 4:
+                elif self.selected == 6:
                     from states.credits_state import CreditsState
                     app.change_state(CreditsState(self))
-                
-                elif self.selected == 5:
+
+                elif self.selected == 7:
                     from states.confirm_quit_state import ConfirmQuitState
                     app.change_state(ConfirmQuitState(self))
 
@@ -86,6 +113,10 @@ class MainMenuState(State):
 
     def update(self, app, dt):
         self.t += dt
+        if self.menu_notice_timer > 0:
+            self.menu_notice_timer -= dt
+            if self.menu_notice_timer <= 0:
+                self.menu_notice = None
 
     def draw(self, app, screen):
         # Background
@@ -109,12 +140,12 @@ class MainMenuState(State):
             screen.blit(hs_text, hs_rect)
 
         # Menu nav
-        menu_top = app.height // 3 + 50
+        menu_top = app.height // 4 + 10
         x = 60
-        line_height = 60
+        line_height = 48
 
         for i, option in enumerate(self.options):
-            y = menu_top + 40 + i * line_height
+            y = menu_top + 30 + i * line_height
 
             if i == self.selected:
                 prefix = "> "
@@ -122,8 +153,12 @@ class MainMenuState(State):
             else:
                 prefix = "  "
                 color = (160, 160, 160)
-            
+
             text = self.menu_font.render(prefix + option, True, color)
             screen.blit(text, (x, y))
 
-        
+        if self.menu_notice:
+            notice = self.score_font.render(self.menu_notice, True, (255, 120, 120))
+            nr = notice.get_rect(center=(app.width // 2, app.height - 36))
+            screen.blit(notice, nr)
+
