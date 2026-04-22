@@ -84,6 +84,7 @@ def load_all_levels():
 def get_level_sequence():
     levels = load_all_levels()
     # Skip test/debug levels from normal progression flow.
+    #should have a more robust way of distinguishing levels
     playable_levels = {
         level_name: level_data
         for level_name, level_data in levels.items()
