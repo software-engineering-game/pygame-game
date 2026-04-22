@@ -4,7 +4,7 @@ import random
 from states import settings
 from states import utils
 from states import entities
-from states import music_manager
+#from states import music_manager
 from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
 from states.upgrade_state import UpgradeState
@@ -45,21 +45,23 @@ class GameState(State):
     def on_enter(self, app):
         self.app = app
         pygame.init()
-        pygame.mixer.init()
+        #pygame.mixer.init()
 
         # Cache common SFX so we don't reload on every event.
         self.sfx_enemy_boom = None
         self.sfx_player_boom = None
         try:
-            self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
-            self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
+            pass
+            #self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
+            #self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
         except pygame.error:
             # Mixer may fail on some systems; game should still run.
             self.sfx_enemy_boom = None
             self.sfx_player_boom = None
 
         if hasattr(app, "music"):
-            app.music.play_track(self.music_track)
+            pass
+            #app.music.play_track(self.music_track)
 
         # reset upgrade-tuned stats at run start
         settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
@@ -87,20 +89,6 @@ class GameState(State):
 
         if hasattr(app, "testing") and app.testing:
             self.countdown_active = False
-
-
-        # progression state
-        self.level_sequence = utils.get_level_sequence()
-        if not self.level_sequence:
-            raise ValueError("No levels found in level_data.json")
-        self.level_index = 0
-        self.current_level_name = self.level_sequence[self.level_index]
-        self.current_level_data = utils.load_level(self.current_level_name)
-        self.current_wave_index = 0
-        self.pending_level_index = None
-        self.waiting_for_upgrade = False
-
-        # spawn first wave of first level
 
         # Spawns Level
         self.enemy_ships.empty()
@@ -206,55 +194,6 @@ class GameState(State):
         player_pos = (self.player.rect.centerx, self.player.rect.centery)
         self.enemy_ships.update(player_pos=player_pos)
 
-        # for enemy in self.enemy_ships:
-        #     if not hasattr(enemy, "move_timer"):
-        #         enemy.pos = pygame.Vector2(enemy.rect.x, enemy.rect.y)
-        #         enemy.move_timer = random.uniform(1.0, 3.0)
-        #         enemy.pause_timer = 0
-        #         enemy.velocity = pygame.Vector2(
-        #             random.uniform(-30, 30),
-        #             random.uniform(40, 80)
-        #         )
-        #         enemy.shoot_cooldown = random.uniform(2.0, 4.0)
-        #         enemy.can_shoot = False
-
-        #     if enemy.pause_timer > 0:
-        #         enemy.pause_timer -= dt
-        #     else:
-        #         enemy.pos += enemy.velocity * dt
-        #         enemy.rect.x = int(enemy.pos.x)
-        #         enemy.rect.y = int(enemy.pos.y)
-
-        #         enemy.move_timer -= dt
-
-        #         if enemy.move_timer <= 0:
-        #             if random.random() < 0.4:
-        #                 enemy.pause_timer = random.uniform(0.5, 1.5)
-        #             else:
-        #                 enemy.velocity = pygame.Vector2(
-        #                     random.uniform(-30, 30),
-        #                     random.uniform(40, 80)
-        #                 )
-
-        #             enemy.move_timer = random.uniform(1.0, 3.0)
-
-        # for enemy in self.enemy_ships:
-        #     if enemy.rect.top > app.height:
-        #         enemy.pos.y = -enemy.rect.height
-        #         enemy.pos.x = random.randint(0, app.width - enemy.rect.width)
-        #         enemy.rect.x = int(enemy.pos.x)
-        #         enemy.rect.y = int(enemy.pos.y)
-
-        #     if enemy.rect.left < 0:
-        #         enemy.pos.x = 0
-        #         enemy.velocity.x *= -1
-        #         enemy.rect.x = int(enemy.pos.x)
-
-        #     elif enemy.rect.right > app.width:
-        #         enemy.pos.x = app.width - enemy.rect.width
-        #         enemy.velocity.x *= -1
-        #         enemy.rect.x = int(enemy.pos.x)
-
         # Refresh bullet hitboxes after bullets move
         self.bullet_hitboxes = utils.extract_hitboxes(self.enemy_bullets)
 
@@ -317,9 +256,10 @@ class GameState(State):
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
+                #sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
                 if settings.SFX_ON:
-                    pygame.mixer.Sound.play(sfx_player_boom)
+                    pass
+                    #pygame.mixer.Sound.play(sfx_player_boom)
                 return
 
         # Score tracking for hits
@@ -333,9 +273,10 @@ class GameState(State):
                         enemy.take_damage(1)
                         if hasattr(enemy, "health") and enemy.health <= 0:
                             enemy.kill()
-                            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
-                            if settings.SFX_ON:    
-                                pygame.mixer.Sound.play(sfx_boom)
+                            #sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
+                            if settings.SFX_ON:
+                                pass
+                                #pygame.mixer.Sound.play(sfx_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:

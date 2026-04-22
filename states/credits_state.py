@@ -70,7 +70,7 @@ class CreditsState(State):
             "Bishal Regmi, Crawford Barnett",
             "",
             "Audio Programming and Design:",
-            "Ian Scheetz",
+            "Ian Scheetz, Nathan Naples",
             "",
             "Artist:",
             "Thomas Bond",
