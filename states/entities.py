@@ -66,7 +66,7 @@ class Bullet(pygame.sprite.Sprite):
     def update(self):
         self.rect.x += self.x_direct * self.speed
         self.rect.y += self.y_direct * self.speed
-        
+
         # Remove bullet if it goes off screen
         if self.rect.bottom < 0:
             self.kill()
@@ -301,7 +301,10 @@ class Bomber_Enemy(Game_Entity):
         # Bomber Mechanics
         self.travel_distance = 340
         self.move_right = True
+
+        # Shooting Tracking
         self.shooting = False
+        self.shooting_cooldown = 5 # seconds
 
     def shoot(self, bullet_group):
         # for when I write the bomber specific mechanics
