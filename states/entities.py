@@ -66,8 +66,7 @@ class Bullet(pygame.sprite.Sprite):
     def update(self):
         self.rect.x += self.x_direct * self.speed
         self.rect.y += self.y_direct * self.speed
-        #self.hitbox.x += self.x_direct * self.speed
-        #self.hitbox.y += self.y_direct * self.speed
+        
         # Remove bullet if it goes off screen
         if self.rect.bottom < 0:
             self.kill()
@@ -295,6 +294,10 @@ class Bomber_Enemy(Game_Entity):
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
 
+        # Movement Variabes
+        self.dx = 0
+        self.dy = 0
+
         # Bomber Mechanics
         self.travel_distance = 340
         self.move_right = True
@@ -308,17 +311,17 @@ class Bomber_Enemy(Game_Entity):
         
         # If the bomber is pausing to shoot
         if self.shooting:
-            dx = dy = 0
+            self.dx = self.dy = 0
         # Move in a horizontal Line
         else:
             if self.move_right:
-                dx = self.speed
+                self.dx = self.speed
             else:
-                dx = -1 * self.speed
+                self.dx = -1 * self.speed
 
             # Consistently move down gradually
-            self.vy = random.uniform(0.8, 1.5)
-            self.vy = max(0.5, min(2, self.vy))
+            self.dy = random.uniform(0.8, 1.2)
+            self.dy = max(0.5, min(1.5, self.dy))
 
 
         # If enemy goes off right -> move left
@@ -334,7 +337,7 @@ class Bomber_Enemy(Game_Entity):
             self.rect.y = random.randint(-100, -40)
 
         # Move based on Velocity
-        self.rect.x += dx
-        self.rect.y += dy
+        self.rect.x += self.dx
+        self.rect.y += self.dy
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
