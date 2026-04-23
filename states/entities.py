@@ -226,9 +226,10 @@ class Basic_Enemy(Game_Entity):
             self.vx = max(-2, min(2, self.vx))
             self.vy = max(0.5, min(2, self.vy))
 
+        # If enemy goes off right -> reset to left
         if self.rect.right < 0:
             self.rect.left = settings.WIDTH
-
+        # if enemy goes off left -> reset to right
         elif self.rect.left > settings.WIDTH:
             self.rect.right = 0
 
@@ -240,8 +241,8 @@ class Basic_Enemy(Game_Entity):
         # Move based on velocity
         self.rect.x += self.vx
         self.rect.y += self.vy
-        self.hitbox.x += self.vx
-        self.hitbox.y += self.vy
+        self.hitbox.centerx = self.rect.centerx
+        self.hitbox.centery = self.rect.centery
 
 # Swarm Enemy Type
 class Swarm_Enemy(Game_Entity):
@@ -278,6 +279,7 @@ class Swarm_Enemy(Game_Entity):
         self.image = pygame.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect(center=center)
 
+        # Move based on velocity
         self.rect.x += dx
         self.rect.y += dy
         self.hitbox.x += dx
@@ -293,10 +295,46 @@ class Bomber_Enemy(Game_Entity):
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
 
+        # Bomber Mechanics
+        self.travel_distance = 340
+        self.move_right = True
+        self.shooting = False
+
     def shoot(self, bullet_group):
         # for when I write the bomber specific mechanics
         pass
     
     def update(self, player_pos):
-        # Enemy behavior
-        pass
+        
+        # If the bomber is pausing to shoot
+        if self.shooting:
+            dx = dy = 0
+        # Move in a horizontal Line
+        else:
+            if self.move_right:
+                dx = self.speed
+            else:
+                dx = -1 * self.speed
+
+            # Consistently move down gradually
+            self.vy = random.uniform(0.8, 1.5)
+            self.vy = max(0.5, min(2, self.vy))
+
+
+        # If enemy goes off right -> move left
+        if self.rect.right > settings.WIDTH - 40:
+            self.move_right = False
+        # if enemy goes off left -> move right
+        elif self.rect.left < 40:
+            self.rect.right = True
+
+        # If enemy goes off bottom → reset to top
+        if self.rect.top > settings.HEIGHT:
+            self.rect.x = random.randint(50, settings.WIDTH - 50)
+            self.rect.y = random.randint(-100, -40)
+
+        # Move based on Velocity
+        self.rect.x += dx
+        self.rect.y += dy
+        self.hitbox.centerx = self.rect.centerx
+        self.hitbox.centery = self.rect.centery
