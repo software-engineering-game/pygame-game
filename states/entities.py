@@ -84,7 +84,7 @@ class Player(Game_Entity):
         super().__init__(frames, speed, start_pos)
 
         # Hitbox
-        self.hitbox = self.rect.scale_by(0.5)
+        self.hitbox = self.rect.scale_by(0.6)
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
 
