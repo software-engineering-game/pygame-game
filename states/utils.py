@@ -85,6 +85,7 @@ def get_level_sequence():
     levels = load_all_levels()
     # Skip test/debug levels from normal progression flow.
     #should have a more robust way of distinguishing levels
+    #also need a way to create randomized level_sequence
     playable_levels = {
         level_name: level_data
         for level_name, level_data in levels.items()

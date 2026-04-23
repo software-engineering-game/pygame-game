@@ -334,12 +334,6 @@ class GameState(State):
         )
         screen.blit(level_text, (10, 45))
 
-        #pygame.draw.rect(screen, (0,0,255), self.player.hitbox)
-        #if len(self.enemy_hitboxes) > 0:
-        #    pygame.draw.rect(screen, (0,0,255), self.enemy_hitboxes[0])
-        #if len(self.bullet_hitboxes) > 0:
-        #    pygame.draw.rect(screen, (0,0,255), self.bullet_hitboxes[0])
-
         # Draw Lives Counter
         live_count = self.lives_font.render(f"x{self.lives}", True, font_color)
         screen.blit(self.lives_icon,(20, screen.get_height() - 45))
