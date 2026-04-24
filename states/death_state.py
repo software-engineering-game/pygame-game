@@ -27,7 +27,8 @@ class DeathState(State):
 
         #stop music
         if hasattr(app, "music"):
-            app.music.stop()
+            pass
+            #app.music.stop()
 
         # Time for stars
         self.t = 0
