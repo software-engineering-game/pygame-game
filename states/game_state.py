@@ -21,11 +21,11 @@ class GameState(State):
     current_level_num = 0
 
     # progression state
-    level_sequence = utils.get_level_sequence()
-    if not level_sequence:
+    intro_levels, random_levels = utils.get_level_sequence()
+    if not intro_levels:
         raise ValueError("No levels found in level_data.json")
     level_index = 0
-    current_level_name = level_sequence[level_index]
+    current_level_name = intro_levels[level_index]
     current_level_data = utils.load_level(current_level_name)
     pending_level_index = None
     waiting_for_upgrade = False
@@ -128,7 +128,7 @@ class GameState(State):
     def _resume_after_upgrade(self):
         if self.pending_level_index is not None:
             self.level_index = self.pending_level_index
-            self.current_level_name = self.level_sequence[self.level_index]
+            self.current_level_name = self.intro_levels[self.level_index]
             self.current_level_data = utils.load_level(self.current_level_name)
             self.current_wave_index = 0
 
@@ -280,7 +280,7 @@ class GameState(State):
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
-            is_last_level = self.level_index >= len(self.level_sequence) - 1
+            is_last_level = self.level_index >= len(self.intro_levels) - 1
 
             if is_last_level:
                 app.change_state(WinState("You Win!", self.enemy_hit_count))
@@ -295,7 +295,6 @@ class GameState(State):
             app.change_state(UpgradeState(app, self))
             return
           
-
     def draw(self, app, screen):
         # Background
         screen.fill(self.bg_color)

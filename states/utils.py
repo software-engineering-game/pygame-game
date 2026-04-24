@@ -81,11 +81,18 @@ def load_all_levels():
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
+def get_intro_levels(levels):
+    # Skip test/debug elvels from normal progression flow.
+    pass
+
+
 def get_level_sequence():
     levels = load_all_levels()
-    # Skip test/debug levels from normal progression flow.
     #should have a more robust way of distinguishing levels
     #also need a way to create randomized level_sequence
+    #get_intro_levels(levels)
+
+    # Skip test/debug levels from normal progression flow.
     playable_levels = {
         level_name: level_data
         for level_name, level_data in levels.items()
@@ -95,7 +102,8 @@ def get_level_sequence():
         playable_levels.items(),
         key=lambda item: item[1].get("level_num", 999999)
     )
-    return [level_name for level_name, _ in sorted_levels]
+    # returns the first five levels and the randomized levels
+    return [level_name for level_name, _ in sorted_levels], []
 
 def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing):
     for j in range(size[1]):     # Rows
