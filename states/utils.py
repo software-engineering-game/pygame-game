@@ -92,9 +92,6 @@ def get_intro_levels(levels):
         and "test" not in level_name.lower()
     }
 
-    print("Intro levels is grabbing:")
-    print(intro_levels)
-
     return intro_levels
 
 # Returns a dictionary of levels valid for random selection
@@ -108,9 +105,6 @@ def get_random_levels(levels):
         and "test" not in level_name.lower()
     }
 
-    print("Random levels is grabbing:")
-    print(random_levels)
-
     return random_levels
 
 def get_level_sequence():
@@ -118,7 +112,12 @@ def get_level_sequence():
     #also need a way to create randomized level_sequence
 
     test_seq_func = get_intro_levels(levels)
+    print("Intro levels is grabbing:")
+    print(test_seq_func)
+
     test_rand_func = get_random_levels(levels)
+    print("Random levels is grabbing:")
+    print(test_rand_func)
 
     # Skip test/debug levels from normal progression flow.
     playable_levels = {
