@@ -81,16 +81,31 @@ def load_all_levels():
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
+# Pulls out the introduction level (1-5) from a dictionary of all levels
 def get_intro_levels(levels):
-    # Skip test/debug elvels from normal progression flow.
-    pass
+    # Skip test/debug levels from normal progression flow.
+    # Skip any levels with level_num value greater than 5
+    intro_levels = {
+        level_name: level_data
+        for level_name, level_data in levels.items()
+        if levels[level_name].get("level_num", 6) < 6
+        and "test" not in level_name.lower()
+    }
 
+    print("Intro levels is grabbing:")
+    print(intro_levels)
+
+    return intro_levels
+
+#
+def get_random_levels():
+    pass
 
 def get_level_sequence():
     levels = load_all_levels()
-    #should have a more robust way of distinguishing levels
     #also need a way to create randomized level_sequence
-    #get_intro_levels(levels)
+
+    test_seq_func = get_intro_levels(levels)
 
     # Skip test/debug levels from normal progression flow.
     playable_levels = {
