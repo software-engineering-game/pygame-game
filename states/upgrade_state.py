@@ -16,12 +16,12 @@ class UpgradeState(State):
         self.options = ["Bullet Speed +2", "Fire Rate +10%"]
 
     def handle_event(self, app, event):
-        #sfx_menu = pygame.mixer.Sound("assets/sfx_ogg/menu1.ogg")
+        sfx_menu = pygame.mixer.Sound("assets/sfx_ogg/menu1.ogg")
         if event.type == pygame.KEYDOWN:
 
             if event.key in (pygame.K_UP, pygame.K_DOWN):
                 self.selected = (self.selected + 1) % 2
-                #pygame.mixer.Sound.play(sfx_menu)
+                pygame.mixer.Sound.play(sfx_menu)
             elif event.key == settings.keybind_menu_confirm:
                 if self.selected == 0:
                     settings.bullet_spd = min(25, settings.bullet_spd + 2)
