@@ -130,6 +130,7 @@ def get_level_sequence():
     # returns the first five levels and the randomized levels
     return [level_name for level_name, _ in sorted_levels], []
 
+    # Currently returns 'ValueError: too many values to unpack (expected 2)'
     # return [level_name for level_name, _ in intro_levels], [level_name for level_name, _ in rand_levels]
 
 
