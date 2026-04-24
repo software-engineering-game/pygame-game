@@ -4,7 +4,7 @@ import random
 from states import settings
 from states import utils
 from states import entities
-#from states import music_manager
+from states import music_manager
 from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
 from states.upgrade_state import UpgradeState
@@ -45,21 +45,23 @@ class GameState(State):
     def on_enter(self, app):
         self.app = app
         pygame.init()
-        pygame.mixer.init()
+        #pygame.mixer.init()
 
         # Cache common SFX so we don't reload on every event.
         self.sfx_enemy_boom = None
         self.sfx_player_boom = None
         try:
-            self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
-            self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
+            pass
+            #self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
+            #self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
         except pygame.error:
             # Mixer may fail on some systems; game should still run.
             self.sfx_enemy_boom = None
             self.sfx_player_boom = None
 
         if hasattr(app, "music"):
-            app.music.play_track(self.music_track)
+            pass
+            #app.music.play_track(self.music_track)
 
         # reset upgrade-tuned stats at run start
         settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
@@ -254,9 +256,10 @@ class GameState(State):
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
+                #sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
                 if settings.SFX_ON:
-                    pygame.mixer.Sound.play(sfx_player_boom)
+                    pass
+                    #pygame.mixer.Sound.play(sfx_player_boom)
                 return
 
         # Score tracking for hits
@@ -270,10 +273,10 @@ class GameState(State):
                         enemy.take_damage(1)
                         if hasattr(enemy, "health") and enemy.health <= 0:
                             enemy.kill()
-                            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
+                            #sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
                             if settings.SFX_ON:
                                 pass
-                                pygame.mixer.Sound.play(sfx_boom)
+                                #pygame.mixer.Sound.play(sfx_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
