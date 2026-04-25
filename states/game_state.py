@@ -32,14 +32,13 @@ class GameState(State):
 
     enemy_hit_count = 0
     lives = 3
-    # Ensures that systems do not crash if they do not have audio support in them 
+
     def _safe_play_sound(self, sound):
         if sound is None:
             return
         try:
             sound.play()
         except pygame.error:
-            # Audio device may be unavailable (e.g., CI/headless).
             pass
 
     def on_enter(self, app):
@@ -54,7 +53,6 @@ class GameState(State):
             self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
             self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
         except pygame.error:
-            # Mixer may fail on some systems; game should still run.
             self.sfx_enemy_boom = None
             self.sfx_player_boom = None
 
@@ -82,12 +80,11 @@ class GameState(State):
         self.enemy_bullets = pygame.sprite.Group()
 
         # Countdown for player readiness
-        self.countdown = 3.0   # seconds
+        self.countdown = 3.0
         self.countdown_active = True
 
         if hasattr(app, "testing") and app.testing:
             self.countdown_active = False
-
 
         # progression state
         self.level_sequence = utils.get_level_sequence()
@@ -99,8 +96,6 @@ class GameState(State):
         self.current_wave_index = 0
         self.pending_level_index = None
         self.waiting_for_upgrade = False
-
-        # spawn first wave of first level
 
         # Spawns Level
         self.enemy_ships.empty()
@@ -117,7 +112,6 @@ class GameState(State):
         self.player_speed = 5
         self.player_start_pos = (app.width // 2, app.height - 50)
         self.player = entities.Player_Auto(
-            # Loads the sprite sheet into the player's frames
             frames=utils.load_spritesheet(
                 sheet_name="player_auto_ship.png",
                 frame_width=utils.FRAME_SIZE,
@@ -147,7 +141,6 @@ class GameState(State):
         self.pending_level_index = None
         self.waiting_for_upgrade = False
 
-        # reset projectiles between waves so transitions are fair
         self.enemy_ships.empty()
         self.enemy_bullets.empty()
         self.ally_bullets.empty()
@@ -157,7 +150,6 @@ class GameState(State):
         )
         self.current_level_num += 1
 
-        # short countdown before next wave starts
         self.countdown = 1.5
         self.countdown_active = True
 
@@ -166,12 +158,11 @@ class GameState(State):
 
     def handle_event(self, app, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            # Save player position before pausing
             GameState.saved_player_position = self.player.rect.center
             from states.pause_state import PauseScreen
             app.change_state(PauseScreen(app, self))
 
-                # Keybind to quickly debug something
+        # Debug key
         if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
             self.waiting_for_upgrade = True
             self.pending_level_index = self.level_index
@@ -189,7 +180,7 @@ class GameState(State):
 
             if self.countdown <= 0:
                 self.countdown_active = False
-            return # returns it to main.py loop
+            return
 
         keys = pygame.key.get_pressed()
         self.player.update(keys)
@@ -206,58 +197,8 @@ class GameState(State):
         player_pos = (self.player.rect.centerx, self.player.rect.centery)
         self.enemy_ships.update(player_pos=player_pos)
 
-        # for enemy in self.enemy_ships:
-        #     if not hasattr(enemy, "move_timer"):
-        #         enemy.pos = pygame.Vector2(enemy.rect.x, enemy.rect.y)
-        #         enemy.move_timer = random.uniform(1.0, 3.0)
-        #         enemy.pause_timer = 0
-        #         enemy.velocity = pygame.Vector2(
-        #             random.uniform(-30, 30),
-        #             random.uniform(40, 80)
-        #         )
-        #         enemy.shoot_cooldown = random.uniform(2.0, 4.0)
-        #         enemy.can_shoot = False
-
-        #     if enemy.pause_timer > 0:
-        #         enemy.pause_timer -= dt
-        #     else:
-        #         enemy.pos += enemy.velocity * dt
-        #         enemy.rect.x = int(enemy.pos.x)
-        #         enemy.rect.y = int(enemy.pos.y)
-
-        #         enemy.move_timer -= dt
-
-        #         if enemy.move_timer <= 0:
-        #             if random.random() < 0.4:
-        #                 enemy.pause_timer = random.uniform(0.5, 1.5)
-        #             else:
-        #                 enemy.velocity = pygame.Vector2(
-        #                     random.uniform(-30, 30),
-        #                     random.uniform(40, 80)
-        #                 )
-
-        #             enemy.move_timer = random.uniform(1.0, 3.0)
-
-        # for enemy in self.enemy_ships:
-        #     if enemy.rect.top > app.height:
-        #         enemy.pos.y = -enemy.rect.height
-        #         enemy.pos.x = random.randint(0, app.width - enemy.rect.width)
-        #         enemy.rect.x = int(enemy.pos.x)
-        #         enemy.rect.y = int(enemy.pos.y)
-
-        #     if enemy.rect.left < 0:
-        #         enemy.pos.x = 0
-        #         enemy.velocity.x *= -1
-        #         enemy.rect.x = int(enemy.pos.x)
-
-        #     elif enemy.rect.right > app.width:
-        #         enemy.pos.x = app.width - enemy.rect.width
-        #         enemy.velocity.x *= -1
-        #         enemy.rect.x = int(enemy.pos.x)
-
         # Refresh bullet hitboxes after bullets move
         self.bullet_hitboxes = utils.extract_hitboxes(self.enemy_bullets)
-
 
         # Enemy auto-fire logic for basic enemies
         for enemy in self.enemy_ships:
@@ -285,13 +226,12 @@ class GameState(State):
         self.ally_bullets.update()
         self.enemy_bullets.update()
 
-
         # Checks if ally_bullet hit an enemy_ship
         collisions = pygame.sprite.groupcollide(
             self.ally_bullets,
             self.enemy_ships,
             True,
-            True
+            False
         )
 
         self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
@@ -308,10 +248,8 @@ class GameState(State):
             pygame.sprite.spritecollide(self.player, self.enemy_bullets, True)
 
             self.lives -= 1
-            # Sets Invinicibility
             self.player_invincible = True
             self.player_invincible_timer = 1.0
-            # Resets player position
             self.player.rect.center = self.player_start_pos
             self.player.hitbox.center = self.player_start_pos
 
@@ -322,38 +260,49 @@ class GameState(State):
 
         # Score tracking for hits
         if collisions:
-            # Increment score for *any* enemy hit, regardless of enemy type.
-            self.enemy_hit_count += sum(len(enemies) for enemies in collisions.values()) 
-            # Fixed (was not counting all enemy kills to scores)
-            for enemies in collisions.values():
-                for enemy in enemies:
+            for enemies_hit in collisions.values():
+                for enemy in enemies_hit:
                     if hasattr(enemy, "take_damage"):
                         enemy.take_damage(1)
                         if hasattr(enemy, "health") and enemy.health <= 0:
                             enemy.kill()
+                            self.enemy_hit_count += 1
+                            self._safe_play_sound(self.sfx_enemy_boom)
+                    else:
+                        enemy.kill()
+                        self.enemy_hit_count += 1
+                        self._safe_play_sound(self.sfx_enemy_boom)
 
-                    # `groupcollide(..., dokill=True)` already removes the enemy.
-                    # Play boom for any enemy hit, including Swarm_Enemy.
-                    self._safe_play_sound(self.sfx_enemy_boom)
-
-        # Level progression: clear level -> upgrade pick -> spawn next level
-        if not self.enemy_ships and not self.waiting_for_upgrade:
+        # Direct level progression: clear level -> next level
+        if not self.enemy_ships:
             is_last_level = self.level_index >= len(self.level_sequence) - 1
 
             if is_last_level:
                 app.change_state(WinState("You Win!", self.enemy_hit_count))
                 return
 
-            self.waiting_for_upgrade = True
-            if not is_last_level:
-                self.pending_level_index = self.level_index + 1
-            else:
-                self.pending_level_index = self.level_index
+            self.level_index += 1
+            self.current_level_name = self.level_sequence[self.level_index]
+            self.current_level_data = utils.load_level(self.current_level_name)
+            self.current_wave_index = 0
 
-            app.change_state(UpgradeState(app, self))
+            self.enemy_ships.empty()
+            self.enemy_bullets.empty()
+            self.ally_bullets.empty()
+
+            self.bg_image = utils.build_level(
+                level_name=self.current_level_name,
+                enemy_ships=self.enemy_ships
+            )
+            self.current_level_num += 1
+
+            self.player.rect.center = self.player_start_pos
+            self.player.hitbox.center = self.player_start_pos
+
+            self.countdown = 1.5
+            self.countdown_active = True
             return
           
-
     def draw(self, app, screen):
         # Background
         screen.fill(self.bg_color)
@@ -367,12 +316,10 @@ class GameState(State):
                 enemy.draw_health_bar(screen)
         self.ally_bullets.draw(screen)
         self.enemy_bullets.draw(screen)
-        
-        font_file = os.path.join(asset_folder, "fonts/PressStart2P-vaV7.ttf")
 
         # Draws Text for Readiness Countdown
         if self.countdown_active:
-            count = int(self.countdown) + 1  # makes it show 3,2,1
+            count = int(self.countdown) + 1
 
             if count > 0:
                 text = self.countdown_font.render(str(count), True, font_color)
@@ -392,14 +339,7 @@ class GameState(State):
         )
         screen.blit(level_text, (10, 45))
 
-        #pygame.draw.rect(screen, (0,0,255), self.player.hitbox)
-        #if len(self.enemy_hitboxes) > 0:
-        #    pygame.draw.rect(screen, (0,0,255), self.enemy_hitboxes[0])
-        #if len(self.bullet_hitboxes) > 0:
-        #    pygame.draw.rect(screen, (0,0,255), self.bullet_hitboxes[0])
-
         # Draw Lives Counter
         live_count = self.lives_font.render(f"x{self.lives}", True, font_color)
         screen.blit(self.lives_icon,(20, screen.get_height() - 45))
         screen.blit(live_count, (60, screen.get_height() - 35))
-

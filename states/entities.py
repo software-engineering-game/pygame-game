@@ -26,9 +26,6 @@ class Stars:
 # Classes for Game Entities
 #
 
-# Sprite is a base class from the Pygame Library
-# def __init__(pygame, sprite, width, height, x, y):
-
 class Game_Entity(pygame.sprite.Sprite):
     def __init__(self, frames, speed, start_pos):
         super().__init__()
@@ -66,9 +63,6 @@ class Bullet(pygame.sprite.Sprite):
     def update(self):
         self.rect.x += self.x_direct * self.speed
         self.rect.y += self.y_direct * self.speed
-        #self.hitbox.x += self.x_direct * self.speed
-        #self.hitbox.y += self.y_direct * self.speed
-        # Remove bullet if it goes off screen
         if self.rect.bottom < 0:
             self.kill()
         if self.rect.top > 740:
@@ -78,7 +72,6 @@ class Bullet(pygame.sprite.Sprite):
 # Player Ship Types
 #
 
-# Base Class for standard player ship
 class Player(Game_Entity):
     def __init__(self, frames, speed, start_pos):
         super().__init__(frames, speed, start_pos)
@@ -106,14 +99,11 @@ class Player(Game_Entity):
 
         # Animation that loops the frames
         current_time = pygame.time.get_ticks()
-        # If times since last frame update exceeds the millisecond interval
         if current_time - self.last_update > self.animation_speed:
             self.last_update = current_time
-            # Sets it to current_frame + 1, unless it exceeds the total number of frames
             self.current_frame = (self.current_frame + 1) % len(self.frames)
             self.image = self.frames[self.current_frame]
         
-        # Setting up WASD movement 
         keys = pygame.key.get_pressed()
         
         if keys[settings.keybind_player_left] or keys[pygame.K_a]:
@@ -130,13 +120,11 @@ class Player(Game_Entity):
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
 
-# Class for the standard firing mode
 class Player_Auto(Player):
     def __init__(self, frames, speed, start_pos):
         super().__init__(frames, speed, start_pos)
     
     def shoot(self, bullet_group):
-        # Spawns the bullet and adds it to bullet group
         player_bullet = Bullet(
             frames="basic_bullet.png",
             speed=settings.bullet_spd,
@@ -147,7 +135,6 @@ class Player_Auto(Player):
         self.can_shoot = False
         self.shoot_cooldown = settings.bullet_cooldown
 
-# Class for Shotgun firing mode
 class Player_Shotgun(Player):
     def __init__(self, frames, speed, start_pos):
         super().__init__(frames, speed, start_pos)
@@ -155,7 +142,6 @@ class Player_Shotgun(Player):
     def shoot(self, bullet_group):
         pass
 
-# Class for Sniper firing mode
 class Player_Sniper(Player):
     def __init__(self, frames, speed, start_pos):
         super().__init__(frames, speed, start_pos)
@@ -164,12 +150,10 @@ class Player_Sniper(Player):
 # Enemy Ship Types
 #
 
-# Basic Enemy type
 class Basic_Enemy(Game_Entity):
-    def __init__(self, frames, start_pos):
+    def __init__(self, frames, start_pos, movement_pattern="random"):
         super().__init__(frames=frames, speed=settings.basic_enemy_spd, start_pos=start_pos)
 
-        # Hitbox
         self.hitbox = self.rect.scale_by(0.8)
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
@@ -177,32 +161,32 @@ class Basic_Enemy(Game_Entity):
         self.max_health = 1
         self.health = self.max_health
 
-        self.vertical_speed = random.uniform(0.8, 1.5)
+        self.movement_pattern = movement_pattern
+        self.spawn_x = self.rect.x
+        self.spawn_y = self.rect.y
+
         self.vx = random.uniform(-1.5, 1.5)
         self.vy = random.uniform(0.8, 1.5)
-
-        # how often direction changes
         self.change_timer = random.uniform(1.0, 3.0)
 
-        # Shooting cooldown tracking
         self.shoot_cooldown = random.uniform(1.0, 5.0)
         self.can_shoot = False
 
+        # Pattern helpers
+        self.pattern_direction = 1
+
+        # Square pattern helpers
+        self.square_step = 0
+        self.square_distance = 0
+        self.square_side_length = 60
+
+        # Circle pattern helpers
+        self.circle_angle = 0.0
+        self.circle_radius = 50
+        self.circle_speed = 0.04
+
     def take_damage(self, amount=1):
         self.health -= amount
-
-    # def draw_health_bar(self, screen):
-    #     bar_width = self.rect.width
-    #     bar_height = 5
-
-    #     health_ratio = self.health / self.max_health
-    #     fill_width = int(bar_width * health_ratio)
-
-    #     pygame.draw.rect(screen, (255, 0, 0),
-    #                      (self.rect.x, self.rect.y - 8, bar_width, bar_height))
-
-    #     pygame.draw.rect(screen, (0, 255, 0),
-    #                      (self.rect.x, self.rect.y - 8, fill_width, bar_height))
 
     def shoot(self, bullet_group):
         enemy_bullet = Bullet(
@@ -216,8 +200,68 @@ class Basic_Enemy(Game_Entity):
         self.shoot_cooldown = random.uniform(2.0, 5.0)
 
     def update(self, player_pos):
-        # Occasionally change direction (this is the key to "flow")
-        self.change_timer -= 0.016  # approx frame time
+        # Level 1: stationary
+        if self.movement_pattern == "stationary":
+            return
+
+        # Level 2: vertical
+        if self.movement_pattern == "vertical":
+            self.rect.y += self.pattern_direction * self.speed
+            self.hitbox.y += self.pattern_direction * self.speed
+
+            if self.rect.y <= self.spawn_y - 60:
+                self.pattern_direction = 1
+            elif self.rect.y >= self.spawn_y + 60:
+                self.pattern_direction = -1
+            return
+
+        # Level 3: horizontal
+        if self.movement_pattern == "horizontal":
+            self.rect.x += self.pattern_direction * self.speed
+            self.hitbox.x += self.pattern_direction * self.speed
+
+            if self.rect.x <= self.spawn_x - 80:
+                self.pattern_direction = 1
+            elif self.rect.x >= self.spawn_x + 80:
+                self.pattern_direction = -1
+            return
+
+        # Level 4: square
+        if self.movement_pattern == "square":
+            if self.square_step == 0:      # right
+                self.rect.x += self.speed
+                self.hitbox.x += self.speed
+            elif self.square_step == 1:    # down
+                self.rect.y += self.speed
+                self.hitbox.y += self.speed
+            elif self.square_step == 2:    # left
+                self.rect.x -= self.speed
+                self.hitbox.x -= self.speed
+            elif self.square_step == 3:    # up
+                self.rect.y -= self.speed
+                self.hitbox.y -= self.speed
+
+            self.square_distance += self.speed
+
+            if self.square_distance >= self.square_side_length:
+                self.square_distance = 0
+                self.square_step = (self.square_step + 1) % 4
+            return
+
+        # Level 5: circular
+        if self.movement_pattern == "circle":
+            self.circle_angle += self.circle_speed
+            center_x = self.spawn_x
+            center_y = self.spawn_y
+
+            self.rect.x = int(center_x + self.circle_radius * math.cos(self.circle_angle))
+            self.rect.y = int(center_y + self.circle_radius * math.sin(self.circle_angle))
+            self.hitbox.centerx = self.rect.centerx
+            self.hitbox.centery = self.rect.centery
+            return
+
+        # Default/random behavior
+        self.change_timer -= 0.016
 
         if self.change_timer <= 0:
             self.vx = random.uniform(-1.5, 1.5)
@@ -228,33 +272,77 @@ class Basic_Enemy(Game_Entity):
 
         if self.rect.right < 0:
             self.rect.left = settings.WIDTH
-
         elif self.rect.left > settings.WIDTH:
             self.rect.right = 0
 
-        # If enemy goes off bottom → reset to top
         if self.rect.top > settings.HEIGHT:
             self.rect.x = random.randint(50, settings.WIDTH - 50)
             self.rect.y = random.randint(-100, -40)
+            self.hitbox.centerx = self.rect.centerx
+            self.hitbox.centery = self.rect.centery
 
-        # Move based on velocity
         self.rect.x += self.vx
         self.rect.y += self.vy
         self.hitbox.x += self.vx
         self.hitbox.y += self.vy
 
-# Swarm Enemy Type
+class Boss_Enemy(Game_Entity):
+    def __init__(self, frames, start_pos):
+        super().__init__(frames=frames, speed=settings.basic_enemy_spd, start_pos=start_pos)
+
+        self.hitbox = self.rect.scale_by(0.8)
+        self.hitbox.centerx = self.rect.centerx
+        self.hitbox.centery = self.rect.centery
+
+        self.max_health = 3
+        self.health = self.max_health
+
+        self.shoot_cooldown = random.uniform(1.0, 3.0)
+        self.can_shoot = False
+
+    def take_damage(self, amount=1):
+        self.health -= amount
+
+    def draw_health_bar(self, screen):
+        bar_width = self.rect.width
+        bar_height = 6
+        health_ratio = self.health / self.max_health
+        fill_width = int(bar_width * health_ratio)
+
+        pygame.draw.rect(
+            screen,
+            (255, 0, 0),
+            (self.rect.x, self.rect.y - 10, bar_width, bar_height)
+        )
+        pygame.draw.rect(
+            screen,
+            (0, 255, 0),
+            (self.rect.x, self.rect.y - 10, fill_width, bar_height)
+        )
+
+    def shoot(self, bullet_group):
+        boss_bullet = Bullet(
+            frames="basic_bullet.png",
+            speed=settings.DEFAULT_BULLET_SPEED,
+            start_pos=(self.rect.centerx, self.rect.bottom),
+            direct=(0, 1)
+        )
+        bullet_group.add(boss_bullet)
+        self.can_shoot = False
+        self.shoot_cooldown = random.uniform(1.5, 3.0)
+
+    def update(self, player_pos):
+        pass
+
 class Swarm_Enemy(Game_Entity):
     def __init__(self, frames, start_pos):
         super().__init__(frames, speed=settings.swarm_enemy_spd, start_pos=start_pos)
         self.original_image = self.image
 
-        # Hitbox
         self.hitbox = self.rect.scale_by(0.8)
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
 
-        # Player Tracking Variables
         self.velocity = (0,0)
         self.angle = 0
 
@@ -269,9 +357,6 @@ class Swarm_Enemy(Game_Entity):
         else:
             dx = (self.velocity[0] / distance) * self.speed
             dy = (self.velocity[1] / distance) * self.speed
-
-            # atan2 gives angle from positive x-axis; subtract 90 so "up" on the sprite faces the target
-            import math
             self.angle = math.degrees(math.atan2(-self.velocity[1], self.velocity[0])) - 90
 
         center = self.rect.center
@@ -283,20 +368,16 @@ class Swarm_Enemy(Game_Entity):
         self.hitbox.x += dx
         self.hitbox.y += dy
 
-# Bomber Enemy Type
 class Bomber_Enemy(Game_Entity):
     def __init__(self, frames, start_pos):
         super().__init__(frames, speed=settings.bomber_enemy_spd, start_pos=start_pos)
 
-        # Hitbox
         self.hitbox = self.rect.scale_by(0.8)
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
 
     def shoot(self, bullet_group):
-        # for when I write the bomber specific mechanics
         pass
     
     def update(self, player_pos):
-        # Enemy behavior
         pass
