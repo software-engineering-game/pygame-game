@@ -128,7 +128,7 @@ def get_level_sequence():
         key=lambda item: item[1].get("level_num", 999999)
     )
     # returns the first five levels and the randomized levels
-    return [level_name for level_name, _ in sorted_levels], []
+    return [level_name for level_name, _ in sorted_levels], ["test_level", "gauntlet_level"]
 
     # Currently returns 'ValueError: too many values to unpack (expected 2)'
     # return [level_name for level_name, _ in intro_levels], [level_name for level_name, _ in rand_levels]
