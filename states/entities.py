@@ -332,7 +332,7 @@ class Bomber_Enemy(Game_Entity):
             self.move_right = False
         # if enemy goes off left -> move right
         elif self.rect.left < 40:
-            self.rect.right = True
+            self.move_right = True
 
         # If enemy goes off bottom → reset to top
         if self.rect.top > settings.HEIGHT:

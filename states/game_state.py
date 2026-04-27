@@ -267,19 +267,12 @@ class GameState(State):
 
         # Score tracking for hits
         if collisions:
-            # Increment score for *any* enemy hit, regardless of enemy type.
-            self.enemy_hit_count += sum(len(enemies) for enemies in collisions.values()) 
-            # Fixed (was not counting all enemy kills to scores)
             for enemies in collisions.values():
                 for enemy in enemies:
-                    if hasattr(enemy, "take_damage"):
-                        enemy.take_damage(1)
-                        if hasattr(enemy, "health") and enemy.health <= 0:
-                            enemy.kill()
-                            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
-                            if settings.SFX_ON:
-                                pass
-                                pygame.mixer.Sound.play(sfx_boom)
+                    self.enemy_hit_count += 1
+
+                    if settings.SFX_ON:
+                        self._safe_play_sound(self.sfx_enemy_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
