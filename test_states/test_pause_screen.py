@@ -68,11 +68,9 @@ def test_click_resume_resumes_previous_state():
     app, pause_screen, previous_state = _make_pause_screen()
     app.state = pause_screen
 
-    event = pygame.event.Event(
-        pygame.MOUSEBUTTONDOWN,
-        button=1,
-        pos=pause_screen.resume_button.center,
-    )
+    pause_screen.selected_index = 0
+
+    event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RETURN)
     pause_screen.handle_event(app, event)
 
     assert app.state is previous_state
@@ -87,12 +85,10 @@ def test_click_quit_changes_to_confirm_quit_state():
         def __init__(self, previous_state):
             self.previous_state = previous_state
 
+    pause_screen.selected_index = 2
+
     with patch("states.confirm_quit_state.ConfirmQuitState", DummyConfirmQuitState):
-        event = pygame.event.Event(
-            pygame.MOUSEBUTTONDOWN,
-            button=1,
-            pos=pause_screen.quit_button.center,
-        )
+        event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RETURN)
         pause_screen.handle_event(app, event)
 
     assert isinstance(app.changed_to, DummyConfirmQuitState)
@@ -106,12 +102,10 @@ def test_click_main_menu_changes_to_main_menu_state():
     class DummyMainMenuState:
         pass
 
+    pause_screen.selected_index = 1
+
     with patch("states.pause_state.MainMenuState", DummyMainMenuState):
-        event = pygame.event.Event(
-            pygame.MOUSEBUTTONDOWN,
-            button=1,
-            pos=pause_screen.main_menu_button.center,
-        )
+        event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RETURN)
         pause_screen.handle_event(app, event)
 
     assert isinstance(app.changed_to, DummyMainMenuState)
