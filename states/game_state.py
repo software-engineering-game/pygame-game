@@ -19,6 +19,7 @@ font_color = (255,255,255) # Currently set to white
 SHAKE_HIT_PLAYER = 22.0
 SHAKE_DECAY_PER_SEC = 58.0
 SHAKE_DRAW_CAP = 18
+INVINCIBLE_BLINK_MS = 90
 
 
 class GameState(State):
@@ -318,7 +319,14 @@ class GameState(State):
         c.fill(self.bg_color)
         c.blit(self.bg_image, (0, 0))
 
-        self.ally_ships.draw(c)
+        blink_off = (
+            self.player_invincible
+            and (pygame.time.get_ticks() // INVINCIBLE_BLINK_MS) % 2 == 1
+        )
+        for spr in self.ally_ships:
+            if blink_off and spr is self.player:
+                continue
+            c.blit(spr.image, spr.rect)
         self.enemy_ships.draw(c)
         for enemy in self.enemy_ships:
             if hasattr(enemy, "draw_health_bar"):
