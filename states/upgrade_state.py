@@ -80,7 +80,8 @@ class UpgradeState(State):
         rect = text.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2 - 120))
         screen.blit(text, rect)
 
-        current_shot = getattr(self.previous_state.player, "shot_mode", "single")
+        current_shot = getattr(self.previous_state, "player_shot_mode", "single")
+        current_lives = getattr(self.previous_state, "lives", 3)
 
         stats_text_1 = self.tiny_font.render(
             f"speed: {settings.bullet_spd}   cooldown: {settings.bullet_cooldown:.2f}s",
@@ -89,7 +90,7 @@ class UpgradeState(State):
         )
 
         stats_text_2 = self.tiny_font.render(
-            f"lives: {self.previous_state.lives}   shot: {current_shot}",
+            f"lives: {current_lives}   shot: {current_shot}",
             True,
             (200, 200, 200)
         )

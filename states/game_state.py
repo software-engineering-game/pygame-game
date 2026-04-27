@@ -280,21 +280,20 @@ class GameState(State):
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
-            is_last_level = self.level_index >= len(self.intro_levels) - 1
-
-            if is_last_level:
-                app.change_state(WinState("You Win!", self.enemy_hit_count))
-                return
-
-            self.waiting_for_upgrade = True
-            if not is_last_level:
-                self.pending_level_index = self.level_index + 1
-            else:
-                self.pending_level_index = self.level_index
-
-            app.change_state(UpgradeState(app, self))
+            self.handle_level_clear(app)
             return
           
+    def handle_level_clear(self, app):
+        is_last_level = self.level_index >= len(self.intro_levels) - 1
+
+        if is_last_level:
+            app.change_state(WinState("You Win!", self.enemy_hit_count))
+            return
+
+        self.waiting_for_upgrade = True
+        self.pending_level_index = self.level_index + 1
+        app.change_state(UpgradeState(app, self))
+         
     def draw(self, app, screen):
         # Background
         screen.fill(self.bg_color)
@@ -326,8 +325,10 @@ class GameState(State):
         # Draw Score and Level Counters
         counter_text = self.score_font.render(f"Score: {self.enemy_hit_count}", True, font_color)
         screen.blit(counter_text, (10, 10))
+        display_level = getattr(self, "endless_round", self.level_index + 1)
+
         level_text = self.score_font.render(
-            f"Level: {self.level_index + 1}",
+            f"Level: {display_level}",
             True,
             font_color
         )
