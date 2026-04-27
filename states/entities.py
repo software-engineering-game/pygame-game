@@ -70,7 +70,11 @@ class Bullet(pygame.sprite.Sprite):
         # Remove bullet if it goes off screen
         if self.rect.bottom < 0:
             self.kill()
-        if self.rect.top > 740:
+        if self.rect.top > settings.HEIGHT:
+            self.kill()
+        if self.rect.right < 0:
+            self.kill()
+        if self.rect.left > settings.WIDTH:
             self.kill()
 
 #
@@ -90,6 +94,7 @@ class Player(Game_Entity):
         # Shooting cooldown tracking
         self.shoot_cooldown = 0.0
         self.can_shoot = True
+        self.shot_mode = "single"
 
     def shoot(self, bullet_group):
         pass
@@ -135,16 +140,41 @@ class Player_Auto(Player):
         super().__init__(frames, speed, start_pos)
     
     def shoot(self, bullet_group):
-        # Spawns the bullet and adds it to bullet group
-        player_bullet = Bullet(
-            frames="basic_bullet.png",
-            speed=settings.bullet_spd,
-            start_pos=(self.rect.centerx, self.rect.top),
-            direct=(0, -1)
-        )
-        bullet_group.add(player_bullet)
+        if self.shot_mode == "triple":
+            bullet_data = [
+                ((self.rect.centerx, self.rect.top), (0, -1)),
+                ((self.rect.centerx - 18, self.rect.top), (-1, -1)),
+                ((self.rect.centerx + 18, self.rect.top), (1, -1)),
+            ]
+
+        elif self.shot_mode == "front_back":
+            bullet_data = [
+                ((self.rect.centerx, self.rect.top), (0, -1)),
+                ((self.rect.centerx, self.rect.bottom), (0, 1)),
+            ]
+
+        else:
+            bullet_data = [
+                ((self.rect.centerx, self.rect.top), (0, -1)),
+            ]
+
+        for start_pos, direction in bullet_data:
+            player_bullet = Bullet(
+                frames="basic_bullet.png",
+                speed=settings.bullet_spd,
+                start_pos=start_pos,
+                direct=direction
+            )
+            bullet_group.add(player_bullet)
+
         self.can_shoot = False
-        self.shoot_cooldown = settings.bullet_cooldown
+
+        if self.shot_mode == "triple":
+            self.shoot_cooldown = max(0.25, settings.bullet_cooldown * 1.75)
+        elif self.shot_mode == "front_back":
+            self.shoot_cooldown = max(0.18, settings.bullet_cooldown * 1.35)
+        else:
+            self.shoot_cooldown = settings.bullet_cooldown
 
 # Class for Shotgun firing mode
 class Player_Shotgun(Player):

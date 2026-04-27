@@ -61,9 +61,12 @@ class GameState(State):
         if hasattr(app, "music"):
             app.music.play_track(self.music_track)
 
-        # reset upgrade-tuned stats at run start
-        settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
-        settings.bullet_cooldown = settings.DEFAULT_BULLET_COOLDOWN
+        # Set default upgrade values only once for this run
+        if not hasattr(self, "upgrades_initialized"):
+            settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
+            settings.bullet_cooldown = settings.DEFAULT_BULLET_COOLDOWN
+            self.player_shot_mode = "single"
+            self.upgrades_initialized = True
 
         # Sets the background color, and loads lives_icon
         self.bg_color = (0, 0, 0)
@@ -103,7 +106,6 @@ class GameState(State):
         self.player_speed = 5
         self.player_start_pos = (app.width // 2, app.height - 50)
         self.player = entities.Player_Auto(
-            # Loads the sprite sheet into the player's frames
             frames=utils.load_spritesheet(
                 sheet_name="player_auto_ship.png",
                 frame_width=utils.FRAME_SIZE,
@@ -112,6 +114,8 @@ class GameState(State):
             speed=self.player_speed,
             start_pos=self.player_start_pos,
         )
+
+        self.player.shot_mode = self.player_shot_mode
         self.ally_ships.add(self.player)
         self.player_invincible = False
         self.player_invincible_timer = 0.0

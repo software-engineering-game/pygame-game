@@ -13,24 +13,51 @@ class UpgradeState(State):
         self.tiny_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 16)
 
         self.selected = 0
-        self.options = ["Bullet Speed +2", "Fire Rate +10%"]
+        self.options = [
+            "Bullet Speed +2",
+            "Fire Rate +10%",
+            "Extra Life +1",
+            "Triple Shot",
+            "Front + Back Shot"
+        ]
 
     def handle_event(self, app, event):
         sfx_menu = pygame.mixer.Sound("assets/sfx_ogg/menu1.ogg")
         if event.type == pygame.KEYDOWN:
 
-            if event.key in (pygame.K_UP, pygame.K_DOWN):
-                self.selected = (self.selected + 1) % 2
+            if event.key == pygame.K_UP:
+                self.selected = (self.selected - 1) % len(self.options)
+                pygame.mixer.Sound.play(sfx_menu)
+
+            elif event.key == pygame.K_DOWN:
+                self.selected = (self.selected + 1) % len(self.options)
                 pygame.mixer.Sound.play(sfx_menu)
             elif event.key == settings.keybind_menu_confirm:
-                if self.selected == 0:
-                    settings.bullet_spd = min(25, settings.bullet_spd + 2)
-                    self._resume_previous_state(app)
-                else:
-                    settings.bullet_cooldown = max(0.05, settings.bullet_cooldown * 0.9)
-                    self._resume_previous_state(app)
+                self.apply_upgrade()
+                self._resume_previous_state(app)
             elif event.key == pygame.K_ESCAPE:
                 self._resume_previous_state(app)
+
+    def apply_upgrade(self):
+        selected_upgrade = self.options[self.selected]
+
+        if selected_upgrade == "Bullet Speed +2":
+            settings.bullet_spd = min(25, settings.bullet_spd + 2)
+
+        elif selected_upgrade == "Fire Rate +10%":
+            settings.bullet_cooldown = max(0.05, settings.bullet_cooldown * 0.9)
+
+        elif selected_upgrade == "Extra Life +1":
+            self.previous_state.lives += 1
+
+        elif selected_upgrade == "Triple Shot":
+            self.previous_state.player.shot_mode = "triple"
+            self.previous_state.player_shot_mode = "triple"
+
+        elif selected_upgrade == "Front + Back Shot":
+            self.previous_state.player.shot_mode = "front_back"
+            self.previous_state.player_shot_mode = "front_back"
+
 
     def _resume_previous_state(self, app):
         if hasattr(self.previous_state, "on_upgrade_complete"):
@@ -50,21 +77,33 @@ class UpgradeState(State):
         screen.blit(overlay, (0, 0))
 
         text = self.font.render("Choose an Upgrade:", True, (255, 255, 255))
-        rect = text.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2 - 100))
+        rect = text.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2 - 120))
         screen.blit(text, rect)
 
-        stats_text = self.tiny_font.render(
-            f"bullet speed: {settings.bullet_spd}   cooldown: {settings.bullet_cooldown:.2f}s",
+        current_shot = getattr(self.previous_state.player, "shot_mode", "single")
+
+        stats_text_1 = self.tiny_font.render(
+            f"speed: {settings.bullet_spd}   cooldown: {settings.bullet_cooldown:.2f}s",
             True,
             (200, 200, 200)
         )
-        stats_rect = stats_text.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2 - 20))
-        screen.blit(stats_text, stats_rect)
+
+        stats_text_2 = self.tiny_font.render(
+            f"lives: {self.previous_state.lives}   shot: {current_shot}",
+            True,
+            (200, 200, 200)
+        )
+
+        stats_rect_1 = stats_text_1.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2 - 90))
+        stats_rect_2 = stats_text_2.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2 - 65))
+
+        screen.blit(stats_text_1, stats_rect_1)
+        screen.blit(stats_text_2, stats_rect_2)
 
         for i, option in enumerate(self.options):
 
             color = (255, 255, 0) if i == self.selected else (180, 180, 180)
             opt = self.small_font.render(option, True, color)
 
-            opt_rect = opt.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2 + 55 + (i * 60)))
+            opt_rect = opt.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2 + 20 + (i * 45)))
             screen.blit(opt, opt_rect)
