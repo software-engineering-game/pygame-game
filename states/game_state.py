@@ -4,7 +4,7 @@ import random
 from states import settings
 from states import utils
 from states import entities
-from states import music_manager
+#from states import music_manager
 from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
 from states.upgrade_state import UpgradeState
@@ -21,11 +21,11 @@ class GameState(State):
     current_level_num = 0
 
     # progression state
-    level_sequence = utils.get_level_sequence()
-    if not level_sequence:
+    intro_levels, random_levels = utils.get_level_sequence()
+    if not intro_levels:
         raise ValueError("No levels found in level_data.json")
     level_index = 0
-    current_level_name = level_sequence[level_index]
+    current_level_name = intro_levels[level_index]
     current_level_data = utils.load_level(current_level_name)
     pending_level_index = None
     waiting_for_upgrade = False
@@ -61,9 +61,12 @@ class GameState(State):
         if hasattr(app, "music"):
             app.music.play_track(self.music_track)
 
-        # reset upgrade-tuned stats at run start
-        settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
-        settings.bullet_cooldown = settings.DEFAULT_BULLET_COOLDOWN
+        # Set default upgrade values only once for this run
+        if not hasattr(self, "upgrades_initialized"):
+            settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
+            settings.bullet_cooldown = settings.DEFAULT_BULLET_COOLDOWN
+            self.player_shot_mode = "single"
+            self.upgrades_initialized = True
 
         # Sets the background color, and loads lives_icon
         self.bg_color = (0, 0, 0)
@@ -88,20 +91,6 @@ class GameState(State):
         if hasattr(app, "testing") and app.testing:
             self.countdown_active = False
 
-
-        # progression state
-        self.level_sequence = utils.get_level_sequence()
-        if not self.level_sequence:
-            raise ValueError("No levels found in level_data.json")
-        self.level_index = 0
-        self.current_level_name = self.level_sequence[self.level_index]
-        self.current_level_data = utils.load_level(self.current_level_name)
-        self.current_wave_index = 0
-        self.pending_level_index = None
-        self.waiting_for_upgrade = False
-
-        # spawn first wave of first level
-
         # Spawns Level
         self.enemy_ships.empty()
         self.bg_image = utils.build_level(
@@ -117,7 +106,6 @@ class GameState(State):
         self.player_speed = 5
         self.player_start_pos = (app.width // 2, app.height - 50)
         self.player = entities.Player_Auto(
-            # Loads the sprite sheet into the player's frames
             frames=utils.load_spritesheet(
                 sheet_name="player_auto_ship.png",
                 frame_width=utils.FRAME_SIZE,
@@ -126,6 +114,8 @@ class GameState(State):
             speed=self.player_speed,
             start_pos=self.player_start_pos,
         )
+
+        self.player.shot_mode = self.player_shot_mode
         self.ally_ships.add(self.player)
         self.player_invincible = False
         self.player_invincible_timer = 0.0
@@ -140,7 +130,7 @@ class GameState(State):
     def _resume_after_upgrade(self):
         if self.pending_level_index is not None:
             self.level_index = self.pending_level_index
-            self.current_level_name = self.level_sequence[self.level_index]
+            self.current_level_name = self.intro_levels[self.level_index]
             self.current_level_data = utils.load_level(self.current_level_name)
             self.current_wave_index = 0
 
@@ -205,55 +195,6 @@ class GameState(State):
 
         player_pos = (self.player.rect.centerx, self.player.rect.centery)
         self.enemy_ships.update(player_pos=player_pos)
-
-        # for enemy in self.enemy_ships:
-        #     if not hasattr(enemy, "move_timer"):
-        #         enemy.pos = pygame.Vector2(enemy.rect.x, enemy.rect.y)
-        #         enemy.move_timer = random.uniform(1.0, 3.0)
-        #         enemy.pause_timer = 0
-        #         enemy.velocity = pygame.Vector2(
-        #             random.uniform(-30, 30),
-        #             random.uniform(40, 80)
-        #         )
-        #         enemy.shoot_cooldown = random.uniform(2.0, 4.0)
-        #         enemy.can_shoot = False
-
-        #     if enemy.pause_timer > 0:
-        #         enemy.pause_timer -= dt
-        #     else:
-        #         enemy.pos += enemy.velocity * dt
-        #         enemy.rect.x = int(enemy.pos.x)
-        #         enemy.rect.y = int(enemy.pos.y)
-
-        #         enemy.move_timer -= dt
-
-        #         if enemy.move_timer <= 0:
-        #             if random.random() < 0.4:
-        #                 enemy.pause_timer = random.uniform(0.5, 1.5)
-        #             else:
-        #                 enemy.velocity = pygame.Vector2(
-        #                     random.uniform(-30, 30),
-        #                     random.uniform(40, 80)
-        #                 )
-
-        #             enemy.move_timer = random.uniform(1.0, 3.0)
-
-        # for enemy in self.enemy_ships:
-        #     if enemy.rect.top > app.height:
-        #         enemy.pos.y = -enemy.rect.height
-        #         enemy.pos.x = random.randint(0, app.width - enemy.rect.width)
-        #         enemy.rect.x = int(enemy.pos.x)
-        #         enemy.rect.y = int(enemy.pos.y)
-
-        #     if enemy.rect.left < 0:
-        #         enemy.pos.x = 0
-        #         enemy.velocity.x *= -1
-        #         enemy.rect.x = int(enemy.pos.x)
-
-        #     elif enemy.rect.right > app.width:
-        #         enemy.pos.x = app.width - enemy.rect.width
-        #         enemy.velocity.x *= -1
-        #         enemy.rect.x = int(enemy.pos.x)
 
         # Refresh bullet hitboxes after bullets move
         self.bullet_hitboxes = utils.extract_hitboxes(self.enemy_bullets)
@@ -330,37 +271,29 @@ class GameState(State):
 
         # Score tracking for hits
         if collisions:
-            # Increment score for *any* enemy hit, regardless of enemy type.
-            self.enemy_hit_count += sum(len(enemies) for enemies in collisions.values()) 
-            # Fixed (was not counting all enemy kills to scores)
             for enemies in collisions.values():
                 for enemy in enemies:
-                    if hasattr(enemy, "take_damage"):
-                        enemy.take_damage(1)
-                        if hasattr(enemy, "health") and enemy.health <= 0:
-                            enemy.kill()
-                            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
-                            if settings.SFX_ON:    
-                                pygame.mixer.Sound.play(sfx_boom)
+                    self.enemy_hit_count += 1
+
+                    if settings.SFX_ON:
+                        self._safe_play_sound(self.sfx_enemy_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
-            is_last_level = self.level_index >= len(self.level_sequence) - 1
-
-            if is_last_level:
-                app.change_state(WinState("You Win!", self.enemy_hit_count))
-                return
-
-            self.waiting_for_upgrade = True
-            if not is_last_level:
-                self.pending_level_index = self.level_index + 1
-            else:
-                self.pending_level_index = self.level_index
-
-            app.change_state(UpgradeState(app, self))
+            self.handle_level_clear(app)
             return
           
+    def handle_level_clear(self, app):
+        is_last_level = self.level_index >= len(self.intro_levels) - 1
 
+        if is_last_level:
+            app.change_state(WinState("You Win!", self.enemy_hit_count))
+            return
+
+        self.waiting_for_upgrade = True
+        self.pending_level_index = self.level_index + 1
+        app.change_state(UpgradeState(app, self))
+         
     def draw(self, app, screen):
         # Background
         screen.fill(self.bg_color)
@@ -392,18 +325,14 @@ class GameState(State):
         # Draw Score and Level Counters
         counter_text = self.score_font.render(f"Score: {self.enemy_hit_count}", True, font_color)
         screen.blit(counter_text, (10, 10))
+        display_level = getattr(self, "endless_round", self.level_index + 1)
+
         level_text = self.score_font.render(
-            f"Level: {self.level_index + 1}",
+            f"Level: {display_level}",
             True,
             font_color
         )
         screen.blit(level_text, (10, 45))
-
-        #pygame.draw.rect(screen, (0,0,255), self.player.hitbox)
-        #if len(self.enemy_hitboxes) > 0:
-        #    pygame.draw.rect(screen, (0,0,255), self.enemy_hitboxes[0])
-        #if len(self.bullet_hitboxes) > 0:
-        #    pygame.draw.rect(screen, (0,0,255), self.bullet_hitboxes[0])
 
         # Draw Lives Counter
         live_count = self.lives_font.render(f"x{self.lives}", True, font_color)

@@ -63,7 +63,7 @@ def extract_hitboxes(sprite_group):
 # Loading Level Data
 #
 
-LEVEL_DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "level_data.json")
+LEVEL_DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "level_data1.json")
 
 def load_level(level_name):
     try:
@@ -81,8 +81,44 @@ def load_all_levels():
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
+# Returns a dictionary of the introductory levels
+def get_intro_levels(levels):
+    # Skip test/debug levels from normal progression flow.
+    # Skip any levels beyond the introductory levels from normal progression flow.
+    intro_levels = {
+        level_name: level_data
+        for level_name, level_data in levels.items()
+        if levels[level_name].get("level_num", 6) < 6
+        and "test" not in level_name.lower()
+    }
+
+    return intro_levels
+
+# Returns a dictionary of levels valid for random selection
+def get_random_levels(levels):
+    # Skip test/debug levels from randomized level selection.
+    # Skip introductory levels from randomized level selection.
+    random_levels = {
+        level_name: level_data
+        for level_name, level_data in levels.items()
+        if levels[level_name].get("level_num", 0) > 5
+        and "test" not in level_name.lower()
+    }
+
+    return random_levels
+
 def get_level_sequence():
     levels = load_all_levels()
+    #also need a way to create randomized level_sequence
+
+    # test_seq_func = get_intro_levels(levels)
+    # print("Intro levels is grabbing:")
+    # print(test_seq_func)
+
+    # test_rand_func = get_random_levels(levels)
+    # print("Random levels is grabbing:")
+    # print(test_rand_func)
+
     # Skip test/debug levels from normal progression flow.
     playable_levels = {
         level_name: level_data
@@ -93,7 +129,8 @@ def get_level_sequence():
         playable_levels.items(),
         key=lambda item: item[1].get("level_num", 999999)
     )
-    return [level_name for level_name, _ in sorted_levels]
+    # returns the first five levels and the randomized levels
+    return [level_name for level_name, _ in sorted_levels], []
 
 def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing):
     for j in range(size[1]):     # Rows

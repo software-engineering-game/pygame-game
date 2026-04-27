@@ -49,15 +49,15 @@ class MainMenuState(State):
 
             elif event.key == pygame.K_DOWN:
                 self.selected = (self.selected + 1) % len(self.options)
-                if settings.SFX_ON:    
+                if settings.SFX_ON:
                     pygame.mixer.Sound.play(sfx_menu)
 
             # Confirming Menu Selection
             elif event.key == settings.keybind_menu_confirm:
 
                 if self.selected == 0:
-                    from states.game_state import GameState
-                    app.change_state(GameState())
+                    from states.mode_select_state import ModeSelectState
+                    app.change_state(ModeSelectState())
 
                 elif self.selected == 1:
                     from states.leaderboard_state import LeaderboardState
@@ -98,9 +98,6 @@ class MainMenuState(State):
         # Title
         logo_rect = self.logo_image.get_rect(center=(app.width // 2, app.height // 5))
         screen.blit(self.logo_image, logo_rect)
-        #title_text = self.title_font.render("Space Dodgers", True, (255, 255, 0))
-        #title_rect = title_text.get_rect(center=(app.width // 2, app.height // 5))
-        #screen.blit(title_text, title_rect)
 
         # High score below title
         if self.high_score > 0:
