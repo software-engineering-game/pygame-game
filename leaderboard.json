@@ -6,5 +6,9 @@
     {
         "name": "NICK",
         "score": 365
+    },
+    {
+        "name": "MANA",
+        "score": 87
     }
 ]

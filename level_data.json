@@ -36,26 +36,26 @@
    
    "second_level": {
       "level_num": 2,
-      "bg_img":    "background_asteroids.png",
+      "bg_img": "background_asteroids.png",
       "waves": [
          {
-            "enemy_type":   "Basic_Enemy",
+            "enemy_type": "Basic_Enemy",
             "sprite_sheet": "enemy_basic.png",
-            "wave_position": [100, 120],
-            "wave_size": [3, 2],
-            "wave_spacing": [80, 80]
+            "wave_position": [120, 90],
+            "wave_size": [5, 2],
+            "wave_spacing": [90, 75]
          },
          {
-            "enemy_type":   "Swarm_Enemy",
+            "enemy_type": "Swarm_Enemy",
             "sprite_sheet": "enemy_swarm.png",
-            "wave_position": [540, 200],
-            "wave_size": [1, 2],
-            "wave_spacing": [80, 80]
+            "wave_position": [220, 270],
+            "wave_size": [2, 1],
+            "wave_spacing": [220, 80]
          }
       ]
    },
 
-   "swarm_level": {
+   "third_level": {
       "level_num": 3,
       "bg_img":    "background_asteroids.png",
       "waves": [
@@ -76,9 +76,16 @@
          {
             "enemy_type":   "Basic_Enemy",
             "sprite_sheet": "enemy_basic.png",
-            "wave_position": [120, 80],
+            "wave_position": [80, 80],
             "wave_size": [4, 2],
             "wave_spacing": [90, 80]
+         },
+         {
+            "enemy_type": "Basic_Enemy",
+            "sprite_sheet": "enemy_basic.png",
+            "wave_position": [430, 130],
+            "wave_size": [2, 2],
+            "wave_spacing": [95, 75]
          },
          {
             "enemy_type":   "Swarm_Enemy",
@@ -92,7 +99,7 @@
 
    "bomber_intro_level": {
       "level_num": 5,
-      "bg_img":    "background_asteroids.png",
+      "bg_img": "background_asteroids.png",
       "waves": [
          {
             "enemy_type":   "Bomber_Enemy",
@@ -118,9 +125,9 @@
          {
             "enemy_type":   "Swarm_Enemy",
             "sprite_sheet": "enemy_swarm.png",
-            "wave_position": [100, 90],
-            "wave_size": [5, 1],
-            "wave_spacing": [65, 80]
+            "wave_position": [90, 80],
+            "wave_size": [6, 1],
+            "wave_spacing": [80, 75]
          },
          {
             "enemy_type":   "Basic_Enemy",
@@ -141,12 +148,12 @@
 
    "gauntlet_level": {
       "level_num": 7,
-      "bg_img":    "background_asteroids.png",
+      "bg_img": "background_asteroids.png",
       "waves": [
          {
             "enemy_type":   "Basic_Enemy",
             "sprite_sheet": "enemy_basic.png",
-            "wave_position": [80, 80],
+            "wave_position": [80, 360],
             "wave_size": [6, 2],
             "wave_spacing": [85, 75]
          },
@@ -160,9 +167,86 @@
          {
             "enemy_type":   "Bomber_Enemy",
             "sprite_sheet": "enemy_bomber.png",
-            "wave_position": [180, 150],
-            "wave_size": [3, 1],
+            "wave_position": [90, 150],
+            "wave_size": [4, 1],
             "wave_spacing": [150, 80]
+         }
+      ]
+   },
+
+   "swarm_level": {
+      "level_num": 8,
+      "bg_img": "background_asteroids.png",
+      "waves": [
+         {
+            "enemy_type": "Basic_Enemy",
+            "sprite_sheet": "enemy_basic.png",
+            "wave_position": [150, 80],
+            "wave_size": [4, 1],
+            "wave_spacing": [100, 80]
+         },
+         {
+            "enemy_type": "Swarm_Enemy",
+            "sprite_sheet": "enemy_swarm.png",
+            "wave_position": [100, 210],
+            "wave_size": [4, 1],
+            "wave_spacing": [150, 80]
+         }
+      ]
+   },
+
+   "light_assault_level": {
+      "level_num": 9,
+      "bg_img": "background_asteroids.png",
+      "waves": [
+         {
+            "enemy_type": "Bomber_Enemy",
+            "sprite_sheet": "enemy_bomber.png",
+            "wave_position": [160, 90],
+            "wave_size": [2, 1],
+            "wave_spacing": [260, 90]
+         },
+         {
+            "enemy_type": "Basic_Enemy",
+            "sprite_sheet": "enemy_basic.png",
+            "wave_position": [120, 210],
+            "wave_size": [5, 1],
+            "wave_spacing": [90, 80]
+         },
+         {
+            "enemy_type": "Swarm_Enemy",
+            "sprite_sheet": "enemy_swarm.png",
+            "wave_position": [240, 330],
+            "wave_size": [2, 1],
+            "wave_spacing": [180, 80]
+         }
+      ]
+   },
+
+   "mixed_enemy_level": {
+      "level_num": 6,
+      "bg_img": "background_asteroids.png",
+      "waves": [
+         {
+            "enemy_type": "Basic_Enemy",
+            "sprite_sheet": "enemy_basic.png",
+            "wave_position": [90, 80],
+            "wave_size": [6, 1],
+            "wave_spacing": [90, 75]
+         },
+         {
+            "enemy_type": "Bomber_Enemy",
+            "sprite_sheet": "enemy_bomber.png",
+            "wave_position": [140, 180],
+            "wave_size": [3, 1],
+            "wave_spacing": [190, 80]
+         },
+         {
+            "enemy_type": "Swarm_Enemy",
+            "sprite_sheet": "enemy_swarm.png",
+            "wave_position": [130, 330],
+            "wave_size": [4, 1],
+            "wave_spacing": [130, 80]
          }
       ]
    }
