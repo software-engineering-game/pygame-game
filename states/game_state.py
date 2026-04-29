@@ -51,7 +51,6 @@ class GameState(State):
         self.sfx_enemy_boom = None
         self.sfx_player_boom = None
         try:
-            pass
             self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
             self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
         except pygame.error:
@@ -257,9 +256,6 @@ class GameState(State):
             # Sets Invinicibility
             self.player_invincible = True
             self.player_invincible_timer = 1.0
-            # Resets player position
-            #self.player.rect.center = self.player_start_pos
-            #self.player.hitbox.center = self.player_start_pos
 
             sfx_player_hit = pygame.mixer.Sound("assets/sfx_ogg/p_hit.ogg")
             if self.lives != 0:
@@ -269,8 +265,8 @@ class GameState(State):
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
                 if settings.SFX_ON:
+                    sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
                     pygame.mixer.Sound.play(sfx_player_boom)
                 return
 
@@ -313,8 +309,6 @@ class GameState(State):
         self.ally_bullets.draw(screen)
         self.enemy_bullets.draw(screen)
         
-        font_file = os.path.join(asset_folder, "fonts/PressStart2P-vaV7.ttf")
-
         # Draws Text for Readiness Countdown
         if self.countdown_active:
             count = int(self.countdown) + 1  # makes it show 3,2,1
