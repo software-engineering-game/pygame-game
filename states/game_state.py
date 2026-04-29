@@ -4,7 +4,7 @@ import random
 from states import settings
 from states import utils
 from states import entities
-#from states import music_manager
+from states import music_manager
 from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
 from states.upgrade_state import UpgradeState
@@ -51,6 +51,7 @@ class GameState(State):
         self.sfx_enemy_boom = None
         self.sfx_player_boom = None
         try:
+            pass
             self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
             self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
         except pygame.error:
@@ -92,6 +93,10 @@ class GameState(State):
             self.countdown_active = False
 
         # Spawns Level
+
+        if self.level_index > len(self.intro_levels):
+            self.current_level_name = random.choice(self.random_levels)
+
         self.enemy_ships.empty()
         self.bg_image = utils.build_level(
             level_name=self.current_level_name,
@@ -161,7 +166,7 @@ class GameState(State):
             from states.pause_state import PauseScreen
             app.change_state(PauseScreen(app, self))
 
-                # Keybind to quickly debug something
+        # Keybind to quickly debug something
         if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
             self.waiting_for_upgrade = True
             self.pending_level_index = self.level_index
