@@ -63,7 +63,7 @@ def extract_hitboxes(sprite_group):
 # Loading Level Data
 #
 
-LEVEL_DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "level_data.json")
+LEVEL_DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "level_data1.json")
 
 def load_level(level_name):
     try:

@@ -16,7 +16,7 @@ asset_folder = os.path.join(repo_root, "assets")
 font_color = (255,255,255) # Currently set to white
 
 class GameState(State):
-    saved_player_position = None
+    #saved_player_position = None
     music_track = "game"
     current_level_num = 0
 
@@ -62,9 +62,12 @@ class GameState(State):
         if hasattr(app, "music"):
             app.music.play_track(self.music_track)
 
-        # reset upgrade-tuned stats at run start
-        settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
-        settings.bullet_cooldown = settings.DEFAULT_BULLET_COOLDOWN
+        # Set default upgrade values only once for this run
+        if not hasattr(self, "upgrades_initialized"):
+            settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
+            settings.bullet_cooldown = settings.DEFAULT_BULLET_COOLDOWN
+            self.player_shot_mode = "single"
+            self.upgrades_initialized = True
 
         # Sets the background color, and loads lives_icon
         self.bg_color = (0, 0, 0)
@@ -108,7 +111,6 @@ class GameState(State):
         self.player_speed = 5
         self.player_start_pos = (app.width // 2, app.height - 50)
         self.player = entities.Player_Auto(
-            # Loads the sprite sheet into the player's frames
             frames=utils.load_spritesheet(
                 sheet_name="player_auto_ship.png",
                 frame_width=utils.FRAME_SIZE,
@@ -117,13 +119,15 @@ class GameState(State):
             speed=self.player_speed,
             start_pos=self.player_start_pos,
         )
+
+        self.player.shot_mode = self.player_shot_mode
         self.ally_ships.add(self.player)
         self.player_invincible = False
         self.player_invincible_timer = 0.0
 
         # Restore saved position if returning from pause
-        if GameState.saved_player_position is not None:
-            self.player.rect.center = GameState.saved_player_position
+        #if GameState.saved_player_position is not None:
+        #    self.player.rect.center = GameState.saved_player_position
 
     def on_exit(self, app):
         pass
@@ -254,8 +258,14 @@ class GameState(State):
             self.player_invincible = True
             self.player_invincible_timer = 1.0
             # Resets player position
-            self.player.rect.center = self.player_start_pos
-            self.player.hitbox.center = self.player_start_pos
+            #self.player.rect.center = self.player_start_pos
+            #self.player.hitbox.center = self.player_start_pos
+
+            sfx_player_hit = pygame.mixer.Sound("assets/sfx_ogg/p_hit.ogg")
+            if self.lives != 0:
+                if settings.SFX_ON:
+                    pygame.mixer.Sound.play(sfx_player_hit)
+
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
@@ -266,36 +276,29 @@ class GameState(State):
 
         # Score tracking for hits
         if collisions:
-            # Increment score for *any* enemy hit, regardless of enemy type.
-            self.enemy_hit_count += sum(len(enemies) for enemies in collisions.values()) 
-            # Fixed (was not counting all enemy kills to scores)
             for enemies in collisions.values():
                 for enemy in enemies:
-                    if hasattr(enemy, "take_damage"):
-                        enemy.take_damage(1)
-                        if hasattr(enemy, "health") and enemy.health <= 0:
-                            enemy.kill()
-                            sfx_boom = pygame.mixer.Sound("assets/sfx_ogg/en_boom.ogg")
-                            if settings.SFX_ON:
-                                pygame.mixer.Sound.play(sfx_boom)
+                    self.enemy_hit_count += 1
+
+                    if settings.SFX_ON:
+                        self._safe_play_sound(self.sfx_enemy_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
-            is_last_level = self.level_index >= len(self.intro_levels) - 1
-
-            if is_last_level:
-                app.change_state(WinState("You Win!", self.enemy_hit_count))
-                return
-
-            self.waiting_for_upgrade = True
-            if not is_last_level:
-                self.pending_level_index = self.level_index + 1
-            else:
-                self.pending_level_index = self.level_index
-
-            app.change_state(UpgradeState(app, self))
+            self.handle_level_clear(app)
             return
           
+    def handle_level_clear(self, app):
+        is_last_level = self.level_index >= len(self.intro_levels) - 1
+
+        if is_last_level:
+            app.change_state(WinState("You Win!", self.enemy_hit_count))
+            return
+
+        self.waiting_for_upgrade = True
+        self.pending_level_index = self.level_index + 1
+        app.change_state(UpgradeState(app, self))
+         
     def draw(self, app, screen):
         # Background
         screen.fill(self.bg_color)
@@ -327,8 +330,10 @@ class GameState(State):
         # Draw Score and Level Counters
         counter_text = self.score_font.render(f"Score: {self.enemy_hit_count}", True, font_color)
         screen.blit(counter_text, (10, 10))
+        display_level = getattr(self, "endless_round", self.level_index + 1)
+
         level_text = self.score_font.render(
-            f"Level: {self.level_index + 1}",
+            f"Level: {display_level}",
             True,
             font_color
         )
