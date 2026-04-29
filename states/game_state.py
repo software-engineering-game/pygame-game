@@ -111,7 +111,7 @@ class GameState(State):
         self.player_start_pos = (app.width // 2, app.height - 50)
         self.player = entities.Player_Auto(
             frames=utils.load_spritesheet(
-                sheet_name="player_auto_ship.png",
+                sheet_name="player_shotgun_ship.png",
                 frame_width=utils.FRAME_SIZE,
                 frame_height=utils.FRAME_SIZE
             ),
