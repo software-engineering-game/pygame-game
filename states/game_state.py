@@ -257,9 +257,9 @@ class GameState(State):
             self.player_invincible = True
             self.player_invincible_timer = 1.0
 
-            sfx_player_hit = pygame.mixer.Sound("assets/sfx_ogg/p_hit.ogg")
             if self.lives != 0:
                 if settings.SFX_ON:
+                    sfx_player_hit = pygame.mixer.Sound("assets/sfx_ogg/p_hit.ogg")
                     pygame.mixer.Sound.play(sfx_player_hit)
 
 

@@ -36,6 +36,20 @@
    
    "second_level": {
       "level_num": 2,
+      "bg_img":    "background_asteroids.png",
+      "waves": [
+         {
+            "enemy_type":    "Swarm_Enemy",
+            "sprite_sheet":  "enemy_swarm.png",
+            "wave_position": [190, 120],
+            "wave_size":     [5,1],
+            "wave_spacing":  [60, 80]
+         }
+      ]
+   },
+
+   "third_level": {
+      "level_num": 3,
       "bg_img": "background_asteroids.png",
       "waves": [
          {
@@ -55,22 +69,29 @@
       ]
    },
 
-   "third_level": {
-      "level_num": 3,
-      "bg_img":    "background_asteroids.png",
+   "bomber_intro_level": {
+      "level_num": 4,
+      "bg_img": "background_asteroids.png",
       "waves": [
          {
-            "enemy_type":    "Swarm_Enemy",
-            "sprite_sheet":  "enemy_swarm.png",
-            "wave_position": [190, 120],
-            "wave_size":     [5,1],
-            "wave_spacing":  [60, 80]
+            "enemy_type":   "Bomber_Enemy",
+            "sprite_sheet": "enemy_bomber.png",
+            "wave_position": [180, 100],
+            "wave_size": [3, 1],
+            "wave_spacing": [140, 90]
+         },
+         {
+            "enemy_type":   "Basic_Enemy",
+            "sprite_sheet": "enemy_basic.png",
+            "wave_position": [140, 220],
+            "wave_size": [4, 1],
+            "wave_spacing": [95, 80]
          }
       ]
    },
 
    "crossfire_level": {
-      "level_num": 4,
+      "level_num": 5,
       "bg_img":    "background_asteroids.png",
       "waves": [
          {
@@ -93,27 +114,6 @@
             "wave_position": [250, 250],
             "wave_size": [3, 1],
             "wave_spacing": [70, 80]
-         }
-      ]
-   },
-
-   "bomber_intro_level": {
-      "level_num": 5,
-      "bg_img": "background_asteroids.png",
-      "waves": [
-         {
-            "enemy_type":   "Bomber_Enemy",
-            "sprite_sheet": "enemy_bomber.png",
-            "wave_position": [180, 100],
-            "wave_size": [3, 1],
-            "wave_spacing": [140, 90]
-         },
-         {
-            "enemy_type":   "Basic_Enemy",
-            "sprite_sheet": "enemy_basic.png",
-            "wave_position": [140, 220],
-            "wave_size": [4, 1],
-            "wave_spacing": [95, 80]
          }
       ]
    },
@@ -251,4 +251,3 @@
       ]
    }
 }
-
