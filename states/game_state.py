@@ -132,6 +132,21 @@ class GameState(State):
     def on_exit(self, app):
         pass
 
+    def _reset_player_to_start(self):
+        # Level transitions rebuild enemies/background, but we want the player ship
+        # to always start each new level from the same spawn position.
+        if not hasattr(self, "player") or self.player is None:
+            return
+        if not hasattr(self, "player_start_pos") or self.player_start_pos is None:
+            return
+
+        # Move the sprite rect back to the intended start position.
+        self.player.rect.center = self.player_start_pos
+        if hasattr(self.player, "hitbox") and self.player.hitbox is not None:
+            # Keep the collision hitbox aligned with the rendered sprite.
+            self.player.hitbox.centerx = self.player.rect.centerx
+            self.player.hitbox.centery = self.player.rect.centery
+
     def _resume_after_upgrade(self):
         if self.pending_level_index is not None:
             self.level_index = self.pending_level_index
@@ -151,6 +166,9 @@ class GameState(State):
             enemy_ships=self.enemy_ships
         )
         self.current_level_num += 1
+
+        # Ensure each new level begins with the player at the start spawn.
+        self._reset_player_to_start()
 
         # short countdown before next wave starts
         self.countdown = 1.5
@@ -295,10 +313,20 @@ class GameState(State):
             app.change_state(WinState("You Win!", self.enemy_hit_count))
             return
 
-        self.waiting_for_upgrade = True
-        self.pending_level_index = self.level_index + 1
-        app.change_state(UpgradeState(app, self))
-         
+        next_level_index = self.level_index + 1
+        # Show upgrade after every two completed levels (2, 4, 6, ...).
+        should_show_upgrade = (self.level_index % 2) == 1
+
+        if should_show_upgrade:
+            self.waiting_for_upgrade = True
+            self.pending_level_index = next_level_index
+            app.change_state(UpgradeState(app, self))
+            return
+
+        # No upgrade due: immediately advance to the next level.
+        self.pending_level_index = next_level_index
+        self._resume_after_upgrade()
+            
     def draw(self, app, screen):
         # Background
         screen.fill(self.bg_color)
