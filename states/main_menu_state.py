@@ -27,7 +27,7 @@ class MainMenuState(State):
         self.score_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 16)
 
         # Mixer initializer
-        #pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
+        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
 
         self.high_score = utils.load_high_score()
 
