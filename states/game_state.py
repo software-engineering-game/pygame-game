@@ -45,21 +45,21 @@ class GameState(State):
     def on_enter(self, app):
         self.app = app
         pygame.init()
-        pygame.mixer.init()
+        #pygame.mixer.init()
 
         # Cache common SFX so we don't reload on every event.
         self.sfx_enemy_boom = None
         self.sfx_player_boom = None
         try:
-            self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
-            self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
+            pass#self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
+            #self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
         except pygame.error:
             # Mixer may fail on some systems; game should still run.
             self.sfx_enemy_boom = None
             self.sfx_player_boom = None
 
         if hasattr(app, "music"):
-            app.music.play_track(self.music_track)
+            pass#app.music.play_track(self.music_track)
 
         # Set default upgrade values only once for this run
         if not hasattr(self, "upgrades_initialized"):
@@ -92,10 +92,6 @@ class GameState(State):
             self.countdown_active = False
 
         # Spawns Level
-
-        if self.level_index > len(self.intro_levels):
-            self.current_level_name = random.choice(self.random_levels)
-
         self.enemy_ships.empty()
         self.bg_image = utils.build_level(
             level_name=self.current_level_name,
@@ -124,6 +120,9 @@ class GameState(State):
         self.player_invincible = False
         self.player_invincible_timer = 0.0
 
+        print("Current Level:", self.current_level_name)
+        print("Level Num:", self.current_level_num)
+
         # Restore saved position if returning from pause
         #if GameState.saved_player_position is not None:
         #    self.player.rect.center = GameState.saved_player_position
@@ -132,11 +131,25 @@ class GameState(State):
         pass
 
     def _resume_after_upgrade(self):
-        if self.pending_level_index is not None:
+
+        print("Pending level index:", self.pending_level_index)
+
+        # If the level index is still at levels 1-5
+        if (
+            self.pending_level_index is not None and
+            self.pending_level_index < len(self.intro_levels)
+        ):
+            print("entering lvl 1-5")
             self.level_index = self.pending_level_index
             self.current_level_name = self.intro_levels[self.level_index]
             self.current_level_data = utils.load_level(self.current_level_name)
-            self.current_wave_index = 0
+
+        # If Random level selection
+        if self.pending_level_index >= len(self.intro_levels):
+            print("entering random level selection")
+            self.level_index = self.pending_level_index
+            self.current_level_name = random.choice(self.random_levels)
+            self.current_level_data = utils.load_level(self.current_level_name)
 
         self.pending_level_index = None
         self.waiting_for_upgrade = False
@@ -149,7 +162,7 @@ class GameState(State):
             level_name=self.current_level_name,
             enemy_ships=self.enemy_ships
         )
-        self.current_level_num += 1
+        #self.current_level_num += 1
 
         # short countdown before next wave starts
         self.countdown = 1.5
@@ -285,11 +298,11 @@ class GameState(State):
             return
           
     def handle_level_clear(self, app):
-        is_last_level = self.level_index >= len(self.intro_levels) - 1
+        #is_last_level = self.level_index >= len(self.intro_levels) - 1
 
-        if is_last_level:
-            app.change_state(WinState("You Win!", self.enemy_hit_count))
-            return
+        #if is_last_level:
+        #    app.change_state(WinState("You Win!", self.enemy_hit_count))
+        #    return
 
         self.waiting_for_upgrade = True
         self.pending_level_index = self.level_index + 1
@@ -324,10 +337,9 @@ class GameState(State):
         # Draw Score and Level Counters
         counter_text = self.score_font.render(f"Score: {self.enemy_hit_count}", True, font_color)
         screen.blit(counter_text, (10, 10))
-        display_level = getattr(self, "endless_round", self.level_index + 1)
 
         level_text = self.score_font.render(
-            f"Level: {display_level}",
+            f"Level: {self.current_level_num}",
             True,
             font_color
         )
