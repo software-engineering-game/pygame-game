@@ -45,21 +45,21 @@ class GameState(State):
     def on_enter(self, app):
         self.app = app
         pygame.init()
-        #pygame.mixer.init()
+        pygame.mixer.init()
 
         # Cache common SFX so we don't reload on every event.
         self.sfx_enemy_boom = None
         self.sfx_player_boom = None
         try:
-            pass#self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
-            #self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
+            self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
+            self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
         except pygame.error:
             # Mixer may fail on some systems; game should still run.
             self.sfx_enemy_boom = None
             self.sfx_player_boom = None
 
         if hasattr(app, "music"):
-            pass#app.music.play_track(self.music_track)
+            app.music.play_track(self.music_track)
 
         # Set default upgrade values only once for this run
         if not hasattr(self, "upgrades_initialized"):
@@ -120,9 +120,6 @@ class GameState(State):
         self.player_invincible = False
         self.player_invincible_timer = 0.0
 
-        print("Current Level:", self.current_level_name)
-        print("Level Num:", self.current_level_num)
-
         # Restore saved position if returning from pause
         #if GameState.saved_player_position is not None:
         #    self.player.rect.center = GameState.saved_player_position
@@ -131,22 +128,17 @@ class GameState(State):
         pass
 
     def _resume_after_upgrade(self):
-
-        print("Pending level index:", self.pending_level_index)
-
         # If the level index is still at levels 1-5
         if (
             self.pending_level_index is not None and
             self.pending_level_index < len(self.intro_levels)
         ):
-            print("entering lvl 1-5")
             self.level_index = self.pending_level_index
             self.current_level_name = self.intro_levels[self.level_index]
             self.current_level_data = utils.load_level(self.current_level_name)
 
         # If Random level selection
         if self.pending_level_index >= len(self.intro_levels):
-            print("entering random level selection")
             self.level_index = self.pending_level_index
             self.current_level_name = random.choice(self.random_levels)
             self.current_level_data = utils.load_level(self.current_level_name)
@@ -242,7 +234,6 @@ class GameState(State):
         # Update bullets
         self.ally_bullets.update()
         self.enemy_bullets.update()
-
 
         # Checks if ally_bullet hit an enemy_ship
         collisions = pygame.sprite.groupcollide(
