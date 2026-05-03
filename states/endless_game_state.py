@@ -32,6 +32,9 @@ class EndlessGameState(GameState):
         self.endless_round += 1
         self.spawn_random_level()
 
+        # Match story mode: start each new round from the same player spawn.
+        self._reset_player_to_start()
+
         self.current_level_num += 1
 
         self.countdown = 1.5
