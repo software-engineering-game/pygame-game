@@ -63,7 +63,7 @@ def extract_hitboxes(sprite_group):
 # Loading Level Data
 #
 
-LEVEL_DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "level_data1.json")
+LEVEL_DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "level_data.json")
 
 def load_level(level_name):
     try:
@@ -110,28 +110,26 @@ def get_random_levels(levels):
 def get_level_sequence():
     levels = load_all_levels()
 
-    # intro_levels = get_intro_levels(levels)
-    # print("Intro levels is grabbing:")
-    # print(test_seq_func)
-    # rand_levels = get_random_levels(levels)
-    # print("Random levels is grabbing:")
-    # print(test_rand_func)
+    # Separates the levels into two separate dictionaries
+    intro_levels = get_intro_levels(levels)
+    rand_levels = get_random_levels(levels)
 
-    # Skip test/debug levels from normal progression flow.
-    playable_levels = {
-        level_name: level_data
-        for level_name, level_data in levels.items()
-        if "test" not in level_name.lower()
-    }
-    sorted_levels = sorted(
-        playable_levels.items(),
+    # Sorts and converts the intro levels into a list
+    sorted_intro_levels = sorted(
+        intro_levels.items(),
         key=lambda item: item[1].get("level_num", 999999)
     )
+    # Sorts and converts the radnom levels into a list
+    sorted_rand_levels = sorted(
+        rand_levels.items(),
+        key=lambda item: item[1].get("level_num", 999999)
+    )
+
     # returns the first five levels and the randomized levels
-    return [level_name for level_name, _ in sorted_levels], ["test_level", "gauntlet_level"]
+    #return [level_name for level_name, _ in sorted_levels], ["test_level", "gauntlet_level"]
 
     # Currently returns 'ValueError: too many values to unpack (expected 2)'
-    # return [level_name for level_name, _ in intro_levels], [level_name for level_name, _ in rand_levels]
+    return [level_name for level_name, _ in sorted_intro_levels], [level_name for level_name, _ in sorted_rand_levels]
 
 
 def spawn_enemy_wave(enemy_type, enemy_group, frames, corner_pos, size, spacing):

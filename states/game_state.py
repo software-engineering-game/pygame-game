@@ -51,7 +51,6 @@ class GameState(State):
         self.sfx_enemy_boom = None
         self.sfx_player_boom = None
         try:
-            pass
             self.sfx_enemy_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "en_boom.ogg"))
             self.sfx_player_boom = pygame.mixer.Sound(os.path.join(asset_folder, "sfx_ogg", "p_boom.ogg"))
         except pygame.error:
@@ -93,10 +92,6 @@ class GameState(State):
             self.countdown_active = False
 
         # Spawns Level
-
-        if self.level_index > len(self.intro_levels):
-            self.current_level_name = random.choice(self.random_levels)
-
         self.enemy_ships.empty()
         self.bg_image = utils.build_level(
             level_name=self.current_level_name,
@@ -112,7 +107,7 @@ class GameState(State):
         self.player_start_pos = (app.width // 2, app.height - 50)
         self.player = entities.Player_Auto(
             frames=utils.load_spritesheet(
-                sheet_name="player_auto_ship.png",
+                sheet_name="player_shotgun_ship.png",
                 frame_width=utils.FRAME_SIZE,
                 frame_height=utils.FRAME_SIZE
             ),
@@ -148,11 +143,20 @@ class GameState(State):
             self.player.hitbox.centery = self.player.rect.centery
 
     def _resume_after_upgrade(self):
-        if self.pending_level_index is not None:
+        # If the level index is still at levels 1-5
+        if (
+            self.pending_level_index is not None and
+            self.pending_level_index < len(self.intro_levels)
+        ):
             self.level_index = self.pending_level_index
             self.current_level_name = self.intro_levels[self.level_index]
             self.current_level_data = utils.load_level(self.current_level_name)
-            self.current_wave_index = 0
+
+        # If Random level selection
+        if self.pending_level_index >= len(self.intro_levels):
+            self.level_index = self.pending_level_index
+            self.current_level_name = random.choice(self.random_levels)
+            self.current_level_data = utils.load_level(self.current_level_name)
 
         self.pending_level_index = None
         self.waiting_for_upgrade = False
@@ -165,7 +169,7 @@ class GameState(State):
             level_name=self.current_level_name,
             enemy_ships=self.enemy_ships
         )
-        self.current_level_num += 1
+        #self.current_level_num += 1
 
         # Ensure each new level begins with the player at the start spawn.
         self._reset_player_to_start()
@@ -249,7 +253,6 @@ class GameState(State):
         self.ally_bullets.update()
         self.enemy_bullets.update()
 
-
         # Checks if ally_bullet hit an enemy_ship
         collisions = pygame.sprite.groupcollide(
             self.ally_bullets,
@@ -275,20 +278,17 @@ class GameState(State):
             # Sets Invinicibility
             self.player_invincible = True
             self.player_invincible_timer = 1.0
-            # Resets player position
-            #self.player.rect.center = self.player_start_pos
-            #self.player.hitbox.center = self.player_start_pos
 
-            sfx_player_hit = pygame.mixer.Sound("assets/sfx_ogg/p_hit.ogg")
             if self.lives != 0:
                 if settings.SFX_ON:
+                    sfx_player_hit = pygame.mixer.Sound("assets/sfx_ogg/p_hit.ogg")
                     pygame.mixer.Sound.play(sfx_player_hit)
 
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
                 if settings.SFX_ON:
+                    sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
                     pygame.mixer.Sound.play(sfx_player_boom)
                 return
 
@@ -307,11 +307,11 @@ class GameState(State):
             return
           
     def handle_level_clear(self, app):
-        is_last_level = self.level_index >= len(self.intro_levels) - 1
+        #is_last_level = self.level_index >= len(self.intro_levels) - 1
 
-        if is_last_level:
-            app.change_state(WinState("You Win!", self.enemy_hit_count))
-            return
+        #if is_last_level:
+        #    app.change_state(WinState("You Win!", self.enemy_hit_count))
+        #    return
 
         next_level_index = self.level_index + 1
         # Show upgrade after every two completed levels (2, 4, 6, ...).
@@ -341,8 +341,6 @@ class GameState(State):
         self.ally_bullets.draw(screen)
         self.enemy_bullets.draw(screen)
         
-        font_file = os.path.join(asset_folder, "fonts/PressStart2P-vaV7.ttf")
-
         # Draws Text for Readiness Countdown
         if self.countdown_active:
             count = int(self.countdown) + 1  # makes it show 3,2,1
@@ -358,10 +356,9 @@ class GameState(State):
         # Draw Score and Level Counters
         counter_text = self.score_font.render(f"Score: {self.enemy_hit_count}", True, font_color)
         screen.blit(counter_text, (10, 10))
-        display_level = getattr(self, "endless_round", self.level_index + 1)
 
         level_text = self.score_font.render(
-            f"Level: {display_level}",
+            f"Level: {self.current_level_num}",
             True,
             font_color
         )
