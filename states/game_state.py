@@ -15,6 +15,13 @@ repo_root = os.path.dirname(os.path.dirname(__file__))
 asset_folder = os.path.join(repo_root, "assets")
 font_color = (255,255,255) # Currently set to white
 
+# screen shake: peak magnitude decays in update; draw uses random offset up to cap
+SHAKE_HIT_PLAYER = 22.0
+SHAKE_DECAY_PER_SEC = 58.0
+SHAKE_DRAW_CAP = 18
+INVINCIBLE_BLINK_MS = 90
+
+
 class GameState(State):
     #saved_player_position = None
     music_track = "game"
@@ -42,6 +49,12 @@ class GameState(State):
             # Audio device may be unavailable (e.g., CI/headless).
             pass
 
+    def _shake_offset(self):
+        if self.screen_shake <= 0:
+            return (0, 0)
+        m = min(int(self.screen_shake), SHAKE_DRAW_CAP)
+        return (random.randint(-m, m), random.randint(-m, m))
+
     def on_enter(self, app):
         self.app = app
         pygame.init()
@@ -65,7 +78,8 @@ class GameState(State):
         if not hasattr(self, "upgrades_initialized"):
             settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
             settings.bullet_cooldown = settings.DEFAULT_BULLET_COOLDOWN
-            self.player_shot_mode = "single"
+            self.unlocked_upgrades = set()
+            self.player_shot_modes = set()
             self.upgrades_initialized = True
 
         # Sets the background color, and loads lives_icon
@@ -115,10 +129,12 @@ class GameState(State):
             start_pos=self.player_start_pos,
         )
 
-        self.player.shot_mode = self.player_shot_mode
+        self.player.shot_modes = self.player_shot_modes
         self.ally_ships.add(self.player)
         self.player_invincible = False
         self.player_invincible_timer = 0.0
+        self.screen_shake = 0.0
+        self._shake_canvas = pygame.Surface((app.width, app.height))
 
         # Restore saved position if returning from pause
         #if GameState.saved_player_position is not None:
@@ -208,6 +224,9 @@ class GameState(State):
                 self.countdown_active = False
             return # returns it to main.py loop
 
+        if self.screen_shake > 0:
+            self.screen_shake = max(0.0, self.screen_shake - dt * SHAKE_DECAY_PER_SEC)
+
         keys = pygame.key.get_pressed()
         self.player.update(keys)
 
@@ -256,12 +275,23 @@ class GameState(State):
         self.enemy_bullets.update(dt, self.enemy_bullets)
 
         # Checks if ally_bullet hit an enemy_ship
-        collisions = pygame.sprite.groupcollide(
-            self.ally_bullets,
-            self.enemy_ships,
-            True,
-            True
-        )
+        for bullet in list(self.ally_bullets):
+            hit_enemies = pygame.sprite.spritecollide(
+                bullet,
+                self.enemy_ships,
+                False
+            )
+
+            if hit_enemies:
+                enemy = hit_enemies[0]
+
+                bullet.kill()
+                enemy.kill()
+
+                self.enemy_hit_count += 1
+
+                if settings.SFX_ON:
+                    self._safe_play_sound(self.sfx_enemy_boom)
 
         self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
 
@@ -277,6 +307,7 @@ class GameState(State):
             pygame.sprite.spritecollide(self.player, self.enemy_bullets, True)
 
             self.lives -= 1
+            self.screen_shake = max(self.screen_shake, SHAKE_HIT_PLAYER)
             # Sets Invinicibility
             self.player_invincible = True
             self.player_invincible_timer = 1.0
@@ -294,14 +325,6 @@ class GameState(State):
                     pygame.mixer.Sound.play(sfx_player_boom)
                 return
 
-        # Score tracking for hits
-        if collisions:
-            for enemies in collisions.values():
-                for enemy in enemies:
-                    self.enemy_hit_count += 1
-
-                    if settings.SFX_ON:
-                        self._safe_play_sound(self.sfx_enemy_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:
@@ -330,19 +353,26 @@ class GameState(State):
         self._resume_after_upgrade()
             
     def draw(self, app, screen):
-        # Background
-        screen.fill(self.bg_color)
-        screen.blit(self.bg_image, (0, 0))
-        
-        # Game Entities
-        self.ally_ships.draw(screen)
-        self.enemy_ships.draw(screen)
+        ox, oy = self._shake_offset()
+        c = self._shake_canvas
+        c.fill(self.bg_color)
+        c.blit(self.bg_image, (0, 0))
+
+        blink_off = (
+            self.player_invincible
+            and (pygame.time.get_ticks() // INVINCIBLE_BLINK_MS) % 2 == 1
+        )
+        for spr in self.ally_ships:
+            if blink_off and spr is self.player:
+                continue
+            c.blit(spr.image, spr.rect)
+        self.enemy_ships.draw(c)
         for enemy in self.enemy_ships:
             if hasattr(enemy, "draw_health_bar"):
-                enemy.draw_health_bar(screen)
-        self.ally_bullets.draw(screen)
-        self.enemy_bullets.draw(screen)
-        
+              
+                enemy.draw_health_bar(c)
+        self.ally_bullets.draw(c)
+        self.enemy_bullets.draw(c)
         # Draws Text for Readiness Countdown
         if self.countdown_active:
             count = int(self.countdown) + 1  # makes it show 3,2,1
@@ -353,21 +383,26 @@ class GameState(State):
                 text = self.countdown_font.render("GO", True, font_color)
 
             countdown_rect = text.get_rect(center=(app.width // 2, app.height // 2))
-            screen.blit(text, countdown_rect)
+            c.blit(text, countdown_rect)
 
         # Draw Score and Level Counters
         counter_text = self.score_font.render(f"Score: {self.enemy_hit_count}", True, font_color)
-        screen.blit(counter_text, (10, 10))
+
+        c.blit(counter_text, (10, 10))
+        display_level = getattr(self, "endless_round", self.level_index + 1)
+
 
         level_text = self.score_font.render(
             f"Level: {self.current_level_num}",
             True,
             font_color
         )
-        screen.blit(level_text, (10, 45))
+        c.blit(level_text, (10, 45))
 
         # Draw Lives Counter
         live_count = self.lives_font.render(f"x{self.lives}", True, font_color)
-        screen.blit(self.lives_icon,(20, screen.get_height() - 45))
-        screen.blit(live_count, (60, screen.get_height() - 35))
+        c.blit(self.lives_icon, (20, c.get_height() - 45))
+        c.blit(live_count, (60, c.get_height() - 35))
+
+        screen.blit(c, (ox, oy))
 
