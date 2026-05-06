@@ -26,7 +26,7 @@ class MainMenuState(State):
         self.menu_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
         self.score_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 16)
 
-        #mixer initializer
+        # Mixer initializer
         pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
 
         self.high_score = utils.load_high_score()
@@ -56,8 +56,8 @@ class MainMenuState(State):
             elif event.key == settings.keybind_menu_confirm:
 
                 if self.selected == 0:
-                    from states.mode_select_state import ModeSelectState
-                    app.change_state(ModeSelectState())
+                    from states.game_state import GameState
+                    app.change_state(GameState())
 
                 elif self.selected == 1:
                     from states.leaderboard_state import LeaderboardState

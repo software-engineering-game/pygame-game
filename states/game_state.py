@@ -4,7 +4,7 @@ import random
 from states import settings
 from states import utils
 from states import entities
-#from states import music_manager
+from states import music_manager
 from states.base_state import State
 from states.death_state import DeathState  #ADDED: death screen
 from states.upgrade_state import UpgradeState
@@ -18,7 +18,7 @@ font_color = (255,255,255) # Currently set to white
 class GameState(State):
     #saved_player_position = None
     music_track = "game"
-    current_level_num = 0
+    current_level_num = 1
 
     # progression state
     intro_levels, random_levels = utils.get_level_sequence()
@@ -97,7 +97,7 @@ class GameState(State):
             level_name=self.current_level_name,
             enemy_ships=self.enemy_ships
         )
-        self.current_level_num += 1
+        #self.current_level_num += 1
 
         self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
         self.bullet_hitboxes = []
@@ -107,7 +107,7 @@ class GameState(State):
         self.player_start_pos = (app.width // 2, app.height - 50)
         self.player = entities.Player_Auto(
             frames=utils.load_spritesheet(
-                sheet_name="player_auto_ship.png",
+                sheet_name="player_shotgun_ship.png",
                 frame_width=utils.FRAME_SIZE,
                 frame_height=utils.FRAME_SIZE
             ),
@@ -127,12 +127,36 @@ class GameState(State):
     def on_exit(self, app):
         pass
 
+    def _reset_player_to_start(self):
+        # Level transitions rebuild enemies/background, but we want the player ship
+        # to always start each new level from the same spawn position.
+        if not hasattr(self, "player") or self.player is None:
+            return
+        if not hasattr(self, "player_start_pos") or self.player_start_pos is None:
+            return
+
+        # Move the sprite rect back to the intended start position.
+        self.player.rect.center = self.player_start_pos
+        if hasattr(self.player, "hitbox") and self.player.hitbox is not None:
+            # Keep the collision hitbox aligned with the rendered sprite.
+            self.player.hitbox.centerx = self.player.rect.centerx
+            self.player.hitbox.centery = self.player.rect.centery
+
     def _resume_after_upgrade(self):
-        if self.pending_level_index is not None:
+        # If the level index is still at levels 1-5
+        if (
+            self.pending_level_index is not None and
+            self.pending_level_index < len(self.intro_levels)
+        ):
             self.level_index = self.pending_level_index
             self.current_level_name = self.intro_levels[self.level_index]
             self.current_level_data = utils.load_level(self.current_level_name)
-            self.current_wave_index = 0
+
+        # If Random level selection
+        if self.pending_level_index >= len(self.intro_levels):
+            self.level_index = self.pending_level_index
+            self.current_level_name = random.choice(self.random_levels)
+            self.current_level_data = utils.load_level(self.current_level_name)
 
         self.pending_level_index = None
         self.waiting_for_upgrade = False
@@ -146,6 +170,9 @@ class GameState(State):
             enemy_ships=self.enemy_ships
         )
         self.current_level_num += 1
+
+        # Ensure each new level begins with the player at the start spawn.
+        self._reset_player_to_start()
 
         # short countdown before next wave starts
         self.countdown = 1.5
@@ -161,7 +188,7 @@ class GameState(State):
             from states.pause_state import PauseScreen
             app.change_state(PauseScreen(app, self))
 
-                # Keybind to quickly debug something
+        # Keybind to quickly debug something
         if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
             self.waiting_for_upgrade = True
             self.pending_level_index = self.level_index
@@ -226,7 +253,6 @@ class GameState(State):
         self.ally_bullets.update()
         self.enemy_bullets.update()
 
-
         # Checks if ally_bullet hit an enemy_ship
         collisions = pygame.sprite.groupcollide(
             self.ally_bullets,
@@ -252,20 +278,17 @@ class GameState(State):
             # Sets Invinicibility
             self.player_invincible = True
             self.player_invincible_timer = 1.0
-            # Resets player position
-            #self.player.rect.center = self.player_start_pos
-            #self.player.hitbox.center = self.player_start_pos
 
-            sfx_player_hit = pygame.mixer.Sound("assets/sfx_ogg/p_hit.ogg")
             if self.lives != 0:
                 if settings.SFX_ON:
+                    sfx_player_hit = pygame.mixer.Sound("assets/sfx_ogg/p_hit.ogg")
                     pygame.mixer.Sound.play(sfx_player_hit)
 
 
             if self.lives <= 0:
                 app.change_state(DeathState("You Died", self.enemy_hit_count))
-                sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
                 if settings.SFX_ON:
+                    sfx_player_boom = pygame.mixer.Sound("assets/sfx_ogg/p_boom.ogg")
                     pygame.mixer.Sound.play(sfx_player_boom)
                 return
 
@@ -284,16 +307,26 @@ class GameState(State):
             return
           
     def handle_level_clear(self, app):
-        is_last_level = self.level_index >= len(self.intro_levels) - 1
+        #is_last_level = self.level_index >= len(self.intro_levels) - 1
 
-        if is_last_level:
-            app.change_state(WinState("You Win!", self.enemy_hit_count))
+        #if is_last_level:
+        #    app.change_state(WinState("You Win!", self.enemy_hit_count))
+        #    return
+
+        next_level_index = self.level_index + 1
+        # Show upgrade after every two completed levels (2, 4, 6, ...).
+        should_show_upgrade = (self.level_index % 2) == 1
+
+        if should_show_upgrade:
+            self.waiting_for_upgrade = True
+            self.pending_level_index = next_level_index
+            app.change_state(UpgradeState(app, self))
             return
 
-        self.waiting_for_upgrade = True
-        self.pending_level_index = self.level_index + 1
-        app.change_state(UpgradeState(app, self))
-         
+        # No upgrade due: immediately advance to the next level.
+        self.pending_level_index = next_level_index
+        self._resume_after_upgrade()
+            
     def draw(self, app, screen):
         # Background
         screen.fill(self.bg_color)
@@ -308,8 +341,6 @@ class GameState(State):
         self.ally_bullets.draw(screen)
         self.enemy_bullets.draw(screen)
         
-        font_file = os.path.join(asset_folder, "fonts/PressStart2P-vaV7.ttf")
-
         # Draws Text for Readiness Countdown
         if self.countdown_active:
             count = int(self.countdown) + 1  # makes it show 3,2,1
@@ -325,10 +356,9 @@ class GameState(State):
         # Draw Score and Level Counters
         counter_text = self.score_font.render(f"Score: {self.enemy_hit_count}", True, font_color)
         screen.blit(counter_text, (10, 10))
-        display_level = getattr(self, "endless_round", self.level_index + 1)
 
         level_text = self.score_font.render(
-            f"Level: {display_level}",
+            f"Level: {self.current_level_num}",
             True,
             font_color
         )
