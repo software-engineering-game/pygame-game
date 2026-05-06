@@ -65,7 +65,8 @@ class GameState(State):
         if not hasattr(self, "upgrades_initialized"):
             settings.bullet_spd = settings.DEFAULT_BULLET_SPEED
             settings.bullet_cooldown = settings.DEFAULT_BULLET_COOLDOWN
-            self.player_shot_mode = "single"
+            self.unlocked_upgrades = set()
+            self.player_shot_modes = set()
             self.upgrades_initialized = True
 
         # Sets the background color, and loads lives_icon
@@ -115,7 +116,7 @@ class GameState(State):
             start_pos=self.player_start_pos,
         )
 
-        self.player.shot_mode = self.player_shot_mode
+        self.player.shot_modes = self.player_shot_modes
         self.ally_ships.add(self.player)
         self.player_invincible = False
         self.player_invincible_timer = 0.0
@@ -254,12 +255,23 @@ class GameState(State):
         self.enemy_bullets.update()
 
         # Checks if ally_bullet hit an enemy_ship
-        collisions = pygame.sprite.groupcollide(
-            self.ally_bullets,
-            self.enemy_ships,
-            True,
-            True
-        )
+        for bullet in list(self.ally_bullets):
+            hit_enemies = pygame.sprite.spritecollide(
+                bullet,
+                self.enemy_ships,
+                False
+            )
+
+            if hit_enemies:
+                enemy = hit_enemies[0]
+
+                bullet.kill()
+                enemy.kill()
+
+                self.enemy_hit_count += 1
+
+                if settings.SFX_ON:
+                    self._safe_play_sound(self.sfx_enemy_boom)
 
         self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
 
@@ -292,14 +304,6 @@ class GameState(State):
                     pygame.mixer.Sound.play(sfx_player_boom)
                 return
 
-        # Score tracking for hits
-        if collisions:
-            for enemies in collisions.values():
-                for enemy in enemies:
-                    self.enemy_hit_count += 1
-
-                    if settings.SFX_ON:
-                        self._safe_play_sound(self.sfx_enemy_boom)
 
         # Level progression: clear level -> upgrade pick -> spawn next level
         if not self.enemy_ships and not self.waiting_for_upgrade:

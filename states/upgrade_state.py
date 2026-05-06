@@ -12,14 +12,22 @@ class UpgradeState(State):
         self.small_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 20)
         self.tiny_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 16)
 
-        self.selected = 0
-        self.options = [
+        all_options = [
             "Bullet Speed +2",
             "Fire Rate +10%",
             "Extra Life +1",
             "Triple Shot",
             "Front + Back Shot"
         ]
+
+        unlocked = getattr(self.previous_state, "unlocked_upgrades", set())
+
+        self.options = [
+            option for option in all_options
+            if option not in unlocked
+        ]
+
+        self.selected = 0
 
     def handle_event(self, app, event):
         sfx_menu = pygame.mixer.Sound("assets/sfx_ogg/menu1.ogg")
@@ -51,12 +59,14 @@ class UpgradeState(State):
             self.previous_state.lives += 1
 
         elif selected_upgrade == "Triple Shot":
-            self.previous_state.player.shot_mode = "triple"
-            self.previous_state.player_shot_mode = "triple"
+            self.previous_state.unlocked_upgrades.add("Triple Shot")
+            self.previous_state.player_shot_modes.add("triple")
+            self.previous_state.player.shot_modes = self.previous_state.player_shot_modes
 
         elif selected_upgrade == "Front + Back Shot":
-            self.previous_state.player.shot_mode = "front_back"
-            self.previous_state.player_shot_mode = "front_back"
+            self.previous_state.unlocked_upgrades.add("Front + Back Shot")
+            self.previous_state.player_shot_modes.add("front_back")
+            self.previous_state.player.shot_modes = self.previous_state.player_shot_modes
 
 
     def _resume_previous_state(self, app):
@@ -80,7 +90,13 @@ class UpgradeState(State):
         rect = text.get_rect(center=(settings.WIDTH // 2, settings.HEIGHT // 2 - 120))
         screen.blit(text, rect)
 
-        current_shot = getattr(self.previous_state, "player_shot_mode", "single")
+        shot_modes = getattr(self.previous_state, "player_shot_modes", set())
+
+        if not shot_modes:
+            current_shot = "single"
+        else:
+            current_shot = " + ".join(sorted(shot_modes))
+            
         current_lives = getattr(self.previous_state, "lives", 3)
 
         stats_text_1 = self.tiny_font.render(

@@ -85,6 +85,7 @@ class Bullet(pygame.sprite.Sprite):
 class Player(Game_Entity):
     def __init__(self, frames, speed, start_pos):
         super().__init__(frames, speed, start_pos)
+        self.shot_modes = set()
 
         # Hitbox
         self.hitbox = self.rect.scale_by(0.6)
@@ -140,23 +141,18 @@ class Player_Auto(Player):
         super().__init__(frames, speed, start_pos)
     
     def shoot(self, bullet_group):
-        if self.shot_mode == "triple":
-            bullet_data = [
-                ((self.rect.centerx, self.rect.top), (0, -1)),
-                ((self.rect.centerx - 18, self.rect.top), (-1, -1)),
-                ((self.rect.centerx + 18, self.rect.top), (1, -1)),
-            ]
+        shot_modes = getattr(self, "shot_modes", set())
 
-        elif self.shot_mode == "front_back":
-            bullet_data = [
-                ((self.rect.centerx, self.rect.top), (0, -1)),
-                ((self.rect.centerx, self.rect.bottom), (0, 1)),
-            ]
+        bullet_data = [
+            ((self.rect.centerx, self.rect.top), (0, -1)),
+        ]
 
-        else:
-            bullet_data = [
-                ((self.rect.centerx, self.rect.top), (0, -1)),
-            ]
+        if "triple" in shot_modes:
+            bullet_data.append(((self.rect.centerx - 18, self.rect.top), (-1, -1)))
+            bullet_data.append(((self.rect.centerx + 18, self.rect.top), (1, -1)))
+
+        if "front_back" in shot_modes:
+            bullet_data.append(((self.rect.centerx, self.rect.bottom), (0, 1)))
 
         for start_pos, direction in bullet_data:
             player_bullet = Bullet(
@@ -169,12 +165,15 @@ class Player_Auto(Player):
 
         self.can_shoot = False
 
-        if self.shot_mode == "triple":
-            self.shoot_cooldown = max(0.25, settings.bullet_cooldown * 1.75)
-        elif self.shot_mode == "front_back":
-            self.shoot_cooldown = max(0.18, settings.bullet_cooldown * 1.35)
-        else:
-            self.shoot_cooldown = settings.bullet_cooldown
+        cooldown_multiplier = 1.0
+
+        if "triple" in shot_modes:
+            cooldown_multiplier *= 1.75
+
+        if "front_back" in shot_modes:
+            cooldown_multiplier *= 1.35
+
+        self.shoot_cooldown = max(0.15, settings.bullet_cooldown * cooldown_multiplier)
 
 # Class for Shotgun firing mode
 class Player_Shotgun(Player):
