@@ -77,6 +77,39 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.left > settings.WIDTH:
             self.kill()
 
+# Bomb Fired by the Bomber enemies
+class Bomb(pygame.sprite.Sprite):
+    def __init__(self, frames, speed, start_pos, direct):
+        super().__init__()
+        self.image = pygame.image.load("assets/" + frames).convert()
+        self.image.set_colorkey((160, 200, 152))
+
+        # Explosion timer
+        self.explode_timer = 3
+
+        # Bounding Box
+        self.rect = self.image.get_rect(center=start_pos)
+        # Hitbox
+        self.hitbox = self.rect
+
+        self.speed = speed
+        self.x_direct = direct[0] # Should be set to 0, 1, or -1
+        self.y_direct = direct[1] # Should be set to 0, 1, or -1
+
+    def update(self):
+        self.rect.x += self.x_direct * self.speed
+        self.rect.y += self.y_direct * self.speed
+
+        # Remove bullet if it goes off screen
+        if self.rect.bottom < 0:
+            self.kill()
+        if self.rect.top > settings.HEIGHT:
+            self.kill()
+        if self.rect.right < 0:
+            self.kill()
+        if self.rect.left > settings.WIDTH:
+            self.kill()
+
 #
 # Player Ship Types
 #
@@ -339,6 +372,19 @@ class Bomber_Enemy(Game_Entity):
 
     def shoot(self, bullet_group):
         # for when I write the bomber specific mechanics
+
+
+        enemy_bullet = Bullet(
+            frames="basic_bullet.png",
+            speed=settings.DEFAULT_BULLET_SPEED,
+            start_pos=(self.rect.centerx, self.rect.bottom),
+            direct=(0, 1)
+        )
+        bullet_group.add(enemy_bullet)
+        self.can_shoot = False
+        self.shoot_cooldown = random.uniform(2.0, 5.0)
+
+
         pass
     
     def update(self, player_pos):
@@ -377,7 +423,7 @@ class Bomber_Enemy(Game_Entity):
             self.rect.x = random.randint(50, settings.WIDTH - 50)
             self.rect.y = random.randint(-100, -40)
 
-        self.traverse -= self.dx
+        self.traverse -= abs(self.dx)
 
         # Move based on Velocity
         self.rect.x += self.dx
