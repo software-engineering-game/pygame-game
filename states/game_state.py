@@ -18,7 +18,7 @@ font_color = (255,255,255) # Currently set to white
 class GameState(State):
     #saved_player_position = None
     music_track = "game"
-    current_level_num = 0
+    current_level_num = 1
 
     # progression state
     intro_levels, random_levels = utils.get_level_sequence()
@@ -97,7 +97,7 @@ class GameState(State):
             level_name=self.current_level_name,
             enemy_ships=self.enemy_ships
         )
-        self.current_level_num += 1
+        #self.current_level_num += 1
 
         self.enemy_hitboxes = utils.extract_hitboxes(self.enemy_ships)
         self.bullet_hitboxes = []
@@ -169,7 +169,7 @@ class GameState(State):
             level_name=self.current_level_name,
             enemy_ships=self.enemy_ships
         )
-        #self.current_level_num += 1
+        self.current_level_num += 1
 
         # Ensure each new level begins with the player at the start spawn.
         self._reset_player_to_start()
