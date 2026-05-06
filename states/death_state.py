@@ -11,12 +11,17 @@ from states.entities import Stars
 
 
 class DeathState(State):
+
+    music_track = "gameover"
+    
     def __init__(self, message="You Died", score=0):
         self.message = message
         self.score = score
 
         self.is_new_high = False
         self.high_score = 0
+
+        
 
         self.name = ""
         self.entering_name = True
@@ -36,7 +41,7 @@ class DeathState(State):
 
         # Stop music
         if hasattr(app, "music"):
-            app.music.stop()
+            app.music.play_track(self.music_track)
 
         # Time for stars
         self.t = 0
