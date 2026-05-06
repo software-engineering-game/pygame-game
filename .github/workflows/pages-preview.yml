@@ -38,6 +38,12 @@ jobs:
         run: |
           rm -rf build build/web-cache
           python -u -m pygbag --build --ume_block 0 .
+          
+      - name: Add deploy version marker
+        run: |
+          echo "commit=${GITHUB_SHA}" > build/web/deploy_version.txt
+          echo "deployed_at=$(date -u)" >> build/web/deploy_version.txt
+          cat build/web/deploy_version.txt
 
       - name: Debug build output
         run: |
@@ -82,6 +88,16 @@ jobs:
           echo "deploy:"
           ls -la deploy || true
 
+      - name: Clear server web folder
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            rm -rf ~/game/build/web
+            mkdir -p ~/game/build/web
+
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -101,13 +117,32 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             echo "Restarting server..."
-            mkdir -p ~/game/build/web
-            pids=$(ps -ef | grep 'python3 -m http.server 15089' | grep -v grep | awk '{print $2}')
+            cd ~/game/build/web || exit 1
+
+            echo "Current deployed version:"
+            cat deploy_version.txt || true
+
+            cat > server.py <<'PY'
+            from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+
+            class NoCacheHandler(SimpleHTTPRequestHandler):
+                def end_headers(self):
+                    self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                    self.send_header("Pragma", "no-cache")
+                    self.send_header("Expires", "0")
+                    super().end_headers()
+
+            ThreadingHTTPServer(("0.0.0.0", 15089), NoCacheHandler).serve_forever()
+            PY
+
+            pids=$(ps -ef | grep -E 'python3 .*http.server 15089|python3 .*server.py' | grep -v grep | awk '{print $2}')
             if [ -n "$pids" ]; then
               kill $pids || true
               sleep 1
             fi
-            cd ~/game/build/web || exit 1
-            nohup python3 -m http.server 15089 >/dev/null 2>&1 </dev/null &
+
+            nohup python3 server.py >/dev/null 2>&1 </dev/null &
             sleep 2
-            ps -ef | grep 'python3 -m http.server 15089' | grep -v grep
+
+            echo "Running server process:"
+            ps -ef | grep 'python3 .*server.py' | grep -v grep

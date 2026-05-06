@@ -5,13 +5,16 @@ from states.entities import Stars
 from states import utils
 
 class MainMenuState(State):
+
+    music_track = "menu"
+
     def on_enter(self, app):
         # Time for stars
         self.t = 0
 
         #stop game music
         if hasattr(app, "music"):
-            pygame.mixer.music.fadeout(500)
+            app.music.play_track(self.music_track)
 
         # Make the stars
         num_stars = 200
@@ -26,8 +29,8 @@ class MainMenuState(State):
         self.menu_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 24)
         self.score_font = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 16)
 
-        #mixer initializer
-        pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
+        # Mixer initializer
+        #pygame.mixer.init(devicename="pygame.mixer.get_dev_info()")
 
         self.high_score = utils.load_high_score()
 
@@ -56,8 +59,8 @@ class MainMenuState(State):
             elif event.key == settings.keybind_menu_confirm:
 
                 if self.selected == 0:
-                    from states.mode_select_state import ModeSelectState
-                    app.change_state(ModeSelectState())
+                    from states.game_state import GameState
+                    app.change_state(GameState())
 
                 elif self.selected == 1:
                     from states.leaderboard_state import LeaderboardState
