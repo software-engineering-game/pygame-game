@@ -63,7 +63,57 @@ class Bullet(pygame.sprite.Sprite):
         self.x_direct = direct[0] # Should be set to 0, 1, or -1
         self.y_direct = direct[1] # Should be set to 0, 1, or -1
 
-    def update(self):
+    def update(self, dt, bullet_group):
+        self.rect.x += self.x_direct * self.speed
+        self.rect.y += self.y_direct * self.speed
+
+        # Remove bullet if it goes off screen
+        if self.rect.bottom < 0:
+            self.kill()
+        if self.rect.top > settings.HEIGHT:
+            self.kill()
+        if self.rect.right < 0:
+            self.kill()
+        if self.rect.left > settings.WIDTH:
+            self.kill()
+
+# Bomb Fired by the Bomber enemies
+class Bomb(pygame.sprite.Sprite):
+    def __init__(self, frames, speed, start_pos, direct):
+        super().__init__()
+        self.image = pygame.image.load("assets/" + frames).convert()
+        self.image.set_colorkey((160, 200, 152))
+
+        # Explosion timer
+        self.explode_timer = 1.5
+
+        # Bounding Box
+        self.rect = self.image.get_rect(center=start_pos)
+        # Hitbox
+        self.hitbox = self.rect
+
+        # Health Variables
+        self.max_health = 1
+        self.health = self.max_health
+
+        self.speed = speed
+        self.x_direct = direct[0] # Should be set to 0, 1, or -1
+        self.y_direct = direct[1] # Should be set to 0, 1, or -1
+
+    def update(self, dt, bullet_group):
+        self.explode_timer -= dt
+        if self.explode_timer <= 0:
+            self.speed = 0
+            for frag in [(0,1),(1,1),(1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1)]:
+                fragment = Bullet(
+                    frames="basic_bullet.png",
+                    speed=settings.DEFAULT_BULLET_SPEED,
+                    start_pos=(self.rect.centerx, self.rect.bottom),
+                    direct=frag
+                )
+                bullet_group.add(fragment)
+            self.kill()
+
         self.rect.x += self.x_direct * self.speed
         self.rect.y += self.y_direct * self.speed
 
@@ -202,7 +252,7 @@ class Basic_Enemy(Game_Entity):
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
       
-        self.max_health = 1
+        self.max_health = 1 * settings.difficulty_scalar
         self.health = self.max_health
 
         self.vertical_speed = random.uniform(0.8, 1.5)
@@ -323,24 +373,49 @@ class Bomber_Enemy(Game_Entity):
         self.hitbox.centerx = self.rect.centerx
         self.hitbox.centery = self.rect.centery
 
+        # Health
+        self.max_health = 1 * settings.difficulty_scalar
+        self.health = self.max_health
+
         # Movement Variabes
         self.dx = 0
         self.dy = 0
 
         # Bomber Mechanics
-        self.travel_distance = 340
+        self.travel_distance = 200
+        self.traverse = self.travel_distance
         self.move_right = True
 
         # Shooting Tracking
         self.shooting = False
-        self.shooting_cooldown = 5 # seconds
+        self.can_shoot = False
+        self.shoot_cooldown = 5 # seconds
+        self.shoot_time = 6
 
     def shoot(self, bullet_group):
-        # for when I write the bomber specific mechanics
-        pass
+        # Creates a bomb
+        enemy_bullet = Bomb(
+            frames="bomb_bullet.png",
+            speed=3,
+            start_pos=(self.rect.centerx, self.rect.bottom),
+            direct=(0, 1)
+        )
+        bullet_group.add(enemy_bullet)
+
+        self.can_shoot = False
+        self.shooting = True
+        self.shoot_cooldown = random.uniform(2.0, 5.0)
     
     def update(self, player_pos):
+        if self.shooting and self.shoot_time <= 0:
+            self.shooting = False
         
+        # If Travel Distance has been traversed
+        if self.traverse == 0:
+            #does this negte the previous value?
+            self.move_right = not self.move_right
+            self.traverse = self.travel_distance
+
         # If the bomber is pausing to shoot
         if self.shooting:
             self.dx = self.dy = 0
@@ -351,22 +426,26 @@ class Bomber_Enemy(Game_Entity):
             else:
                 self.dx = -1 * self.speed
 
-            # Consistently move down gradually
-            self.dy = random.uniform(0.8, 1.2)
-            self.dy = max(0.5, min(1.5, self.dy))
+            # Move down gradually
+            self.dy = random.uniform(0, 1.2)
+            self.dy = max(0, min(1.5, self.dy))
 
 
         # If enemy goes off right -> move left
         if self.rect.right > settings.WIDTH - 40:
             self.move_right = False
+            self.traverse = self.travel_distance
         # if enemy goes off left -> move right
         elif self.rect.left < 40:
             self.move_right = True
+            self.traverse = self.travel_distance
 
         # If enemy goes off bottom → reset to top
         if self.rect.top > settings.HEIGHT:
             self.rect.x = random.randint(50, settings.WIDTH - 50)
             self.rect.y = random.randint(-100, -40)
+
+        self.traverse -= abs(self.dx)
 
         # Move based on Velocity
         self.rect.x += self.dx

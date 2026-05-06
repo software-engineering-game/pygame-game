@@ -57,6 +57,8 @@ def toggle_music():
     global MUSIC_ON
     MUSIC_ON = not MUSIC_ON
 
+difficulty_scalar = 1
+
 # Enemy Variables
 basic_enemy_spd = 2
 swarm_enemy_spd = 3

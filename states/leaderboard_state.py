@@ -48,11 +48,11 @@ class LeaderboardState(State):
         for star in self.stars:
             star.draw(screen, self.t)
 
-        font_big = pygame.font.Font(None, 80)
-        font_small = pygame.font.Font(None, 40)
+        font_title = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 50)
+        font_small = pygame.font.Font("assets/fonts/PressStart2P-vaV7.ttf", 20)
 
         # title
-        title = font_big.render("Leaderboard", True, (255, 255, 0))
+        title = font_title.render("Leaderboard", True, (255, 255, 0))
         screen.blit(title, title.get_rect(center=(app.width // 2, app.height // 6)))
 
         # entries
