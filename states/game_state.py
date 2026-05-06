@@ -229,8 +229,10 @@ class GameState(State):
 
         # Enemy auto-fire logic for basic enemies
         for enemy in self.enemy_ships:
-            if isinstance(enemy, entities.Basic_Enemy):
+            if isinstance(enemy, entities.Basic_Enemy) or isinstance(enemy, entities.Bomber_Enemy):
                 enemy.shoot_cooldown -= dt
+                if isinstance(enemy, entities.Bomber_Enemy):
+                    enemy.shoot_time -= dt
                 if enemy.shoot_cooldown <= 0 and not enemy.can_shoot:
                     enemy.can_shoot = True
 
@@ -250,8 +252,8 @@ class GameState(State):
             self.player.shoot(self.ally_bullets)
 
         # Update bullets
-        self.ally_bullets.update()
-        self.enemy_bullets.update()
+        self.ally_bullets.update(dt, self.ally_bullets)
+        self.enemy_bullets.update(dt, self.enemy_bullets)
 
         # Checks if ally_bullet hit an enemy_ship
         collisions = pygame.sprite.groupcollide(
