@@ -37,16 +37,18 @@ class FakeApp:
 
 def test_bullet_despawn():
     bullet = Bullet(frames="basic_bullet.png", speed=5, start_pos=(100,100), direct=(0,-1))
+    group = pygame.sprite.Group()
 
     bullet.rect.y = -100
-    bullet.update()
+    bullet.update(dt=0, bullet_group=group)
     assert not bullet.alive()
 
 def test_bullet_moves_up():
     bullet = Bullet(frames="basic_bullet.png", speed=5, start_pos=(100,100), direct=(0,-1))
+    group = pygame.sprite.Group()
 
     start_y = bullet.rect.y
-    bullet.update()
+    bullet.update(dt=0, bullet_group=group)
     assert bullet.rect.y < start_y
 
 def test_bullets_alive_onscreen():
@@ -55,7 +57,7 @@ def test_bullets_alive_onscreen():
     group = pygame.sprite.Group()
     group.add(bullet)
     
-    bullet.update()
+    bullet.update(dt=0, bullet_group=group)
     assert bullet.alive()
 
 #----------Player Death Test----------
