@@ -31,7 +31,6 @@ class music_manager:
 
         pygame.mixer.music.load(path)
 
-        # 🔹 use global volume variable
         pygame.mixer.music.set_volume(VOLUME)
 
         pygame.mixer.music.play(loops)
